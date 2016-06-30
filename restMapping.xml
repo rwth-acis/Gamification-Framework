@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<service consumes="*" name="i5.las2peer.services.gamificationManagerService.GamificationManagerService" path="manager" produces="text/plain" version="0.1">
+  <methods>
+    <method httpMethod="post" name="createNewApp" path="apps" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="header" index="0" name="Content-Type" type="java.lang.String"/>
+        <parameter annotation="content" index="1" name="" type="[B"/>
+      </parameters>
+    </method>
+    <method httpMethod="delete" name="deleteApp" path="apps/{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="memberLoginValidation" path="validation" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters/>
+    </method>
+    <method httpMethod="delete" name="removeUserFromApp" path="apps/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getAllAppInfo" path="apps" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters/>
+    </method>
+    <method httpMethod="get" name="getAppDetails" path="apps/{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+      </parameters>
+    </method>
+  </methods>
+</service>
