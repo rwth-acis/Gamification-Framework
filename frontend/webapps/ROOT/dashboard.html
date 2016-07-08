@@ -2,161 +2,50 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            Badge
+                            Dashboard
                         </h1>
                         <ol class="breadcrumb">
-                            <li>
-                                <i class="fa fa-dashboard"></i>  <a href="index.html">Dashboard</a>
-                            </li>
                             <li class="active">
-                                <i class="fa fa-certificate"></i> Badge
+                                <i class="fa fa-dashboard"></i> Dashboard</a>
                             </li>
                         </ol>
                     </div>
                 </div>
                 <!-- /.row -->
-                <div class="table-responsive" id='list_badges'>
-							<table class="table table-bordered table-striped" id='list_badges_table'>
-								<thead>
-									<tr>
-										<th >Badge ID</th>
-										<th>Badge Name</th>
-										<th>Badge Description</th>
-										<th>Badge Image</th>
-										<th>Update/Delete</th>
-								</thead>
-								
-								<tbody id='badgetbody'>
-									<!-- <tr>
-									<td class='bidclass' id='1'>name1</td>
-									<td class='bnameclass' id='1'>Badge Name 1</td>
-									<td class='bdescclass' id='1'>Badge Name 1 Description</td>
-									<td>
-										<button id="1" type="button" class="btn btn-info bimgclass" name="#test1" data-toggle="modal" data-target="#modalimage">View image</button>
-									</td>
-									<td >
-										<button id="1" type="button" class="btn btn-warning bupdclass" data-toggle="modal" data-target="#updatebadgediv">Update</button>
-										<button id="1" type="button" class="btn btn-danger bdelclass">Delete</button>
-									</td>
+                <div class="container-fluid" >
+				<div class="row">
 
-									<tr>
-										<td class='bidclass' id='2'>name2</td>
-										<td class='bnameclass' id='2'>Badge Name 2</td>
-										<td class='bdescclass' id='2'>Badge Name 2 Description</td>
-										<td>
-											<button id="2" type="button" class="btn btn-info bimgclass" name="#test2" data-toggle="modal" data-target="#modalimage">View image</button>
-										</td>
-										<td>
-											<button id="2" type="button" class="btn btn-warning bupdclass" data-toggle="modal" data-target="#updatebadgediv">Update</button>
-											<button id="2" type="button" class="btn btn-danger bdelclass">Delete</button>
-										</td>	 -->
-								</tbody>
+					<div class="col-md-3">
 
-							</table>
-							<button id="addnewbadge" type="button" class="btn btn-success" data-toggle="modal" data-target="#addbadgediv">Add a new badge</button> 
-						</div>
-						
-
-	<!-- 					<div id="deletedialog" title="Confirmation Required">
-						  Are you sure about this?
-						</div> -->
-
-					  <div class="modal fade" id="updatebadgediv" role="dialog">
-					    <div class="modal-dialog modal-lg">
-					      <div class="modal-content">
-					        <div class="modal-header">
-					          <button type="button" class="close" data-dismiss="modal">&times;</button>
-					          <h4 class="modal-title">Update Badge</h4>
-					        </div>
-					        <div class="modal-body">
-						        <form enctype="multipart/form-data" method="post" id="updatebadgeform" class="form-horizontal" role="form">
-						        	<div class="form-group">
-									  <label class="col-sm-2 control-label">Badge ID:</label>
-									  <div class="col-sm-10">
-									  	<input type="text" class="form-control" id="badge_id_name" name="badgeid" value="badge_name">
-									  </div>
-									</div>
-									<div class="form-group">
-									  <label class="col-sm-2 control-label">Badge Name:</label>
-									  <div class="col-sm-10">
-									  	<input type="text" class="form-control" id="badge_name" name="badgename" value="The good badge">
-									 </div>
-									</div>
-									<div class="form-group">
-									  <label class="col-sm-2 control-label">Badge Description:</label>
-									  <div class="col-sm-10">
-									  	<textarea class="form-control" rows="5" id="badge_desc" name="badgedesc" value="This is the badge description"></textarea>
-									  </div>
-									</div>
-									<div class="form-group">
-									  <label class="col-sm-2 control-label">Badge Image:</label>
-									  <div class="col-sm-10">
-									  	<img id="badgeimageinmodalupdate" src="" alt="your image" /><br>
-									 	<input type='file' onchange="showImageOnChangeUpdate(this)" name="badgeimageinput" accept='image/*' required/><br>
-									  </div>
-									</div>
-									<div class="form-group">        
-								      <div class="col-sm-offset-2 col-sm-10">
-								        <button type="submit" class="btn btn-primary" value="Update" >Update</button>
-								      </div>
-								    </div>
-								</form>
-					        </div>
-					        <!-- <div class="modal-footer">
-					          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					        </div> -->
+					    <!-- Point unit name -->
+						<div class="panel panel-default">
+					      <div class="panel-heading"><b>Point Unit Name</b></div>
+					      <div class="panel-body">
+								  			
+					      	 <form id="point_id_container">
+					      	 		<b><h4 class="form-control-static text-center" id="level_point_id_static"></h4></b>
+								    <br>
+								    <div class="form-group">
+										<div class="col-sm-12">
+								  			<div class="input-group">
+								      			<input type="text" class="form-control" placeholder="Unit name" id="level_point_id" name="levelpointid">
+												<span class="input-group-btn">
+								      				<button class="btn btn-secondary" type="button" id="select_point" data-toggle="collapse" data-target="#panel_point" aria-expanded="false" aria-controls="panel_point">Submit</button>		
+								    			</span>
+								      
+							    			</div>
+									  	</div>
+									</div> 
+								</form> 
 					      </div>
 					    </div>
-					  </div>
-						
+					    <!-- Point unit name end -->
+					</div>
 
-						<div class="modal fade" id="addbadgediv" role="dialog">
-					    <div class="modal-dialog modal-lg">
-					      <div class="modal-content">
-					        <div class="modal-header">
-					          <button type="button" class="close" data-dismiss="modal">&times;</button>
-					          <h4 class="modal-title">Add a New Badge</h4>
-					        </div>
-					        <div class="modal-body">
-						        <form method="POST" enctype="multipart/form-data" id="addbadgeform" name="appId" class="form-horizontal" role="form">
-						        	<div class="form-group">
-									  <label class="col-sm-2 control-label">Badge ID:</label>
-									  <div class="col-sm-10">
-									  	<input type="text" class="form-control" id="badge_id_name" name="badgeid" placeholder="badge_name" required>
-									  </div>
-									</div>
-									<div class="form-group">
-									  <label class="col-sm-2 control-label">Badge Name:</label>
-									  <div class="col-sm-10">
-									  	<input type="text" class="form-control" id="badge_name" name="badgename" placeholder="The good badge">
-									 </div>
-									</div>
-									<div class="form-group">
-									  <label class="col-sm-2 control-label">Badge Description:</label>
-									  <div class="col-sm-10">
-									  	<textarea class="form-control" rows="5" id="badge_desc" name="badgedesc" placeholder="This is the badge description"></textarea>
-									  </div>
-									</div>
-									<div class="form-group">
-									  <label class="col-sm-2 control-label">Badge Image:</label>
-									  <div class="col-sm-10">
-									  	<img id="badgeimageinmodaladd" src="" alt="your image" /><br>
-									 	<input type='file' onchange="showImageOnChangeAdd(this)" name="badgeimageinput" accept='image/*' required/><br>
-									  </div>
-									</div>
-									<div class="form-group">        
-								      <div class="col-sm-offset-2 col-sm-10">
-								        <button id="addbadgesubmit" type="submit" class="btn btn-primary" value="Submit" >Submit</button>
-								      </div>
-								    </div>
-								</form>
-					        </div>
-					        <!-- <div class="modal-footer">
-					          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					        </div> -->
-					      </div>
-					    </div>
-					  </div>
-
+					<div class="col-md-9">
+					</div>
+				</div>
+			</div>
+				
 				
 					

@@ -2,12 +2,12 @@ body {
 
 }
 
-.table-hover tbody
+.table-can-be-selected tbody
 {
 cursor: pointer;
 }
 
-.table-hover>tbody>tr:hover>td, .table-hover>tbody>tr:hover>th {
+.table-can-be-selected >tbody>tr:hover>td, .table-can-be-selected>tbody>tr:hover>th {
   background-color: #b3c450;
 
 }
@@ -48,7 +48,7 @@ position: absolute;
 
 
 
-.badgeimage {
+.badgeimagemini {
   display: block;
   max-width:64px;
   max-height:64px;
@@ -59,4 +59,21 @@ position: absolute;
 
 .table td {
    text-align: center;   
+}
+
+.table th {
+   text-align: center;   
+}
+
+.panel-animate{
+    transition-duration: 2s;
+    transition-timing-function: linear;
+    transition-delay: 1s;
+    -webkit-transition-transition-duration: 2s;
+    -webkit-transition-transition-timing-function: linear;
+    -webkit-transition-transition-delay: 1s;
+}
+
+.hidden {
+  display: none;
 }

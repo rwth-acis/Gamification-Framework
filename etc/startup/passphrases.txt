@@ -1,6 +1,9 @@
 agent-user-alice.xml;pwalice
 agent-user-bobby.xml;pwbobby
 agent-user-joey.xml;pwjoey
-agent-BadgeService.xml;badgepass
 agent-GamificationManagerService.xml;gamificationmanagerpass
-agent-FileService.xml;filepass
+agent-MemberService.xml;memberpass
+agent-ActionService.xml;actionpass
+agent-${service4.class}.xml;${service4.password}
+agent-${service5.class}.xml;${service5.password}
+agent-${service6.class}.xml;${service6.password}

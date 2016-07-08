@@ -69,6 +69,8 @@ TemplateServiceClient.prototype.postMethod = function(input, successCallback, er
 	);
 };
 
+
+
 /**
 * sends an AJAX request to a resource.
 * Parameters:
@@ -100,7 +102,7 @@ TemplateServiceClient.prototype.sendRequest = function(method, relativePath, con
 		console.log("Anonymous request... ");
 	}
 
-
+ 	console.log(content);
 	var ajaxObj = {
 		url: rurl,
 		type: method.toUpperCase(),
@@ -118,12 +120,13 @@ TemplateServiceClient.prototype.sendRequest = function(method, relativePath, con
 			
          },
 		error: function (xhr, errorType, error) {
-			console.log(error);
+			console.log(xhr);
 			var errorText = error;
 			if (xhr.responseText != null && xhr.responseText.trim().length > 0) {
 				errorText = xhr.responseText;
 			}
-			errorCallback(errorText);
+			console.log(errorText);
+			errorCallback(xhr.status,errorText);
 		},
 		success: function (data, status, xhr) {
 			var type = xhr.getResponseHeader("Content-Type");

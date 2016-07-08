@@ -1,7 +1,7 @@
 package i5.las2peer.services.gamificationManagerService.database;
 
-import java.awt.image.BufferedImage;
-import java.io.Serializable;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
 * Application Model
@@ -10,10 +10,13 @@ import java.io.Serializable;
 * 
 */
 
+@ApiModel( value = "ApplicationModel", description = "Application data resource representation" )
 public class ApplicationModel{
-	
+	@ApiModelProperty( value = "Application ID", required = true ) 
 	private String app_id;
+	@ApiModelProperty( value = "Application description", required = true ) 
 	private String app_desc;
+	@ApiModelProperty( value = "Community type of application", required = true ) 
 	private String community_type;
 
 	public ApplicationModel(String app_id, String app_desc, String community_type){
@@ -45,7 +48,7 @@ public class ApplicationModel{
 	 * 
 	 * @return app_desc application description
 	 */
-	public String getAppDescription(){
+	public String getDescription(){
 		return this.app_desc;
 	}
 	
@@ -54,7 +57,7 @@ public class ApplicationModel{
 	 * 
 	 * @param app_desc application description
 	 */
-	public void setAppDescription(String app_desc){
+	public void setDescription(String app_desc){
 		this.app_desc = app_desc;
 	}
 	

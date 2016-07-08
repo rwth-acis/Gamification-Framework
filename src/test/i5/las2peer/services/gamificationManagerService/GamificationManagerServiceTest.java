@@ -4,20 +4,30 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
+
+import javax.imageio.ImageIO;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.ServiceNameVersion;
@@ -30,11 +40,13 @@ import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
 import i5.las2peer.webConnector.client.MiniClient;
 import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GamificationManagerServiceTest {
 
 	private static final String HTTP_ADDRESS = "http://127.0.0.1";
@@ -52,8 +64,19 @@ public class GamificationManagerServiceTest {
 	// during testing, the specified service version does not matter
 	private static final ServiceNameVersion testGamificationManagerService = new ServiceNameVersion(GamificationManagerService.class.getCanonicalName(),"0.1");
 
-	private static final String mainPath = "manager/";
-
+	private static String appId = "app_test_id";
+	private static String badgeId = "badge_test_id";
+	private static String achievementId = "ach_test_id";
+	private static int levelId = 1343;
+	private static String actionId = "action_test_id";
+	private static final String mainPath = "games/";
+	
+	// to fetch data per batch
+	int currentPage = 1;
+	int windowSize = 10;
+	String searchParam = "";
+	
+	String unitName = "dollar";
 	/**
 	 * Called before the tests start.
 	 * 
@@ -81,6 +104,18 @@ public class GamificationManagerServiceTest {
 		user1Data.put("family_name", "Jordan");
 		user1Data.put("email", "adam@example.com");
 		user1.setUserData(user1Data);
+		
+		JSONObject user2Data = new JSONObject();
+		user2Data.put("given_name", "Abel");
+		user2Data.put("family_name", "leba");
+		user2Data.put("email", "abel@example.com");
+		user2.setUserData(user2Data);
+		
+		JSONObject user3Data = new JSONObject();
+		user3Data.put("given_name", "Eve");
+		user3Data.put("family_name", "vev");
+		user3Data.put("email", "eve@example.com");
+		user3.setUserData(user3Data);
 		
 		node.storeAgent(user1);
 		node.storeAgent(user2);
@@ -154,8 +189,37 @@ public class GamificationManagerServiceTest {
 
 	}
 
+	// Application Test
+	/**
+	 * 
+	 * Validate user, register if not registered yet
+	 * 
+	 */
+	@Test
+	public void testA1_userLoginValidation()
+	{
 
-	void createNewApp(){
+		System.out.println("Test --- User Login Validation");
+		try
+		{
+			ClientResponse result = c1.sendRequest("POST", mainPath + "validation", ""); // testInput is
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+			result = c2.sendRequest("POST", mainPath + "validation", ""); // testInput is
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+			result = c3.sendRequest("POST", mainPath + "validation", ""); // testInput is
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	@Test
+	public void testA2_createNewApp(){
+		System.out.println("Test --- Create New App");
 		try
 		{
 			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
@@ -165,7 +229,7 @@ public class GamificationManagerServiceTest {
 			builder.setBoundary(boundary);
 			
 
-			builder.addPart("appid", new StringBody("testapp", ContentType.TEXT_PLAIN));
+			builder.addPart("appid", new StringBody(appId, ContentType.TEXT_PLAIN));
 			builder.addPart("appdesc", new StringBody("New App", ContentType.TEXT_PLAIN));
 			builder.addPart("commtype", new StringBody("com_type", ContentType.TEXT_PLAIN));
 			
@@ -179,40 +243,94 @@ public class GamificationManagerServiceTest {
 			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
 			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			
-			ClientResponse result = c1.sendRequest("POST", mainPath + "apps", out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+			ClientResponse result = c1.sendRequest("POST", mainPath + "apps/data", out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+			System.out.println(result.getResponse());
+			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
+				assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			}
+			else{
 
-
-			assertEquals(HttpURLConnection.HTTP_CREATED, result.getHttpCode());
+				assertEquals(HttpURLConnection.HTTP_CREATED,result.getHttpCode());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception: " + e);
 		}
 	}
-	void deleteApp(){
-		String appId = "testapp";
+	 // Remove a member from the application
+	@Test
+	public void testA3_removeMemberFromApp()
+	{
+
+		System.out.println("Test --- Remove Member From App");
 		try
 		{
-			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "apps/" + appId, "");
-	        assertEquals(200, result.getHttpCode());
+			String memberId = user1.getLoginName();
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "apps/data/"+appId+"/"+memberId, ""); // testInput is
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	@Test
+	public void testA4_addMemberToApp()
+	{
+		// Add user 2 to app
+		System.out.println("Test --- Add Member To App");
+		try
+		{
+			String memberId = user2.getLoginName();
+			ClientResponse result = c2.sendRequest("POST",  mainPath + "apps/data/"+appId+"/"+memberId, ""); // testInput is
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+
+	@Test
+	public void testA4_getAppWithId(){
+
+		System.out.println("Test --- Get App With Id");
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET",  mainPath + "apps/data/" + appId, "");
+	        assertEquals(HttpURLConnection.HTTP_OK, result.getHttpCode());
 		} catch (Exception e)
 		{
 			e.printStackTrace();
 			fail("Exception: " + e);
 		}
 	}
-	/**
-	 * 
-	 * Test the example method that consumes one path parameter
-	 * which we give the value "testInput" in this test.
-	 * 
-	 */
+	
 	@Test
-	public void testUserLoginValidation()
-	{
+	public void testA4_getAppListSeparated(){
+
+		System.out.println("Test --- Get App List Separated");
 		try
 		{
-			
-			ClientResponse result = c1.sendRequest("GET", mainPath + "validation", ""); // testInput is
+			ClientResponse result = c1.sendRequest("GET",  mainPath + "apps/list/separated", "");
+	        assertEquals(HttpURLConnection.HTTP_OK, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	
+	// Point Test -----------------------------------------------------
+	@Test
+	public void testA4_changeUnitName()
+	{
+		System.out.println("Test --- Change Unit Name");
+		try
+		{
+			String memberId = user1.getLoginName();
+			ClientResponse result = c1.sendRequest("PUT", mainPath + "points/"+appId+"/name/"+unitName, ""); // testInput is
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -221,19 +339,630 @@ public class GamificationManagerServiceTest {
 		}
 	}
 	
+	@Test
+	public void testA4_getUnitName()
+	{
+		System.out.println("Test --- Get Unit Name");
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET", mainPath + "points/"+appId+"/name", ""); // testInput is
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+//			JSONParser parse = new JSONParser(JSONParser.ACCEPT_NON_QUOTE|JSONParser.ACCEPT_SIMPLE_QUOTE);
+//			JSONObject obj = (JSONObject) parse.parse(result.getResponse());
+//			assertEquals(unitName, obj.get("pointUnitName"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+
+	// Badge Test --------------------------------------------------
+	@Test
+	public void testB1_createNewBadge(){
+		System.out.println("Test --- Create New Badge");
+		try
+		{
+			File badgeImage = new File("./frontend/webapps/ROOT/img/logo.png");
+			String boundary =  "----WebKitFormBoundaryuK41JdjQK2kdEBDn"; 
+			
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			builder.setBoundary(boundary);
+			
+			builder.addPart("badgeid", new StringBody(badgeId, ContentType.TEXT_PLAIN));
+			builder.addPart("badgename", new StringBody("Badge name", ContentType.TEXT_PLAIN));
+			builder.addPart("badgedesc", new StringBody("Badge description", ContentType.TEXT_PLAIN));
+			builder.addPart("badgeimageinput", new FileBody(badgeImage, ContentType.create("image/png"), "logo.png"));
+			builder.addPart("dev", new StringBody("yes", ContentType.TEXT_PLAIN));
+
+		
+			HttpEntity formData = builder.build();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			formData.writeTo(out);
+
+			ClientResponse result = c1.sendRequest("POST", mainPath + "badges/" + appId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*",new Pair[]{});
+			
+			System.out.println(result.getResponse());
+			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
+				assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			}
+			else{
+
+				assertEquals(HttpURLConnection.HTTP_CREATED,result.getHttpCode());
+			}
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
+			fail("Exception: " + e);
+		}
+	}
+	
 	/**
-	 * 
-	 * Test the example method that consumes one path parameter
-	 * which we give the value "testInput" in this test.
+	 * update badge
 	 * 
 	 */
 	@Test
-	public void testCreateDeleteApp()
-	{
-		createNewApp();
-		deleteApp();
-	}
+	public void testB2_updateBadge(){
+		System.out.println("Test --- Update Badge");
+		try
+		{
+			File badgeImage = new File("./frontend/webapps/ROOT/img/logo.png");
+			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			builder.setBoundary(boundary);
+			
+			builder.addPart("badgeid", new StringBody(badgeId, ContentType.TEXT_PLAIN));
+			builder.addPart("badgename", new StringBody("Badge name", ContentType.TEXT_PLAIN));
+			builder.addPart("badgedesc", new StringBody("Badge description", ContentType.TEXT_PLAIN));
+			builder.addPart("badgeimageinput", new FileBody(badgeImage, ContentType.create("image/png"), "logo.png"));
+			builder.addPart("dev", new StringBody("yes", ContentType.TEXT_PLAIN));
 
+		
+			HttpEntity formData = builder.build();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			formData.writeTo(out);
+
+			ClientResponse result = c1.sendRequest("PUT", mainPath + "badges/" + appId +"/" + badgeId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*",new Pair[]{});
+			
+			System.out.println(result.getResponse());
+			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
+			fail("Exception: " + e);
+		}
+	}
+	
+	@Test
+	public void testB2_getBadgeWithId(){
+		System.out.println("Test --- Get Badge With Id");
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET",  mainPath + "badges/" + appId + "/" + badgeId, "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	/**
+	 * 
+	 * get badge list
+	 * 
+	 */
+	@Test
+	public void testB2_getBadgeList()
+	{
+		System.out.println("Test --- Get Badge List");
+		try
+		{
+			JSONObject obj = new JSONObject();
+			obj.put("current", 1);
+			obj.put("rowCount", 10);
+			obj.put("searchPhrase", "");
+			ClientResponse result = c1.sendRequest("GET", mainPath + "badges/" + appId + "?current=1&rowCount=10&searchPhrase=", "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	
+	}
+	
+	/**
+	 * 
+	 * get badge image
+	 * 
+	 */
+	@Test
+	public void testB2_getBadgeImage()
+	{
+		System.out.println("Test --- Get Badge Image");
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET", mainPath + "badges/" + appId + "/" + badgeId + "/img", "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	
+
+	// Achievement Test
+	@Test
+	public void testC1_createNewAchievement(){
+		System.out.println("Test --- Create New Achievement");
+		// Depend on badge
+		try
+		{
+			
+			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
+			
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			builder.setBoundary(boundary);
+			
+			builder.addPart("achievementid", new StringBody(achievementId, ContentType.TEXT_PLAIN));
+			builder.addPart("achievementname", new StringBody("achievement", ContentType.TEXT_PLAIN));
+			builder.addPart("achievementdesc", new StringBody("achievement description", ContentType.TEXT_PLAIN));
+			builder.addPart("achievementpointvalue", new StringBody("50", ContentType.TEXT_PLAIN));
+			builder.addPart("achievementbadgeid", new StringBody(badgeId, ContentType.TEXT_PLAIN));
+			
+			HttpEntity formData = builder.build();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			formData.writeTo(out);
+		
+			Pair<String>[] headers = new Pair[2];
+			
+			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
+			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
+			
+			ClientResponse result = c1.sendRequest("POST", mainPath + "achievements/" + appId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+
+			System.out.println(result.getResponse());
+			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
+				assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			}
+			else{
+
+				assertEquals(HttpURLConnection.HTTP_CREATED,result.getHttpCode());
+			}
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
+			fail("Exception: " + e);
+		}
+	}
+	
+	@Test
+	public void testC2_getAchievementWithId(){
+
+		System.out.println("Test --- Get Achievement With Id");
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET",  mainPath + "achievements/" + appId + "/" + achievementId, "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+
+	}
+	
+	@Test
+	public void testC2_updateAchievement(){
+
+		System.out.println("Test --- Update Achievement");
+		try
+		{
+			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			builder.setBoundary(boundary);
+			
+			builder.addPart("achievementid", new StringBody(achievementId, ContentType.TEXT_PLAIN));
+			builder.addPart("achievementname", new StringBody("achievement", ContentType.TEXT_PLAIN));
+			builder.addPart("achievementdesc", new StringBody("achievement description", ContentType.TEXT_PLAIN));
+			builder.addPart("achievementpointvalue", new StringBody("50", ContentType.TEXT_PLAIN));
+			builder.addPart("achievementbadgeid", new StringBody(badgeId, ContentType.TEXT_PLAIN));
+				
+			HttpEntity formData = builder.build();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			formData.writeTo(out);
+		
+			Pair<String>[] headers = new Pair[2];
+			
+			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
+			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
+			
+			ClientResponse result = c1.sendRequest("PUT", mainPath + "achievements/" + appId +"/"+ achievementId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+
+			System.out.println(result.getResponse());
+			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
+			fail("Exception: " + e);
+		}
+	}
+	
+
+	
+	/**
+	 * 
+	 * get achievement list
+	 * 
+	 */
+	@Test
+	public void testC2_getAchievementList()
+	{
+		System.out.println("Test --- Get Achievement List");
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET", mainPath + "achievements/" + appId + "?current=1&rowCount=10&searchPhrase=", "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	
+	}
+	
+	// Level Test
+	@Test
+	public void testD1_createNewLevel(){
+		System.out.println("Test --- Create New Level");
+		try
+		{
+			
+			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
+			
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			builder.setBoundary(boundary);
+			
+			builder.addPart("levelnum", new StringBody(Integer.toString(levelId), ContentType.TEXT_PLAIN));
+			builder.addPart("levelname", new StringBody("level name", ContentType.TEXT_PLAIN));
+			builder.addPart("levelpointvalue", new StringBody("50", ContentType.TEXT_PLAIN));
+			
+			HttpEntity formData = builder.build();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			formData.writeTo(out);
+		
+			Pair<String>[] headers = new Pair[2];
+			
+			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
+			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
+			
+			ClientResponse result = c1.sendRequest("POST", mainPath + "levels/" + appId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+
+			System.out.println(result.getResponse());
+			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
+				assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			}
+			else{
+
+				assertEquals(HttpURLConnection.HTTP_CREATED,result.getHttpCode());
+			}
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
+			fail("Exception: " + e);
+		}
+	}
+	
+	@Test
+	public void testD2_getLevelWithId(){
+		System.out.println("Test --- Get Level With Id");
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET",  mainPath + "levels/" + appId + "/" + levelId, "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+
+	}
+	
+	@Test
+	public void testD2_updateLevel(){
+		System.out.println("Test --- Update Level");
+		try
+		{
+			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			builder.setBoundary(boundary);
+			
+			builder.addPart("levelnum", new StringBody(Integer.toString(levelId), ContentType.TEXT_PLAIN));
+			builder.addPart("levelname", new StringBody("level name", ContentType.TEXT_PLAIN));
+			builder.addPart("levelpointvalue", new StringBody("50", ContentType.TEXT_PLAIN));
+					
+			HttpEntity formData = builder.build();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			formData.writeTo(out);
+		
+			Pair<String>[] headers = new Pair[2];
+			
+			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
+			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
+			
+			ClientResponse result = c1.sendRequest("PUT", mainPath + "levels/" + appId +"/"+ levelId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+
+			System.out.println(result.getResponse());
+			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
+			fail("Exception: " + e);
+		}
+	}
+	
+	/**
+	 * 
+	 * get level list
+	 * 
+	 */
+	@Test
+	public void testD2_getLevelList()
+	{
+		System.out.println("Test --- Get Level List");
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET", mainPath + "levels/" + appId + "?current=1&rowCount=10&searchPhrase=", "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	
+	}
+	
+	// Action Test
+	@Test
+	public void testE1_createNewAction(){
+		try
+		{
+			
+			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
+			
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			builder.setBoundary(boundary);
+			
+			builder.addPart("actionid", new StringBody(actionId, ContentType.TEXT_PLAIN));
+			builder.addPart("actionname", new StringBody("action name", ContentType.TEXT_PLAIN));
+			builder.addPart("actiondesc", new StringBody("action description", ContentType.TEXT_PLAIN));
+			builder.addPart("actionpointvalue", new StringBody("50", ContentType.TEXT_PLAIN));
+			
+			HttpEntity formData = builder.build();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			formData.writeTo(out);
+		
+			Pair<String>[] headers = new Pair[2];
+			
+			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
+			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
+			
+			ClientResponse result = c1.sendRequest("POST", mainPath + "actions/" + appId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+
+			System.out.println(result.getResponse());
+			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
+				assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			}
+			else{
+
+				assertEquals(HttpURLConnection.HTTP_CREATED,result.getHttpCode());
+			}
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
+			fail("Exception: " + e);
+		}
+	}
+	
+	@Test
+	public void testE2_getActionWithId(){
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET",  mainPath + "actions/" + appId + "/" + actionId, "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+
+	}
+	
+	@Test
+	public void testE2_updateAction(){
+		try
+		{
+			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+			builder.setBoundary(boundary);
+			
+			builder.addPart("actionid", new StringBody(actionId, ContentType.TEXT_PLAIN));
+			builder.addPart("actionname", new StringBody("action name", ContentType.TEXT_PLAIN));
+			builder.addPart("actiondesc", new StringBody("action description", ContentType.TEXT_PLAIN));
+			builder.addPart("actionpointvalue", new StringBody("50", ContentType.TEXT_PLAIN));
+						
+			HttpEntity formData = builder.build();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			formData.writeTo(out);
+		
+			Pair<String>[] headers = new Pair[2];
+			
+			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
+			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
+			
+			ClientResponse result = c1.sendRequest("PUT", mainPath + "actions/" + appId +"/"+ actionId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+			
+			System.out.println(result.getResponse());
+			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
+			fail("Exception: " + e);
+		}
+	}
+	
+	/**
+	 * 
+	 * get action list
+	 * 
+	 */
+	@Test
+	public void testE21_getActionList()
+	{
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET", mainPath + "actions/" + appId + "?current=1&rowCount=10&searchPhrase=", "");
+			assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	
+	}
+	
+
+	//------- CLEAN UP --------------
+	
+	@Test
+	public void testZ4_deleteAction(){
+		try
+		{
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "actions/" + appId + "/" + actionId, "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	@Test
+	public void testZ5_deleteLevel(){
+		System.out.println("Test --- Delete Level");
+		try
+		{
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "levels/" + appId + "/" + levelId, "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	@Test
+	public void testZ6_deleteAchievement(){
+		System.out.println("Test --- Delete Achievement");
+		try
+		{
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "achievements/" + appId + "/" + achievementId, "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	
+	@Test
+	public void testZ7_deleteBadge()
+	{
+		System.out.println("Test --- Delete Badge");
+		try
+		{
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "badges/" + appId + "/" + badgeId, "");
+	        assertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	 // Remove a member from the application
+	@Test
+	public void testZ8_removeMemberFromApp()
+	{
+
+		System.out.println("Test --- Remove Member From App");
+		try
+		{
+			String memberId = user1.getLoginName();
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "apps/data/"+appId+"/"+memberId, ""); // testInput is
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
+	@Test
+	public void testZ9_deleteApp(){
+
+		System.out.println("Test --- Delete App");
+		try
+		{
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "apps/data/" + appId, "");
+	        assertEquals(HttpURLConnection.HTTP_OK, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Exception: " + e);
+		}
+	}
+	
 	
 	
 	/**
