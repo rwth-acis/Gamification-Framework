@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gamification Manager</title>
+
+  <!-- Bootstrap stylesheet import -->
+  <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+
+  <!-- import jQuery for AJAX calls -->
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+<!--Pulling Awesome Font -->
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/login.css">
+      <!-- Custom CSS -->
+  <link href="css/sb-admin.css" rel="stylesheet">
+  <link href="css/jquery.bootgrid.min.css" rel="stylesheet">
+
+	  <!-- import client library for service -->
+  	<script type="text/javascript" src="js/client.js"></script>
+	<script type="text/javascript" src="js/gamification/gamemanagerui.js"></script>
+	<script type="text/javascript" src="js/gamification/achievement.js"></script>
+	<script type="text/javascript" src="js/gamification/gamificationelements.js"></script>
+
+	<script type="text/javascript" src="js/bootstrap-notify.min.js"></script>
+	<script type="text/javascript" src="js/jquery.bootgrid.js"></script>
+	<script type="text/javascript" src="js/jquery.bootgrid.fa.min.js"></script>
+	<script type="text/javascript" src="js/validator.min.js"></script>
+	
+ 
+</head>
+<body>
+   
+
+<div class="container" id="loginview">
+    <div class="row">
+        <div class="col-md-offset-5 col-md-3">
+            <div class="form-login">
+            <h4>Gamification Manager</h4>
+            <div class="wrapper">
+            <button class="oidc-signin"
+				         style="padding:5px; border-radius: 4px; border:1px;margin:15px 5px;"
+				         data-callback="signinCallback"
+				         data-name="Learning Layers"
+				    	 data-logo="http://learning-layers.eu/wp-content/themes/learninglayers/images/logo.png"
+				         data-server="https://api.learning-layers.eu/o/oauth2"
+				         data-clientid="768f478e-39cf-4b26-916d-8359850c9099"
+				         data-size="sm"
+				         data-scope="openid phone email address profile"><img style="margin-right:5px;" src="./img/logo.png" height="16px"> Sign in with <i>Learning Layers</i>
+				    	
+				    </button>
+            </div>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" id="headerbutton">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">Gamification Manager</a>
+    </div>
+    <ul class="nav navbar-right top-nav">
+    	<li>
+   		<button class="oidc-signin"
+	         style="padding:5px; border-radius: 4px; border:1px;margin:10px 15px;"
+	         data-callback="signinCallback"
+	         data-name="Learning Layers"
+	    	 data-logo="http://learning-layers.eu/wp-content/themes/learninglayers/images/logo.png"
+	         data-server="https://api.learning-layers.eu/o/oauth2"
+	         data-clientid="768f478e-39cf-4b26-916d-8359850c9099"
+	         data-size="default"
+	         data-scope="openid phone email address profile"><img style="margin-right:5px;" src="./img/logo.png" height="16px"> Sign in with <i>Learning Layers</i>
+		</button>
+		<li class="dropdown">
+	        <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="apptitle"><i class="fa fa-user"></i> AppID <b class="caret"></b></a>
+	        <ul class="dropdown-menu">
+	            <li>
+	                <a href="#" data-toggle="modal" data-target="#settingsmodal"><i class="fa fa-fw fa-gear"></i> Settings</a>
+	            </li>
+	            <li id="backtoappselection">
+	                <a href="#" ><i class="fa fa-gamepad" aria-hidden="true"></i></i> App selection</a>
+	            </li>
+	        </ul>
+    	</li>
+    </ul>
+</nav>
+<div id="page-wrapper">
+	<h3>Gamification-Framework-Achievement</h3>
+	<div class="container-fluid" >
+		<div class="row">
+			<div class="col-md-12">
+				<table id="list_achievements" class="table table-condensed table-striped" data-toggle="bootgrid">
+					    <thead>
+					        <tr>
+					            <th data-column-id="id" data-identifier="true" data-type="string">Achievement ID</th>
+					            <th data-column-id="name" data-type="string">Achievement Name</th>
+					            <th data-column-id="description" data-type="string">Achievement Description</th>
+					            <th data-column-id="pointValue" data-type="numeric">Point value</th>
+					            <th data-column-id="badgeId" data-formatter="badgeId" data-identifier="true" data-type="string">Badge ID</th>
+					            <th data-column-id="useNotification" data-type="boolean">Use Notification</th>
+						            <th data-column-id="notificationMessage" data-type="string">Message</th>
+					            <th data-column-id="commands" data-formatter="commands" data-sortable="false">Commands</th>
+					        </tr>
+					    </thead>
+					</table>
+					<button id="addnewachievement" type="button" class="btn btn-success">Add a new achievement</button> 
+			</div>
+			<div class="col-md-0">
+			</div>
+		</div>
+	</div>
+</div>
+            <!-- /.container-fluid -->
+
+		<div class="modal fade" id="modalachievementdiv" role="dialog">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+					    <button type="button" class="close" data-dismiss="modal">&times;</button>
+					    <h4 class="modal-title"></h4>
+					</div>
+					<div class="modal-body">
+						<form method="POST" data-toggle="validator" enctype="multipart/form-data" id="modalachievementform" name="appId" class="form-horizontal" role="form">
+						    <div class="form-group">
+								<label class="col-sm-2 control-label">Achievement ID:</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control" id="achievement_id_name" name="achievementid" placeholder="achievement_name" maxlength="20" required>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">Achievement Name:</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control" maxlength="20" id="achievement_name" name="achievementname" placeholder="The good achievement">
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">Achievement Description:</label>
+								<div class="col-sm-10">
+									<textarea class="form-control" rows="3" maxlength="100" id="achievement_desc" name="achievementdesc" placeholder="This is the achievement description"></textarea>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">Badge :</label>
+								<div class="col-sm-10">
+									<div class="input-group">
+									    <input type="text" class="form-control" placeholder="Badge ID" id="achievement_badge_id" name="achievementbadgeid">
+									    <span class="input-group-btn">
+										    <button class="btn btn-secondary btn-info" type="button" id="empty_badge">No Badge</button>
+										    <button class="btn btn-secondary" type="button" id="select_badge" data-toggle="collapse" data-target="#panel_badge" aria-expanded="false" aria-controls="panel_badge">Select</button>
+									    </span>
+									</div>
+
+								    <div class="collapse" id="panel_badge">	  
+									    <table id="list_badges_a" class="table table-condensed table-hover table-striped" data-toggle="bootgrid">
+										    <thead>
+										        <tr>
+										            <th data-column-id="id" data-identifier="true" data-type="string">Badge ID</th>
+										            <th data-column-id="name" data-type="string">Badge Name</th>
+										            <th data-column-id="description" data-type="string">Badge Description</th>
+										            <th data-column-id="image_path" data-formatter="image_path" data-type="string">Badge Image</th>
+										            <th data-column-id="commands" data-formatter="commands" data-sortable="false">Commands</th>
+										        </tr>
+										    </thead>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!-- Form group end -->
+							<div class="form-group">
+								<label class="col-sm-2 control-label">Point Value :</label>
+								<div class="col-sm-5">
+							  		<input type="number" class="form-control" placeholder="Value" id="achievement_point_value" name="achievementpointvalue" value="0">
+								</div>
+								<div class="col-sm-5">
+								</div>
+							</div>
+								<!-- Add remaining columns here -->
+
+							<div class="form-group">								
+								<label class="col-sm-2 control-label">Notification :</label>
+								<div class="col-sm-10">
+								  	<div class="input-group">
+									      <span class="input-group-addon">
+									        <input type="checkbox" aria-label="..." id="achievement_notification_check" name="achievementnotificationcheck">
+									      </span>
+									      <input type="text" class="form-control" id="achievement_notification_message" name="achievementnotificationmessage" placeholder="Notification Message">
+								    </div>
+								</div>
+							</div>
+							<div class="form-group">        
+						    	<div class="col-sm-offset-2 col-sm-10">
+						        	<button id="modalachievementsubmit" type="submit" class="btn btn-primary" value="" ></button>
+						    	</div>
+							</div>
+						</form>
+					</div>
+					    <!-- <div class="modal-footer">
+					        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					    </div> -->
+					</div>
+				</div>
+			</div>
+			<!-- Add Modal END -->
+
+			<div id="badge-popover-content" class="hidden">
+				<form>
+		        	<div class="form-group row">
+					  <div class="col-sm-12">
+					  <b>Badge ID</b> <p class="form-control-static" id="badgeidpopover"></p>
+
+					  </div>
+					</div>
+					<div class="form-group row">
+					  <div class="col-sm-12">
+							<b>Badge Name</b> <p class="form-control-static" id="badgenamepopover"></p>
+					  </div>
+					</div>
+					<div class="form-group row">
+					  <div class="col-sm-12">
+						<b>Description</b>	<p class="form-control-static" id="badgedescpopover"></p>
+					  </div>
+					</div>
+					<div class="form-group row">
+					  <div class="col-sm-12">
+							<img class="badgeimagemini" id="badgeimagepopover" alt="your image" />
+					  </div>
+					</div>
+				</form>
+			</div>
+
+<div id="modalspinner" style="display: none">
+    <div class="center">
+        <img alt="" src="./img/loader.svg" />
+    </div>
+</div>
+<!-- OpenID Connect Button - Step 2: resolve dependencies to jQuery, bootstrap, jsjws and jsrsasign -->
+		
+		<!-- import jQuery for AJAX calls (must) -->
+		<!-- <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script> -->
+		
+		<!-- import Bootstrap for responsive UI (must) -->
+		<!-- <script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script> -->
+		
+<script type="text/javascript" src="./js/js.cookie.js"></script>
+
+<!-- import JWS and JSRSASIGN (must) -->
+<script type="text/javascript" src="./js/jsjws/jws-2.0.min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/ext/base64-min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/base64x-1.1.min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/ext/jsbn-min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/ext/jsbn2-min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/asn1hex-1.1.min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/crypto-1.0.min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/ext/rsa-min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/ext/rsa2-min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/rsapem-1.1.min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/rsasign-1.2.min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/x509-1.1.min.js"></script>
+<script type="text/javascript" src="./js/jsrsasign/crypto-1.1.min.js"></script>
+		
+	<!-- 	<script type="text/javascript">
+			// OpenID Connect Button - Step 4: implement a callback function
+			function signinCallback(result) {
+				if(result === "success"){
+					// at this point, developers have access to several pieces of information
+					// relevant to OpenID Connect (see ./oidc-button.js)
+					console.log("OpenID Connect Provider Configuration:");
+					console.log(oidc_provider_config);
+					console.log("OpenID Connect User Info:");
+					console.log(oidc_userinfo);
+					console.log("OpenID Connect ID Token:");
+					console.log(oidc_idtoken);
+					
+					$("#status").html("Hello, " + oidc_userinfo.name + "!");
+				} else {
+					console.log("not signed in...");
+					console.log(result);
+					$("#status").html("Do I know you?!");
+				}
+			}
+		</script> -->
+		
+		<!--  
+		<!-- OpenID Connect Button - Step 2: add this script element right before closing </body> tag -->
+<script type="text/javascript">
+  (function() {
+   var po = document.createElement('script');
+   po.type = 'text/javascript'; 
+   po.async = true;
+   po.src = './js/oidc-button.js';
+   var s = document.getElementsByTagName('script')[0];
+   s.parentNode.insertBefore(po, s);
+ })();
+</script>
+</body>
+</html>

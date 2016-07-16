@@ -1,0 +1,81 @@
+
+
+body, html {
+height: 100%;
+}
+
+.table-can-be-selected tbody
+{
+cursor: pointer;
+}
+
+.table-can-be-selected >tbody>tr:hover>td, .table-can-be-selected>tbody>tr:hover>th {
+  background-color: #b3c450;
+
+}
+.ortext-container {
+  position: relative;
+  height: 14rem;
+  /*border: 1px solid;*/
+}
+
+.ortext{
+position: absolute;
+  top: 50%;
+  left:50%;
+  transform: translate(-50%,-50%);
+  /*border: 1px dashed deeppink;*/
+}
+
+#modalspinner
+{
+    position: fixed;
+    z-index: 9999;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: Black;
+    filter: alpha(opacity=60);
+    opacity: 0.6;
+    -moz-opacity: 0.8;
+}
+.center
+{
+    z-index: 1000;
+    margin: 300px auto;
+    padding: 10px;
+    width: 130px;
+}
+
+
+
+.badgeimagemini {
+  display: block;
+  max-width:64px;
+  max-height:64px;
+  width: auto;
+  height: auto;
+  margin:0 auto; 
+}
+
+.table td {
+   text-align: center;   
+}
+
+.table th {
+   text-align: center;   
+}
+
+.panel-animate{
+    transition-duration: 2s;
+    transition-timing-function: linear;
+    transition-delay: 1s;
+    -webkit-transition-transition-duration: 2s;
+    -webkit-transition-transition-timing-function: linear;
+    -webkit-transition-transition-delay: 1s;
+}
+
+.hidden {
+  display: none;
+}

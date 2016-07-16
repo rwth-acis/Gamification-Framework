@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<service consumes="*" name="i5.las2peer.services.gamificationPointService.GamificationPointService" path="gamification/points" produces="text/plain" version="0.1">
+  <methods>
+    <method httpMethod="put" name="changeUnitName" path="{appId}/name/{unitName}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="unitName" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getUnitName" path="{appId}/name" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+      </parameters>
+    </method>
+  </methods>
+</service>
