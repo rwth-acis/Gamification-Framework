@@ -13,6 +13,7 @@
             	<file name="GamificationVisualizationService/build.xml"/>
             </filelist>
         <target name="all"/>
+    	</subant>
 	</target>
     
 </project>
