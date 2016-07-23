@@ -4,24 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
 
-import javax.imageio.ImageIO;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,9 +30,7 @@ import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
 import i5.las2peer.webConnector.client.MiniClient;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.
@@ -66,11 +55,6 @@ public class GamificationApplicationServiceTest {
 	private static final ServiceNameVersion testGamificationApplicationService = new ServiceNameVersion(GamificationApplicationService.class.getCanonicalName(),"0.1");
 
 	private static String appId = "app_test_id";
-	private static String badgeId = "badge_test_id";
-	private static String achievementId = "ach_test_id";
-	private static int levelId = 1343;
-	private static String actionId = "action_test_id";
-	private static String questId = "quest_test_id";
 	private static final String mainPath = "gamification/applications/";
 	
 	// to fetch data per batch

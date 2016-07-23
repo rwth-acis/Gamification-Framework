@@ -2,18 +2,15 @@ package i5.las2peer.services.gamificationApplicationService.database;
 
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import i5.las2peer.services.gamificationApplicationService.database.MemberModel;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 
 /**
  * Class to maintain the model that are used in the application management
@@ -113,7 +110,6 @@ public class ApplicationDAO {
 			ResultSet rs = dbcreationSt.executeQuery();
 			conn.commit();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			conn.rollback();
 		} finally {

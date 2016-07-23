@@ -74,6 +74,13 @@
         </ivy:settings>
     	<ivy:retrieve type="jar, bundle" conf="platform" pattern="${lib}/[artifact]-[revision].[ext]"/>
     	<ivy:retrieve type="jar, bundle" conf="bundle" pattern="${service}/[artifact]-[revision].[ext]"/>
+    	
+    	<!-- GamificationApplicationService Dependency -->
+    	<!-- For unit testing -->
+    	<copy file="../GamificationApplicationService/etc/i5.las2peer.services.gamificationApplicationService.GamificationApplicationService.properties" tofile="etc/i5.las2peer.services.gamificationApplicationService.GamificationApplicationService.properties"/>
+    	<copy file="../GamificationApplicationService/service/i5.las2peer.services.gamificationApplicationService-0.1.jar" tofile="${service}/i5.las2peer.services.gamificationApplicationService-0.1.jar"/>
+    	<copy file="../GamificationApplicationService/service/i5.las2peer.services.gamificationApplicationService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationApplicationService-0.1.jar"/>
+
     </target>
     
     
@@ -191,6 +198,9 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
             	<attribute name="Import-Library" value="${service.dependencies}" />
             </manifest>
         </jar>
+    	
+
+        <!-- For development, all services will be executed in one node !-->
     	<jar jarfile="../GamificationApplicationService/service/${service.name}-${service.version}.jar">
             <fileset dir="${tmp.classes}" includes="${service.path}/**" />
             <manifest>
@@ -199,7 +209,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
             	<attribute name="Import-Library" value="${service.dependencies}" />
             	</manifest>
         </jar>
-    </target>
+     </target>
     
     
     <!-- Generate Documentation -->

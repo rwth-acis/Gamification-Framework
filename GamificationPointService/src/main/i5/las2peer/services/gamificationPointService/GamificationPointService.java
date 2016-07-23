@@ -27,6 +27,8 @@ import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
+import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
+import i5.las2peer.services.gamificationApplicationService.database.SQLDatabase;
 import i5.las2peer.services.gamificationPointService.helper.LocalFileManager;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -98,6 +100,7 @@ public class GamificationPointService extends Service {
 	private int jdbcPort;
 	private String jdbcSchema;
 	private String epURL;
+	private SQLDatabase DBManager;
 	
 	public GamificationPointService() {
 		// read and set properties values
@@ -105,6 +108,21 @@ public class GamificationPointService extends Service {
 		setFieldValues();
 	}
 
+	private boolean initializeDBConnection() {
+
+		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
+		logger.info(jdbcDriverClassName + " " + jdbcLogin);
+		try {
+				this.DBManager.connect();
+				logger.info("Monitoring: Database connected!");
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.info("Monitoring: Could not connect to database!. " + e.getMessage());
+				return false;
+			}
+	}
+	
 	private JSONObject fetchConfigurationToSystem(String appId) throws IOException {
 		String confPath = LocalFileManager.getBasedir()+"/"+appId+"/conf.json";
 		// RMI call without parameters
@@ -458,49 +476,8 @@ public class GamificationPointService extends Service {
 	}
 
 	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Badge PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD ---------------------------------
-	
-	
-	
-	// TODO Batch processing --------------------
-	
-	
-	
-	// TODO Other functions ---------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Achievement PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	// TODO  Basic single CRUD --------------------------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Level PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic Single CRUD
-	
-	
-
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Action PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Quest PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
 	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+		
 		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
 		
 		if (result != null) {

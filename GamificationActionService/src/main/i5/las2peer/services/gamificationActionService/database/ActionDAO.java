@@ -4,6 +4,9 @@ package i5.las2peer.services.gamificationActionService.database;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +14,12 @@ import java.sql.SQLException;
 
 public class ActionDAO {
 	
+	public static enum NotificationType {
+		BADGE,
+		ACHIEVEMENT,
+		QUEST,
+		LEVEL,
+	}
 	
 	PreparedStatement stmt;
 	Connection conn;
@@ -146,10 +155,9 @@ public class ActionDAO {
 	 * @throws SQLException sql exception
 	 */
 	public void deleteAction(String appId, String action_id) throws SQLException {
-		// TODO Auto-generated method stub
-			stmt = conn.prepareStatement("DELETE FROM "+appId+".action WHERE action_id = ?");
-			stmt.setString(1, action_id);
-			stmt.executeUpdate();
+		stmt = conn.prepareStatement("DELETE FROM "+appId+".action WHERE action_id = ?");
+		stmt.setString(1, action_id);
+		stmt.executeUpdate();
 	}
 
 	/**
@@ -160,8 +168,6 @@ public class ActionDAO {
 	 * @throws SQLException sql exception
 	 */
 	public void addNewAction(String appId, ActionModel action) throws SQLException {
-		// TODO Auto-generated method stub
-
 			stmt = conn.prepareStatement("INSERT INTO "+appId+".action (action_id, name, description, point_value, use_notification, notif_message) VALUES (?, ?, ?, ?, ?, ?)");
 			stmt.setString(1, action.getId());
 			stmt.setString(2, action.getName());
@@ -169,8 +175,48 @@ public class ActionDAO {
 			stmt.setInt(4, action.getPointValue());
 			stmt.setBoolean(5, action.isUseNotification());
 			stmt.setString(6, action.getNotificationMessage());
-			stmt.executeUpdate();
-			
+			stmt.executeUpdate();		
+	}
+	
+	/**
+	 * trigger an action and fetch the notifications
+	 * 
+	 * @param appId application id
+	 * @param memberId member id
+	 * @param actionId action id
+	 * @throws SQLException sql exception
+	 * @return JSONArray of notifications
+	 */
+	public JSONArray triggerAction(String appId, String memberId, String actionId) throws SQLException {
+		
+		JSONArray resArray = new JSONArray();
+		
+		// Submit action into member_action
+		stmt = conn.prepareStatement("INSERT INTO "+appId+".member_action (member_id, action_id) VALUES (?, ?)");
+		stmt.setString(1, memberId);
+		stmt.setString(2, actionId);
+		
+		// Fetch notifications caused by action
+		stmt = conn.prepareStatement("SELECT * FROM "+appId+".notification WHERE member_id = ?");
+		stmt.setString(1, memberId);
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()){
+			if(rs.getBoolean("use_notification")){
+				JSONObject resObj = new JSONObject();
+				resObj.put("memberId", rs.getString("member_id"));
+				resObj.put("type", NotificationType.valueOf(rs.getString("type")));
+				resObj.put("typeId", rs.getString("type_id"));
+				resObj.put("message", rs.getString("message"));
+				resObj.put("otherMessage", rs.getString("other_message"));
+				resArray.add(resObj);
+			}
+		}
+		// Clean up notification for the member
+		stmt = conn.prepareStatement("DELETE FROM "+appId+".notification WHERE member_id = ?");
+		stmt.setString(1, memberId);
+		stmt.executeUpdate();	
+		
+		return resArray;
 	}
 	
 }

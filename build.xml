@@ -1,0 +1,18 @@
+<project name="Gamification-Framework" default="all" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+    
+	<target name="all">
+		<subant>
+            <filelist dir="">
+                <file name="GamificationApplicationService/build.xml"/>
+                <file name="GamificationBadgeService/build.xml"/>
+                <file name="GamificationAchievementService/build.xml"/>
+                <file name="GamificationActionService/build.xml"/>
+                <file name="GamificationLevelService/build.xml"/>
+                <file name="GamificationPointService/build.xml"/>
+                <file name="GamificationQuestService/build.xml"/>
+            	<file name="GamificationVisualizationService/build.xml"/>
+            </filelist>
+        <target name="all"/>
+	</target>
+    
+</project>

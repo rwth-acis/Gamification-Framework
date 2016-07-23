@@ -50,6 +50,7 @@ import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
+import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
 import i5.las2peer.services.gamificationLevelService.database.LevelDAO;
 import i5.las2peer.services.gamificationLevelService.database.LevelModel;
 import i5.las2peer.services.gamificationLevelService.database.SQLDatabase;
@@ -724,6 +725,7 @@ public class GamificationLevelService extends Service {
 	}
 
 	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+		
 		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
 		
 		if (result != null) {

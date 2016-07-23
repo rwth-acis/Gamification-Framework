@@ -303,4 +303,19 @@ agent-${service.class}.xml;${service.password}
     
     <target name="all" depends="clean, jar, startscripts, generate_agents, junit, javadoc" />
     
+	<target name="build_all_others">
+		<subant>
+            <filelist dir="../">
+                <file name="GamificationBadgeService/build.xml"/>
+                <file name="GamificationAchievementService/build.xml"/>
+                <file name="GamificationActionService/build.xml"/>
+                <file name="GamificationLevelService/build.xml"/>
+                <file name="GamificationPointService/build.xml"/>
+                <file name="GamificationQuestService/build.xml"/>
+            	<file name="GamificationVisualizationService/build.xml"/>
+            </filelist>
+            <target name="all"/>
+        </subant>
+	</target>
+	
 </project>

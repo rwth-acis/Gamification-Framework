@@ -59,6 +59,7 @@ import i5.las2peer.services.gamificationAchievementService.database.SQLDatabase;
 import i5.las2peer.services.gamificationAchievementService.helper.FormDataPart;
 import i5.las2peer.services.gamificationAchievementService.helper.LocalFileManager;
 import i5.las2peer.services.gamificationAchievementService.helper.MultipartHelper;
+import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -175,126 +176,6 @@ public class GamificationAchievementService extends Service {
 
 	}
 	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Service methods.
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Application PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD -------------------------------------
-	
-	
-		
-
-	
-	
-	
-	
-//	/**
-//	 * Get a list of users apps from database
-//	 * 
-//	 * @param currentPage current cursor page
-//	 * @param windowSize size of fetched data
-//	 * @param memberId member id
-//	 * @return HttpResponse Returned as JSON object
-//	 */
-//	@GET
-//	@Path("/data/{memberId}/{windowSize}")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@ApiResponses(value = {
-//			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of badges"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-//	@ApiOperation(value = "Find applications", 
-//				  notes = "Returns a list of applications",
-//				  response = ApplicationModel.class,
-//				  responseContainer = "List",
-//				  authorizations = @Authorization(value = "api_key")
-//				  )
-//	public HttpResponse getUsersAppsList(
-//			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
-//			@ApiParam(value = "Member ID")@PathParam("memberId") String memberId,
-//			@ApiParam(value = "Number of data size")@PathParam("windowSize") int windowSize)
-//	{
-//		List<ApplicationModel> apps = null;
-//		JSONObject objResponse = new JSONObject();
-//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-//		String name = userAgent.getLoginName();
-//		if(!name.equals("anonymous")){
-//			try {
-//				if(!initializeDBConnection()){
-//					logger.info("Cannot connect to database >> ");
-//					objResponse.put("message", "Cannot connect to database");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//				}
-//				if(!managerAccess.isMemberRegistered(memberId)){
-//					logger.info("No member found >> ");
-//					objResponse.put("message", "No member found");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-//				}
-//				int offset = (currentPage - 1) * windowSize;
-//				apps = managerAccess.getUsersApplicationsWithOffset(offset, windowSize, memberId);
-//				int totalNum = managerAccess.getNumberOfUsersApplications(memberId);
-//				
-//				JSONArray appArray = new JSONArray();
-//				appArray.addAll(apps);
-//				
-//				objResponse.put("current", currentPage);
-//				objResponse.put("rowCount", windowSize);
-//				objResponse.put("rows", appArray);
-//				objResponse.put("total", totalNum);
-//				logger.info(objResponse.toJSONString());
-//				
-//				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-//
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				String response = "Internal Error. Database connection failed. ";
-//				
-//				// return HTTP Response on error
-//				return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//			}
-//		}
-//		else{
-//
-//			logger.info("Unauthorized >> ");
-//			objResponse.put("success", false);
-//			objResponse.put("message", "You are not authorized");
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-//
-//		}
-//		
-//	}
-	
-	
-
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Badge PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD ---------------------------------
-	
-	
-	
-	// TODO Batch processing --------------------
-	
-	
-	
-	// TODO Other functions ---------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Achievement PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	// TODO  Basic single CRUD --------------------------------------
 	
 	/**
 	 * Post a new achievement
@@ -864,35 +745,27 @@ public class GamificationAchievementService extends Service {
 
 		}
 	}
-	// TODO Other functions ----------------------------------------
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Level PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic Single CRUD
-	
-	
 
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Action PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Quest PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
-		
-		if (result != null) {
-			if((int)result == 1){
+	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+		ApplicationDAO applicationAccess = null;
+		if(!initializeDBConnection()){
+			logger.info("Cannot connect to database >> ");
+			return false;
+		}
+		try {
+			applicationAccess = new ApplicationDAO(this.DBManager.getConnection());
+			if(applicationAccess.isAppIdExist(appId)){
+				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
 				return true;
 			}
+			else{
+				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
+				return false;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
 		}
-		return false;
 	}
 
 	// //////////////////////////////////////////////////////////////////////////////////////

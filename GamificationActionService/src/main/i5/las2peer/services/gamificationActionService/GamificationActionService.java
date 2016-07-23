@@ -57,6 +57,8 @@ import i5.las2peer.services.gamificationActionService.database.ActionModel;
 import i5.las2peer.services.gamificationActionService.database.SQLDatabase;
 import i5.las2peer.services.gamificationActionService.helper.FormDataPart;
 import i5.las2peer.services.gamificationActionService.helper.MultipartHelper;
+import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
+import i5.las2peer.services.gamificationActionService.helper.ErrorResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -841,19 +843,113 @@ public class GamificationActionService extends Service {
 		}
 	}
 	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Quest PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
+//	/**
+//	 * Trigger an action
+//	 * @param appId applicationId
+//	 * @param actionId actionId
+//	 * @return HttpResponse with the returnString
+//	 */
+//	@POST
+//	@Path("/{appId}/trigger/{actionId}")
+//	@Produces(MediaType.APPLICATION_JSON)
+//	@ApiResponses(value = {
+//			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "{\"status\": 3, \"message\": \"Action upload success ( (actionid) )\"}"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "{\"status\": 3, \"message\": \"Failed to upload (actionid)\"}"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "{\"status\": 1, \"message\": \"Failed to add the action. Action ID already exist!\"}"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "{\"status\": =, \"message\": \"Action ID cannot be null!\"}"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "{\"status\": 2, \"message\": \"File content null. Failed to upload (actionid)\"}"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "{\"status\": 2, \"message\": \"Failed to upload (actionid)\"}"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "{\"status\": 3, \"message\": \"Action upload success ( (actionid) )}")
+//	})
+//	@ApiOperation(value = "triggerAction",
+//				 notes = "A method to trigger an ")
+//	public HttpResponse triggerAction(
+//			@ApiParam(value = "Application ID", required = true) @PathParam("appId") String appId,
+//			@ApiParam(value = "Action ID", required = true) @PathParam("actionId") String actionId)  {
+//		// parse given multipart form data
+//		JSONObject objResponse = new JSONObject();
+//		
+//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+//		String name = userAgent.getLoginName();
+//		if(name.equals("anonymous")){
+//			return ErrorResponse.Unauthorized(this, logger, objResponse);
+//		}
+//		// Implicitly retrieve member ID
+//		String memberId = name;
+//		if(!initializeDBConnection()){
+//			logger.info("Cannot connect to database >> ");
+//			objResponse.put("message", "Cannot connect to database");
+//			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+//		}
+//		
+//		JSONArray arr = new JSONArray();
+//		try {
+//			try {
+//				if(!isAppWithIdExist(appId)){
+//					objResponse.put("message", "App not found");
+//					return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+//				}
+//			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
+//					| TimeoutException e1) {
+//				e1.printStackTrace();
+//				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
+//				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+//			}
+//			if(!actionAccess.isActionIdExist(appId, actionId)){
+//				objResponse.put("message", "Action not found");
+//				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+//			}
+//			arr = actionAccess.triggerAction(appId, memberId, actionId);
+//			return new HttpResponse(arr.toJSONString(),HttpURLConnection.HTTP_OK);
+//			
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//			objResponse.put("message", "Failed to trigger action " + actionId);
+//			return ErrorResponse.InternalError(this, logger, e, objResponse);
+//		}
+//	}
 
-	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
+	
+
+	public String triggerActionRMI(String appId, String memberId, String actionId) throws SQLException  {
+
+		if(!initializeDBConnection()){
+			logger.info("Cannot connect to database >> ");
+			throw new SQLException("Cannot connect to database >> ");
+		}
 		
-		if (result != null) {
-			if((int)result == 1){
+		JSONArray arr = new JSONArray();
+	
+		if(!actionAccess.isActionIdExist(appId, actionId)){
+			throw new SQLException("Action ID is not exist");
+		}
+		
+		arr = actionAccess.triggerAction(appId, memberId, actionId);
+		return arr.toJSONString();
+
+	}
+	
+	
+	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+		ApplicationDAO applicationAccess = null;
+		if(!initializeDBConnection()){
+			logger.info("Cannot connect to database >> ");
+			return false;
+		}
+		try {
+			applicationAccess = new ApplicationDAO(this.DBManager.getConnection());
+			if(applicationAccess.isAppIdExist(appId)){
+				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
 				return true;
 			}
+			else{
+				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
+				return false;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
 		}
-		return false;
 	}
 
 	// //////////////////////////////////////////////////////////////////////////////////////

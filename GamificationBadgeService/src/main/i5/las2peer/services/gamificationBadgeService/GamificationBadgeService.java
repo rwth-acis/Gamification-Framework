@@ -8,15 +8,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -29,7 +25,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
-import org.apache.commons.lang3.tuple.Pair;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
@@ -52,6 +47,7 @@ import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
+import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeModel;
 import i5.las2peer.services.gamificationBadgeService.database.SQLDatabase;
@@ -72,8 +68,6 @@ import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import net.minidev.json.parser.ParseException;
-
 
 // TODO Describe your own service
 /**
@@ -1073,6 +1067,7 @@ public class GamificationBadgeService extends Service {
 	}
 	
 	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+		
 		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
 		
 		if (result != null) {
@@ -1082,7 +1077,6 @@ public class GamificationBadgeService extends Service {
 		}
 		return false;
 	}
-
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Methods required by the LAS2peer framework.
 	// //////////////////////////////////////////////////////////////////////////////////////

@@ -1,22 +1,13 @@
 package i5.las2peer.services.gamificationApplicationService;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import javax.imageio.ImageIO;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -25,24 +16,17 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
-import org.apache.commons.lang3.tuple.Pair;
-import org.imgscalr.Scalr;
-import org.imgscalr.Scalr.Mode;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import i5.las2peer.api.Service;
-import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
-import i5.las2peer.p2p.AgentNotKnownException;
-import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -50,15 +34,15 @@ import i5.las2peer.restMapper.annotations.ContentParam;
 import i5.las2peer.restMapper.annotations.Version;
 import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
-import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
 import i5.las2peer.services.gamificationApplicationService.database.ApplicationModel;
 import i5.las2peer.services.gamificationApplicationService.database.MemberModel;
 import i5.las2peer.services.gamificationApplicationService.database.SQLDatabase;
+import i5.las2peer.services.gamificationApplicationService.helper.ErrorResponse;
 import i5.las2peer.services.gamificationApplicationService.helper.FormDataPart;
-import i5.las2peer.services.gamificationApplicationService.helper.LocalFileManager;
 import i5.las2peer.services.gamificationApplicationService.helper.MultipartHelper;
+import i5.las2peer.services.gamificationApplicationService.helper.StorageManagerGamification;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -70,10 +54,8 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import net.minidev.json.parser.ParseException;
 
 
 /**
@@ -82,16 +64,11 @@ import net.minidev.json.parser.ParseException;
  * This is Gamification Application service to manage top level application in Gamification Framework
  * It uses the LAS2peer Web-Connector for RESTful access to it.
  * 
- * Note:
- * If you plan on using Swagger you should adapt the information below
- * in the ApiInfo annotation to suit your project.
- * If you do not intend to provide a Swagger documentation of your service API,
- * the entire ApiInfo annotation should be removed.
  * 
  */
-// TODO Adjust the following configuration
+
 @Path("/gamification/applications")
-@Version("0.1") // this annotation is used by the XML mapper
+@Version("0.1")
 @Api( value = "/gamification/applications", authorizations = {
 		@Authorization(value = "application_auth",
 		scopes = {
@@ -116,7 +93,7 @@ import net.minidev.json.parser.ParseException;
 				)
 		))
 
-// TODO Your own Serviceclass
+
 public class GamificationApplicationService extends Service {
 
 	// instantiate the logger class
@@ -130,10 +107,9 @@ public class GamificationApplicationService extends Service {
 	private String jdbcHost;
 	private int jdbcPort;
 	private String jdbcSchema;
-	private String epURL;
 	
 	private SQLDatabase DBManager;
-	private ApplicationDAO managerAccess;
+	private ApplicationDAO applicationAccess;
 	
 	// this header is not known to javax.ws.rs.core.HttpHeaders
 	public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
@@ -153,210 +129,15 @@ public class GamificationApplicationService extends Service {
 		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
 		logger.info(jdbcDriverClassName + " " + jdbcLogin);
 		try {
-				this.DBManager.connect();
-				this.managerAccess = new ApplicationDAO(this.DBManager.getConnection());
-				logger.info("Monitoring: Database connected!");
-				return true;
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.info("Monitoring: Could not connect to database!. " + e.getMessage());
-				return false;
-			}
-	}
-
-
-	private JSONObject fetchConfigurationToSystem(String appId) throws IOException {
-		String confPath = LocalFileManager.getBasedir()+"/"+appId+"/conf.json";
-		// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
-		if(!appFolder.exists()){
-			if(appFolder.mkdir()){
-				System.out.println("New directory "+ appId +" is created!");
-			}
-			else{
-				System.out.println("Failed to create directory");
-			}
-		}
-		File fileconf = new File(confPath);
-		if(!fileconf.exists()) {
-			if(fileconf.createNewFile()){
-				// Initialize
-				LocalFileManager.writeFile(confPath, "{}");
-				System.out.println("New file is created!");
-			}
-			else{
-				System.out.println("Failed to create file");
-			}
-		} 
-		String confJSONByte = new String(LocalFileManager.getFile(appId+"/conf.json"));
-		return (JSONObject) JSONValue.parse(confJSONByte);
-	}
-	
-	/**
-	 * Function to store configuration
-	 * @param appId appId
-	 * @param obj JSON object
-	 * @throws IOException 
-	 */
-	private void storeConfigurationToSystem(String appId, JSONObject obj) throws IOException{
-		String confPath = LocalFileManager.getBasedir()+"/"+appId+"/conf.json";
-			// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
-		if(!appFolder.exists()){
-			if(appFolder.mkdir()){
-				System.out.println("New directory "+ appId +" is created!");
-			}
-			else{
-				System.out.println("Failed to create directory");
-			}
-		}
-		File fileconf = new File(confPath);
-		if(!fileconf.exists()) {
-			if(fileconf.createNewFile()){
-				// Initialize
-				LocalFileManager.writeFile(confPath, "{}");
-				System.out.println("New file is created!");
-			}
-			else{
-				System.out.println("Failed to create file");
-			}
-		} 
-		LocalFileManager.writeFile(LocalFileManager.getBasedir()+"/"+appId+"/conf.json", obj.toJSONString());
-	}
-	
-	/**
-	 * Function to store configuration
-	 * @param appId appId
-	 * @throws IOException 
-	 */
-	private boolean cleanStorage(String appId){
-			// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
-		
-		try {
-			recursiveDelete(appFolder);
+			this.DBManager.connect();
+			this.applicationAccess = new ApplicationDAO(this.DBManager.getConnection());
+			logger.info("Monitoring: Database connected!");
 			return true;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			logger.info("Monitoring: Could not connect to database!. " + e.getMessage());
 			return false;
 		}
-
-    }
-	
-	private void recursiveDelete(File appFolder) throws IOException{
-		if(appFolder.isDirectory()){
-    		//directory is empty, then delete it
-    		if(appFolder.list().length==0){
-    			appFolder.delete();
-    		   System.out.println("Directory is deleted : " 
-                                                 + appFolder.getAbsolutePath());
-    		}else{
-    			
-    		   //list all the directory contents
-        	   String files[] = appFolder.list();
-     
-        	   for (String temp : files) {
-        	      //construct the file structure
-        	      File fileDelete = new File(appFolder, temp);
-        		 
-        	      //recursive delete
-        	      recursiveDelete(fileDelete);
-        	   }
-        		
-        	   //check the directory again, if empty then delete it
-        	   if(appFolder.list().length==0){
-        		   appFolder.delete();
-        	     System.out.println("Directory is deleted : " + appFolder.getAbsolutePath());
-        	   }
-    		}
-    	}else{
-    		//if file, then delete it
-    		appFolder.delete();
-    		System.out.println("File is deleted : " + appFolder.getAbsolutePath());
-    	}
-	}
-	
-	private HttpResponse unauthorizedMessage(){
-		JSONObject objResponse = new JSONObject();
-		logger.info("You are not authorized >> " );
-		objResponse.put("message", "You are not authorized");
-		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-
-	}
-	
-	private static String stringfromJSON(JSONObject obj, String key) throws IOException {
-		String s = (String) obj.get(key);
-		if (s == null) {
-			throw new IOException("Key " + key + " is missing in JSON");
-		}
-		return s;
-	}
-
-	private static List<String> stringArrayfromJSON(JSONObject obj, String key) throws IOException {
-		JSONArray arr = (JSONArray)obj.get(key);
-		List<String> ss = new ArrayList<String>();
-		if (arr == null) {
-			throw new IOException("Key " + key + " is missing in JSON");
-		}
-		for(int i = 0; i < arr.size(); i++){
-			ss.add((String) arr.get(i));
-		}
-		return ss;
-	}
-
-	private static int intfromJSON(JSONObject obj, String key) {
-		return (int) obj.get(key);
-	}
-
-	private static boolean boolfromJSON(JSONObject obj, String key) {
-		try {
-			return (boolean) obj.get(key);
-		} catch (Exception e) {
-			String b = (String) obj.get(key);
-			if (b.equals("1")) {
-				return true;
-			}
-			return (boolean)Boolean.parseBoolean(b);
-		}
-	}
-	
-	private static List<Pair<String, Integer>> listPairfromJSON(JSONObject obj, String mainkey, String keykey, String keyval) throws IOException {
-		
-		List<Pair<String, Integer>> listpair = new ArrayList<Pair<String, Integer>>();
-		JSONArray arr = (JSONArray)obj.get(mainkey);
-		
-		if (arr == null) {
-			throw new IOException("Key " + mainkey + " is missing in JSON");
-		}
-		for (int i = 0; i < arr.size(); i++)
-	    {
-	      JSONObject objectInArray = (JSONObject) arr.get(i);
-	      String key = (String) objectInArray.get(keykey);
-	      if (key == null) {
-				throw new IOException("Key " + keykey + " is missing in JSON");
-			}
-	      Integer val = (Integer) objectInArray.get(keyval);
-	      if (val == null) {
-				throw new IOException("Key " + keyval + " is missing in JSON");
-			}
-	      listpair.add(Pair.of(key,val));
-	    }
-		return listpair;
-	}
-	
-	private static JSONArray listPairtoJSONArray(List<Pair<String, Integer>> listpair) throws IOException {
-		JSONArray arr = new JSONArray();
-
-		if (listpair.isEmpty() || listpair.equals(null)) {
-			throw new IOException("List pair is empty");
-		}
-		for(Pair<String, Integer> pair : listpair){
-			JSONObject obj = new JSONObject();
-			obj.put("actionId", pair.getLeft());
-			obj.put("times", pair.getRight());
-			arr.add(obj);
-		}
-		return arr;
 	}
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
@@ -375,7 +156,7 @@ public class GamificationApplicationService extends Service {
 	 * 
 	 * @param contentType form content type
 	 * @param formData form data
-	 * @return HttpResponse with the returnString
+	 * @return Application data in JSON
 	 */
 	@POST
 	@Path("/data")
@@ -383,12 +164,18 @@ public class GamificationApplicationService extends Service {
 	@ApiOperation(value = "Create a new application",
 			notes = "Method to create a new application")
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "OK"),
-			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error in parsing form data"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App ID already exist"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App ID cannot be empty"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Error checking app ID exist"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
+			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "New application created")
 	})
 	public HttpResponse createNewApp(
 			@ApiParam(value = "App detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
-			@ContentParam byte[] formData) {
+			@ApiParam(value = "Content of form data", required = true)@ContentParam byte[] formData) {
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -396,12 +183,12 @@ public class GamificationApplicationService extends Service {
 		String appdesc = null;
 		String commtype = null;
 		if(name.equals("anonymous")){
-			return unauthorizedMessage();
+			return ErrorResponse.Unauthorized(this, logger, objResponse);
 		}
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 		}
 		Map<String, FormDataPart> parts;
 		try {
@@ -412,13 +199,10 @@ public class GamificationApplicationService extends Service {
 				appid = partAppID.getContent();
 				// appid must be unique
 				System.out.println(appid);
-				if(managerAccess.isAppIdExist(appid)){
+				if(applicationAccess.isAppIdExist(appid)){
 					// app id already exist
 					objResponse.put("message", "App ID already exist");
-
-					System.out.println(objResponse.toJSONString());
-					logger.info(objResponse.toJSONString());
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 				}
 				
 				FormDataPart partAppDesc = parts.get("appdesc");
@@ -437,69 +221,35 @@ public class GamificationApplicationService extends Service {
 				}
 				
 				ApplicationModel newApp = new ApplicationModel(appid, appdesc, commtype);
-//					if(managerAccess.addNewApplicationInfo(newApp)){
-//						// add Member to App
-//						if(managerAccess.createApplicationDB(newApp.getId())){
-//							try {
-//								managerAccess.addMemberToApp(newApp.getId(), name);
-//								objResponse.put("message", "New schema created");
-//								logger.info(objResponse.toJSONString());
-//								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_CREATED);
-//
-//							} catch (SQLException e) {
-//								// TODO Auto-generated catch block
-//								e.printStackTrace();
-//								logger.info("SQLException >> " + e.getMessage());
-//								objResponse.put("message", "Database Error");
-//								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//
-//							}
-//						
-//						}
-//					}
-//					objResponse.put("message", "Cannot add new application");
-//
-//					System.out.println(objResponse.toJSONString());
-//					logger.info(objResponse.toJSONString());
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+
 				try{
-					managerAccess.addNewApplication(newApp);
-					managerAccess.addMemberToApp(newApp.getId(), name);
-					objResponse.put("message", "New schema created");
+					applicationAccess.addNewApplication(newApp);
+					applicationAccess.addMemberToApp(newApp.getId(), name);
+					objResponse.put("message", "New application created");
 					logger.info(objResponse.toJSONString());
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_CREATED);
 
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
-					logger.info("SQLException >> " + e.getMessage());
-					objResponse.put("message", "Database Error");
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-
+					objResponse.put("message", "Database Error");;
+					return ErrorResponse.InternalError(this, logger, e, objResponse);
 				}
 			}
 			else{
 				// app id cannot be empty
 				objResponse.put("message", "App ID cannot be empty");
-
-				System.out.println(objResponse.toJSONString());
-				logger.info(objResponse.toJSONString());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
-			
 		}
 		catch (IOException e) {
 			e.printStackTrace();
-			logger.info("IOException >> " + e.getMessage());
-			objResponse.put("message", "IO Exception");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Error in parsing form data");
+			return ErrorResponse.InternalError(this, logger, e, objResponse);
+
 		} catch (SQLException e) {
-			e.printStackTrace();
 				e.printStackTrace();
-				logger.info("Error checking app ID exist >> " + e.getMessage());
 				objResponse.put("message", "Error checking app ID exist "  + e.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-			
+				return ErrorResponse.BadRequest(this, logger, e, objResponse);
 		} 
 	}
 	
@@ -508,61 +258,56 @@ public class GamificationApplicationService extends Service {
 	/**
 	 * Get an app data with specified ID
 	 * @param appId applicationId
-	 * @return HttpResponse with the returnString
+	 * @return Application data in JSON
 	 */
 	@GET
 	@Path("/data/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get an application data with specific ID",
+				notes = "Get an application data with specific ID")
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Selected"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return application data with specific ID"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Method not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Failed to process JSON")
 	})
-	@ApiOperation(value = "",
-				  notes = "Select an App")
-	public HttpResponse getAppDetails(@PathParam("appId") String appId)
+	public HttpResponse getAppDetails(
+			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId)
 	{
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
-			return unauthorizedMessage();
+			return ErrorResponse.Unauthorized(this, logger, objResponse);
 		}
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 		}
 
 		try {
-			if(!managerAccess.isAppIdExist(appId)){
-				logger.info("App not found >> ");
+			if(!applicationAccess.isAppIdExist(appId)){
 				objResponse.put("message", "App not found");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
 			// Add Member to App
-			ApplicationModel app = managerAccess.getApplicationWithId(appId);
+			ApplicationModel app = applicationAccess.getApplicationWithId(appId);
 			ObjectMapper objectMapper = new ObjectMapper();
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-	    	
 	    	String appString = objectMapper.writeValueAsString(app);
-			
 			return new HttpResponse(appString, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
-			
 			e.printStackTrace();
-
-			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, e, objResponse);
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to process JSON");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-
+			return ErrorResponse.InternalError(this, logger, e, objResponse);
 		}
 	}
 	
@@ -571,19 +316,22 @@ public class GamificationApplicationService extends Service {
 	 * @param appId applicationId
 	 * @param formData form data
 	 * @param contentType content type
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse Application updated status
 	 */
 	@PUT
 	@Path("/data/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Update an application",
+	 			 	notes = "A method to update an application detail")
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Application Updated"),
-			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error occured"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error in Processing Database"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error in parsing form data"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App ID not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Wrong form data"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")
 	})
-	@ApiOperation(value = "Update an application",
-				 notes = "A method to update an application with detail")
 	public HttpResponse updateApplication(
 			@ApiParam(value = "Application ID to be updated", required = true) @PathParam("appId") String appId,
 			@ApiParam(value = "Application detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
@@ -597,21 +345,19 @@ public class GamificationApplicationService extends Service {
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
-			return unauthorizedMessage();
+			return ErrorResponse.Unauthorized(this, logger, objResponse);
 		}
 		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 		}
 		try {
-			if(!managerAccess.isAppIdExist(appId)){
-				logger.info("App not found >> ");
+			if(!applicationAccess.isAppIdExist(appId)){
 				objResponse.put("message", "App not found");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
 			Map<String, FormDataPart> parts;parts = MultipartHelper.getParts(formData, contentType);
-			ApplicationModel app = managerAccess.getApplicationWithId(appId);
+			ApplicationModel app = applicationAccess.getApplicationWithId(appId);
 			
 			FormDataPart partDesc = parts.get("appdesc");
 			if (partDesc != null) {
@@ -631,35 +377,27 @@ public class GamificationApplicationService extends Service {
 			}
 				
 			try{
-				managerAccess.updateApplication(app);
+				applicationAccess.updateApplication(app);
 				logger.info("Application "+ appid +" updated >> ");
 				objResponse.put("message", "Application "+ appid +" updated");
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
-				System.out.println(e.getMessage());
-				logger.info("SQLException >> " + e.getMessage());
 				objResponse.put("message", "Cannot connect to database");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				return ErrorResponse.InternalError(this, logger, e, objResponse);
 			}
-		} catch (MalformedStreamException e1) {
-			e1.printStackTrace();
-			logger.info("MalformedStreamException >> " + e1.getMessage());
-			objResponse.put("message", "Wrong Form Data. " + e1.getMessage());
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			logger.info("IOException >> " + e1.getMessage());
-			objResponse.put("message", "Error in IO. " + e1.getMessage());
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			logger.info("SQLException >> " + e1.getMessage());
-			objResponse.put("message", "Error in Processing Database. " + e1.getMessage());
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-
+		} catch (MalformedStreamException e) {
+			e.printStackTrace();
+			objResponse.put("message", "Wrong Form Data. " + e.getMessage());
+			return ErrorResponse.BadRequest(this, logger, e, objResponse);
+		} catch (IOException e) {
+			e.printStackTrace();
+			objResponse.put("message", "Error in parsing form data. " + e.getMessage());
+			return ErrorResponse.InternalError(this, logger, e, objResponse);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			objResponse.put("message", "Error in Processing Database. " + e.getMessage());
+			return ErrorResponse.InternalError(this, logger, e, objResponse);
 		}
 	}
 		
@@ -673,240 +411,92 @@ public class GamificationApplicationService extends Service {
 	 */
 	@DELETE
 	@Path("/data/{appId}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)	
+	@ApiOperation(value = "Delete App",
+	  			notes = "This method deletes an App")
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Delete Success"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Deleted"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error checking app ID exist"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error delete storage"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "",
-				  notes = "delete an App")
-	public HttpResponse deleteApp(@PathParam("appId") String appId)
+
+	public HttpResponse deleteApp(
+			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId)
 	{
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
-			return unauthorizedMessage();
+			return ErrorResponse.Unauthorized(this, logger, objResponse);
 		}
 		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 		}
 
 		try {
-			if(!managerAccess.isAppIdExist(appId)){
-				logger.info("App not found >> ");
+			if(!applicationAccess.isAppIdExist(appId)){
 				objResponse.put("message", "App not found");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.info("Error checking app ID exist >> " + e.getMessage());
 			objResponse.put("message", "Error checking app ID exist "  + e.getMessage());
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-		}
-
-		
-		
-			if(cleanStorage(appId)){
-				if(managerAccess.removeApplicationInfo(appId)){
-					if(managerAccess.deleteApplicationDB(appId)){
+			return ErrorResponse.BadRequest(this, logger, e, objResponse);
+		}		
+			if(StorageManagerGamification.cleanStorage(appId)){
+				if(applicationAccess.removeApplicationInfo(appId)){
+					if(applicationAccess.deleteApplicationDB(appId)){
 						objResponse.put("message", "Application deleted");
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					}
 				}
-				logger.info("Database error >> ");
 				objResponse.put("message", "Database error. ");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
-			logger.info("Error delete storage >> ");
 			objResponse.put("message", "Error delete storage");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 	}
-	// -------------------------------------------------------
-	// TODO Batch processing --------------------------------------
-//	/**
-//	 * Get a list of apps from database
-//	 * 
-//	 * @param currentPage current cursor page
-//	 * @param windowSize size of fetched data
-//	 * @return HttpResponse Returned as JSON object
-//	 */
-//	@GET
-//	@Path("/apps/list/{windowSize}")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@ApiResponses(value = {
-//			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of badges"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-//	@ApiOperation(value = "Find applications", 
-//				  notes = "Returns a list of applications",
-//				  response = ApplicationModel.class,
-//				  responseContainer = "List",
-//				  authorizations = @Authorization(value = "api_key")
-//				  )
-//	public HttpResponse getAppList(
-//			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
-//			@ApiParam(value = "Number of data size")@PathParam("windowSize") int windowSize)
-//	{
-//		List<ApplicationModel> apps = null;
-//		JSONObject objResponse = new JSONObject();
-//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-//		String name = userAgent.getLoginName();
-//		if(!name.equals("anonymous")){
-//			try {
-//				if(!initializeDBConnection()){
-//					logger.info("Cannot connect to database >> ");
-//					objResponse.put("message", "Cannot connect to database");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//				}
-//				int offset = (currentPage - 1) * windowSize;
-//				apps = managerAccess.getApplicationsWithOffset(offset, windowSize);
-//				int totalNum = managerAccess.getNumberOfApplications();
-//				
-//				for(ApplicationModel a : apps){
-//					logger.info(a.getId());
-//				}
-//				JSONArray appArray = new JSONArray();
-//				appArray.addAll(apps);
-//				
-//				objResponse.put("current", currentPage);
-//				objResponse.put("rowCount", windowSize);
-//				objResponse.put("rows", appArray);
-//				objResponse.put("total", totalNum);
-//				logger.info(objResponse.toJSONString());
-//				
-//				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-//
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				String response = "Internal Error. Database connection failed. ";
-//				
-//				// return HTTP Response on error
-//				return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//			}
-//		}
-//		else{
-//
-//			logger.info("Unauthorized >> ");
-//			objResponse.put("success", false);
-//			objResponse.put("message", "You are not authorized");
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-//
-//		}
-//		
-//	}
-	
-//	/**
-//	 * Get a list of users apps from database
-//	 * 
-//	 * @param currentPage current cursor page
-//	 * @param windowSize size of fetched data
-//	 * @param memberId member id
-//	 * @return HttpResponse Returned as JSON object
-//	 */
-//	@GET
-//	@Path("/data/{memberId}/{windowSize}")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@ApiResponses(value = {
-//			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of badges"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-//	@ApiOperation(value = "Find applications", 
-//				  notes = "Returns a list of applications",
-//				  response = ApplicationModel.class,
-//				  responseContainer = "List",
-//				  authorizations = @Authorization(value = "api_key")
-//				  )
-//	public HttpResponse getUsersAppsList(
-//			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
-//			@ApiParam(value = "Member ID")@PathParam("memberId") String memberId,
-//			@ApiParam(value = "Number of data size")@PathParam("windowSize") int windowSize)
-//	{
-//		List<ApplicationModel> apps = null;
-//		JSONObject objResponse = new JSONObject();
-//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-//		String name = userAgent.getLoginName();
-//		if(!name.equals("anonymous")){
-//			try {
-//				if(!initializeDBConnection()){
-//					logger.info("Cannot connect to database >> ");
-//					objResponse.put("message", "Cannot connect to database");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//				}
-//				if(!managerAccess.isMemberRegistered(memberId)){
-//					logger.info("No member found >> ");
-//					objResponse.put("message", "No member found");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-//				}
-//				int offset = (currentPage - 1) * windowSize;
-//				apps = managerAccess.getUsersApplicationsWithOffset(offset, windowSize, memberId);
-//				int totalNum = managerAccess.getNumberOfUsersApplications(memberId);
-//				
-//				JSONArray appArray = new JSONArray();
-//				appArray.addAll(apps);
-//				
-//				objResponse.put("current", currentPage);
-//				objResponse.put("rowCount", windowSize);
-//				objResponse.put("rows", appArray);
-//				objResponse.put("total", totalNum);
-//				logger.info(objResponse.toJSONString());
-//				
-//				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-//
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				String response = "Internal Error. Database connection failed. ";
-//				
-//				// return HTTP Response on error
-//				return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//			}
-//		}
-//		else{
-//
-//			logger.info("Unauthorized >> ");
-//			objResponse.put("success", false);
-//			objResponse.put("message", "You are not authorized");
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-//
-//		}
-//		
-//	}
+
 	
 	/**
-	 * Get all application list
+	 * Get all application list separated into two categories. All apps registered for the member and other apps.
+	 * 
 	 * 
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
 	@Path("/list/separated")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "REPLACE THIS WITH AN APPROPRIATE FUNCTION NAME",
-			notes = "REPLACE THIS WITH YOUR NOTES TO THE FUNCTION")
+	@ApiOperation(value = "getSeparateAppInfo",
+			notes = "Get all application list separated into two categories. All apps registered for the member and other apps.")
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "REPLACE THIS WITH YOUR OK MESSAGE"),
-			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "List of apps"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "JsonProcessingException")
 	})
 	public HttpResponse getSeparateAppInfo() {
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
-			return unauthorizedMessage();
+			return ErrorResponse.Unauthorized(this, logger, objResponse);
 		}
 		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 		}
 		ObjectMapper objectMapper = new ObjectMapper();
     	//Set pretty printing of json
     	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 		
     	try {
-			List<List<ApplicationModel>> allApps = managerAccess.getSeparateApplicationsWithMemberId(name);
+			List<List<ApplicationModel>> allApps = applicationAccess.getSeparateApplicationsWithMemberId(name);
 
 			
 			try {
@@ -921,18 +511,15 @@ public class GamificationApplicationService extends Service {
 				
 				allApps.clear();
 				// return HTTP Response on error
-				objResponse.put("success", false);
 				objResponse.put("message", "Internal Error. JsonProcessingException.");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+				return ErrorResponse.InternalError(this, logger, e, objResponse);
 
 			}
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-
-			objResponse.put("success", false);
 			objResponse.put("message", "Database error");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+			return ErrorResponse.InternalError(this, logger, e, objResponse);
 		}
 		
 	}
@@ -942,55 +529,58 @@ public class GamificationApplicationService extends Service {
 	 * Remove a member from the application
 	 * @param appId applicationId
 	 * @param memberId memberId
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse status if a member is removed
 	 */
 	@DELETE
 	@Path("/data/{appId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "removeMemberFromApp",
+				notes = "delete a member from an app")
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Delete Success"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is removed from app"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Error checking app ID exist"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "No member found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database error")
 	})
-	@ApiOperation(value = "",
-				  notes = "delete a user from an app")
-	public HttpResponse removeMemberFromApp(@PathParam("appId") String appId,@PathParam("memberId") String memberId)
+	public HttpResponse removeMemberFromApp(
+			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
-			return unauthorizedMessage();
+			return ErrorResponse.Unauthorized(this, logger, objResponse);
 		}
 		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 		}
 		try {
-			if(!managerAccess.isAppIdExist(appId)){
-				logger.info("App not found >> ");
+			if(!applicationAccess.isAppIdExist(appId)){
 				objResponse.put("message", "App not found");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
-			if(!managerAccess.isMemberRegistered(memberId)){
-				logger.info("No member found >> ");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			objResponse.put("message", "Error checking app ID exist "  + e.getMessage());
+			return ErrorResponse.BadRequest(this, logger, e, objResponse);
+		}		
+		try {
+			if(!applicationAccess.isMemberRegistered(memberId)){
 				objResponse.put("message", "No member found");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
-			managerAccess.removeMemberFromApp(memberId, appId);
+			applicationAccess.removeMemberFromApp(memberId, appId);
 			objResponse.put("success", true);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		}
 		catch (SQLException e) {
-			
 			e.printStackTrace();
-
-			logger.info("SQLException >> " + e.getMessage());
-			objResponse.put("success", false);
 			objResponse.put("message", "Database error");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+			return ErrorResponse.InternalError(this, logger, e, objResponse);
 		}
 	}
 	
@@ -998,66 +588,71 @@ public class GamificationApplicationService extends Service {
 	 * Add a member to the application
 	 * @param appId applicationId
 	 * @param memberId memberId
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse status if the member is added
 	 */
 	@POST
 	@Path("/data/{appId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member Added"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Service not found"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is Added"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Error checking app ID exist"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database error")
 	})
-	@ApiOperation(value = "",
+	@ApiOperation(value = "addMemberToApp",
 				  notes = "add a member to an app")
-	public HttpResponse addMemberToApp(@PathParam("appId") String appId,@PathParam("memberId") String memberId)
+	public HttpResponse addMemberToApp(
+			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
-			return unauthorizedMessage();
+			return ErrorResponse.Unauthorized(this, logger, objResponse);
 		}
 		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 		}
 		try {
-			if(!managerAccess.isAppIdExist(appId)){
-				
-				logger.info("App not found >> ");
+			if(!applicationAccess.isAppIdExist(appId)){
 				objResponse.put("message", "App not found");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
-			logger.info(appId);
-			managerAccess.addMemberToApp(appId, memberId);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			objResponse.put("message", "Error checking app ID exist "  + e.getMessage());
+			return ErrorResponse.BadRequest(this, logger, e, objResponse);
+		}		
+		try {
+			applicationAccess.addMemberToApp(appId, memberId);
 			objResponse.put("success", true);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-
 		}
 		catch (SQLException e) {
 			
 			e.printStackTrace();
-
-			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database error");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			return ErrorResponse.InternalError(this, logger, e, objResponse);
 		}
 	}
 	
 	/**
-	 * 
-	 * @return HttpResponse 
+	 * Validate member and add to the database as the new member if he/she is not registered yet
+	 * @return HttpResponse status if validation success
 	 */
 	@POST
 	@Path("/validation")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Member Validation",
+	@ApiOperation(value = "memberLoginValidation",
 			notes = "Simple function to validate a member login.")
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Validation Confirmation"),
-			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is registered"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "User data error to be retrieved"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "User data error to be retrieved. Not JSON object")
 	})
 	public HttpResponse memberLoginValidation() {
 		JSONObject objResponse = new JSONObject();
@@ -1066,14 +661,13 @@ public class GamificationApplicationService extends Service {
 			UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 			// take username as default name
 			String name = userAgent.getLoginName();
+			System.out.println("User name : " + name);
 			if(name.equals("anonymous")){
-				return unauthorizedMessage();
+				return ErrorResponse.Unauthorized(this, logger, objResponse);
 			}
-				
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
 			// try to fetch firstname/lastname from user data received from OpenID
 			Serializable userData = userAgent.getUserData();
@@ -1110,108 +704,58 @@ public class GamificationApplicationService extends Service {
 					member = new MemberModel(name,firstname,lastname,email);
 					logger.info(member.getId()+" "+member.getFullName()+" "+member.getEmail());
 					try {
-						if(!managerAccess.isMemberRegistered(member.getId())){
-							managerAccess.registerMember(member);
+						if(!applicationAccess.isMemberRegistered(member.getId())){
+							applicationAccess.registerMember(member);
 							objResponse.put("message", "Welcome " + member.getId() + "!");
 							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 						}
 					} catch (SQLException e) {
 						e.printStackTrace();
-						logger.info("Cannot connect to database >> ");
 						objResponse.put("message", "Cannot connect to database");
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return ErrorResponse.InternalError(this, logger, e, objResponse);
 					}
 				} else {
 					logger.warning("Parsing user data failed! Got '" + jsonUserData.getClass().getName() + "' instead of "
 							+ JSONObject.class.getName() + " expected!");
 					objResponse.put("message", "User data error to be retrieved. Not JSON object.");
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 				}
 				objResponse.put("message", "Member already registered");
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			}
 			else{
 				objResponse.put("message", "User data error to be retrieved.");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
 				
 		
 	}
 	
 	
-
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Badge PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD ---------------------------------
-	
-	
-	
-	// TODO Batch processing --------------------
-	
-	
-	
-	// TODO Other functions ---------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Achievement PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	// TODO  Basic single CRUD --------------------------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Level PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic Single CRUD
-	
-	
-
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Action PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-//	public boolean isAppWithIdExist(String appId){
-//		try {
-//			if(managerAccess.isAppIdExist(appId)){
-//				return true;
-//			}
-//			else{
-//				return false;
-//			}
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			logger.info("Exception when checking Application ID exists or not. " + e.getMessage());
-//			return false;
-//		}
-//	}
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Quest PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	// Functions to be invoked via RMI
+	/**
+	 * Checking whether the application ID is already registered or not.
+	 * This function is to be invoked via RMI by another services
+	 * 
+	 * @param appId application ID
+	 * @return 1, if application ID exist
+	 */
 	public int isAppWithIdExist(String appId){
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			return 0;
 		}
 		try {
-			if(managerAccess.isAppIdExist(appId)){
+			if(applicationAccess.isAppIdExist(appId)){
+				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
 				return 1;
 			}
 			else{
+				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
 				return 0;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.info("Exception when checking Application ID exists or not. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.RMI_FAILED, "Exception when checking Application ID exists or not. " + e.getMessage());
 			return 0;
 		}
 	}
