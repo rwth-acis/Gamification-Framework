@@ -12,12 +12,16 @@ The back-end is using las2peer. To start the service, run bat script located in 
 
 ## Starting All Projects
 
-To build all projects in Gamification-Framework, go to main project folder and run 
+To build all projects in Gamification-Framework, go to GamificationApplicationService and run
 ```
-ant
+ant all
+```
+then,
+```
+ant build_all_others
 ```
 
-To run all services, execute 
+To run all services, in main folder project execute 
 ```
 start.bat
 ```
