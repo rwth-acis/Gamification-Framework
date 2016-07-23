@@ -1,0 +1,55 @@
+#visualization-panel {
+	width: 850px;
+	height: 500px;
+	/*overflow: hidden;*/
+	overflow-y:scroll;
+}
+
+
+.group-handle {
+	height: 34px;
+	width: 10px;
+	cursor: move;
+}
+
+.panel-heading {
+    cursor: move;
+}
+
+.draggable-group {
+	float: left;
+}
+
+#sortable {
+	padding: 0px;
+}
+
+#sort-holder {
+	display: none;
+}
+
+#toggle-toolbox-tools {
+    cursor: pointer;
+}
+
+#close-toolbox-tools {
+	cursor: pointer;
+}
+
+.toggle-button-group {
+    cursor: pointer;
+}
+
+.draggable-group {
+    overflow: hidden;
+}
+
+.minimized {
+    width: 12px;
+    height: 36px;
+}
+
+.badges_list_item{
+	display: inline;
+	list-style: none;
+}

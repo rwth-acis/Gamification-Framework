@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>d</title>
+  <head>
+
+
+  <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link href="vis.css" rel="stylesheet"> 
+  <!-- import jQuery for AJAX calls -->
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+  
+  <script type="text/javascript" src="./js/client.js"></script> 
+  <script type="text/javascript" src="./js/vis.js"></script> 
+
+
+</head>
+<body>
+
+<div class="form-login">
+	    <h4>Some App</h4>
+	    <div class="wrapper">
+	    <button class="oidc-signin"
+			         style="padding:5px; border-radius: 4px; border:1px;margin:15px 5px;"
+			         data-callback="signinCallback"
+			         data-name="Learning Layers"
+			    	 data-logo="http://learning-layers.eu/wp-content/themes/learninglayers/images/logo.png"
+			         data-server="https://api.learning-layers.eu/o/oauth2"
+			         data-clientid="768f478e-39cf-4b26-916d-8359850c9099"
+			         data-size="sm"
+			         data-scope="openid phone email address profile"><img style="margin-right:5px;" src="./img/logo.png" height="16px"> Sign in with <i>Learning Layers</i>
+			    	
+			    </button>
+	    </div>
+    </div>
+
+<div class="panel panel-primary draggable-panel toolbar-panel ui-draggable ui-resizable" id="toolbox-tools">
+    <div class="panel-heading lang-panel-header-tools">Gamification Visualization <i class="fa fa-times pull-right close-panel" id="close-toolbox-tools"></i><i class="fa pull-right fa-chevron-down" id="toggle-toolbox-tools"></i>
+    </div>
+
+ <div class="panel-body">
+    <div id="container-text">
+    You are not authenticated. Sign in first.
+    </div>
+ 	<div class="container-fluid " id="vis_container">
+		<div class="row">
+				<div class="col-md-6">
+
+					 <div class="container-fluid" >
+						<div class="row">
+						    <label class="col-sm-6 text-right">User Name</label>
+						    <div class="col-sm-6">
+						      <p class="form-control-static text-left">User1</p>
+							  <!-- class form-control-static to display static text -->
+						    </div>
+						</div>
+						<div class="row">
+						    <label class="col-sm-6 text-right">Point</label>
+						    <div class="col-sm-6">
+						      <p class="form-control-static text-left">Point</p>
+							  <!-- class form-control-static to display static text -->
+						    </div>
+						</div>
+						<div class="row">
+						    <label class="col-sm-4 text-right">Level</label>
+						    <div class="col-sm-4">
+						      <div class="progress">
+							  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
+							    60%
+							  </div>
+							</div>
+							</div>
+						    <label class="col-sm-4 text-left text-muted">Level</label>
+						</div>
+					</div>
+				</div>
+				
+				<div class="col-md-6">
+					<div id="content">
+					    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+					        <li class="active"><a href="#localleaderboard" data-toggle="tab">Leaderboard</a></li>
+					        <li><a href="#globalleaderboard" data-toggle="tab">Global Leaderboard</a></li>
+					    </ul>
+					    <div id="my-tab-content" class="tab-content">
+					        <div class="tab-pane active" id="localleaderboard">
+					            <table id="list_leaderboard" class="table table-condensed table-striped" data-toggle="bootgrid">
+								    <thead>
+								        <tr>
+								            <th data-column-id="rank" data-identifier="true" data-type="numeric">#</th>
+								            <th data-column-id="name" data-type="string">Member Name</th>
+								           	<th data-column-id="pointValue" data-type="numeric">Point</th>
+								        </tr>
+								    </thead>
+								</table>
+					        </div>
+					        <div class="tab-pane" id="globalleaderboard">
+					            <p>orange orange orange orange orange</p>
+					        </div>
+					    </div>
+					</div>
+				</div>
+		</div>
+		<div class="row">
+			 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+		        <li class="active"><a href="#badgevis" data-toggle="tab">Your badges</a></li>
+		        <li><a href="#achievementvis" data-toggle="tab">Your achievements</a></li>
+		        <li><a href="#questvis" data-toggle="tab">Your quests</a></li>
+		    </ul>
+		    <div id="my-tab-content" class="tab-content">
+		        <div class="tab-pane active" id="badgevis">
+		            <ul id="badges_list_group">
+				        <li class="badges_list_item">
+					        <div class="badge_container">
+					        </div>
+				        </li>
+				        <li class="badges_list_item">aaa </li>
+				        <li class="badges_list_item">aaa </li>
+				    </ul>
+		        </div>
+		        <div class="tab-pane" id="achievementvis">
+		             <div class="container-fluid">
+
+				        <div class="row">
+				            <div class="col-lg-3 col-md-4 col-xs-6 thumb">
+				                <a class="thumbnail" href="#">
+				                    <img class="img-responsive" src="http://placehold.it/400x300" alt="">
+				                </a>
+				            </div>
+				            <div class="col-lg-3 col-md-4 col-xs-6 thumb">
+				                <a class="thumbnail" href="#">
+				                    <img class="img-responsive" src="http://placehold.it/400x300" alt="">
+				                </a>
+				            </div>
+				            <div class="col-lg-3 col-md-4 col-xs-6 thumb">
+				                <a class="thumbnail" href="#">
+				                    <img class="img-responsive" src="http://placehold.it/400x300" alt="">
+				                </a>
+				            </div>
+	
+				        </div>
+				    </div>
+		        </div>
+		        <div class="tab-pane" id="questvis">
+		            <p>orange orange orange orange orange</p>
+		        </div>
+		    </div>
+		</div>
+	</div>
+</div>
+    
+	
+</div>
+
+
+ <!--  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+ <script type="text/javascript" src="jquery-ui.min.js"></script>
+ -->
+ 
+	 <!-- import JWS and JSRSASIGN (must) -->
+	<script type="text/javascript" src="./js/jsjws/jws-2.0.min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/ext/base64-min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/base64x-1.1.min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/ext/jsbn-min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/ext/jsbn2-min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/asn1hex-1.1.min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/crypto-1.0.min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/ext/rsa-min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/ext/rsa2-min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/rsapem-1.1.min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/rsasign-1.2.min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/x509-1.1.min.js"></script>
+	<script type="text/javascript" src="./js/jsrsasign/crypto-1.1.min.js"></script>
+
+
+	<script type="text/javascript">
+
+    </script>
+	<script type="text/javascript">
+		(function() {
+
+		var po = document.createElement('script');
+		po.type = 'text/javascript'; 
+		po.async = true;
+		po.src = './js/oidc-button.js';
+		var s = document.getElementsByTagName('script')[0];
+		s.parentNode.insertBefore(po, s);
+		})();
+	</script>
+</body>
+</html>
