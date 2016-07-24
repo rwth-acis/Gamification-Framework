@@ -1,25 +1,16 @@
 package i5.las2peer.services.gamificationQuestService;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
-import javax.imageio.ImageIO;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -50,7 +41,6 @@ import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationQuestService.database.ActionDAO;
-import i5.las2peer.services.gamificationQuestService.database.ActionModel;
 import i5.las2peer.services.gamificationQuestService.database.QuestDAO;
 import i5.las2peer.services.gamificationQuestService.database.QuestModel;
 import i5.las2peer.services.gamificationQuestService.database.SQLDatabase;
@@ -577,9 +567,19 @@ public class GamificationQuestService extends Service {
 				objResponse.put("message", "Quest not found");
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			
-	    	String questString = getQuestWithIdMethod( appId, questId);
-			return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
+			quest = questAccess.getQuestWithId(appId, questId);
+
+			if(quest == null){
+				logger.info("Quest Null, Cannot find quest with " + questId);
+				objResponse.put("message", "Quest Null, Cannot find quest with " + questId);
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			}
+			ObjectMapper objectMapper = new ObjectMapper();
+	    	//Set pretty printing of json
+	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+	    	
+	    	String questString = objectMapper.writeValueAsString(quest);
+	    	return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -597,18 +597,7 @@ public class GamificationQuestService extends Service {
 		
 	}
 	
-	public String getQuestWithIdMethod(String appId, String questId) throws SQLException, IOException {
-		QuestModel quest = questAccess.getQuestWithId(appId, questId);
-		if(quest == null){
-			throw new SQLException("Quest Null, Cannot find quest with " + questId);
-		}
-		ObjectMapper objectMapper = new ObjectMapper();
-    	//Set pretty printing of json
-    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-    	
-    	String questString = objectMapper.writeValueAsString(quest);
-    	return questString;
-	}
+
 	/**
 	 * Update a quest
 	 * @param appId applicationId
@@ -933,7 +922,7 @@ public class GamificationQuestService extends Service {
 		}
 	}
 
-	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
 		
 		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
 		
@@ -945,6 +934,37 @@ public class GamificationQuestService extends Service {
 		return false;
 	}
 
+	// RMI
+	public String getQuestWithIdRMI(String appId, String questId) {
+		QuestModel quest;
+		try {
+			if(!initializeDBConnection()){
+				logger.info("Cannot connect to database >> ");
+				return null;
+			}
+			quest = questAccess.getQuestWithId(appId, questId);
+			if(quest == null){
+				return null;
+			}
+			ObjectMapper objectMapper = new ObjectMapper();
+	    	//Set pretty printing of json
+	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+	    	
+	    	String questString = objectMapper.writeValueAsString(quest);
+	    	return questString;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.warning("Get Quest with ID RMI failed. " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			logger.warning("Get Quest with ID RMI failed. " + e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.warning("Get Quest with ID RMI failed. " + e.getMessage());
+		}
+		return null;
+	}
+	
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Methods required by the LAS2peer framework.
 	// //////////////////////////////////////////////////////////////////////////////////////

@@ -9,10 +9,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
@@ -34,7 +38,15 @@ import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.restMapper.data.Pair;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
+import i5.las2peer.services.gamificationAchievementService.GamificationAchievementService;
+import i5.las2peer.services.gamificationActionService.GamificationActionService;
+import i5.las2peer.services.gamificationBadgeService.GamificationBadgeService;
+import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
+import i5.las2peer.services.gamificationLevelService.GamificationLevelService;
+import i5.las2peer.services.gamificationPointService.GamificationPointService;
+import i5.las2peer.services.gamificationQuestService.GamificationQuestService;
 import i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService;
+import i5.las2peer.services.gamificationVisualizationService.database.SQLDatabase;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
@@ -65,6 +77,13 @@ public class GamificationVisualizationServiceTest {
 	// during testing, the specified service version does not matter
 	private static final ServiceNameVersion testGamificationVisualizationService = new ServiceNameVersion(GamificationVisualizationService.class.getCanonicalName(),"0.1");
 
+	private static final ServiceNameVersion testBadgeService = new ServiceNameVersion(GamificationBadgeService.class.getCanonicalName(),"0.1");
+	private static final ServiceNameVersion testPointService = new ServiceNameVersion(GamificationPointService.class.getCanonicalName(),"0.1");
+	private static final ServiceNameVersion testLevelService = new ServiceNameVersion(GamificationLevelService.class.getCanonicalName(),"0.1");
+	private static final ServiceNameVersion testAchievementService = new ServiceNameVersion(GamificationAchievementService.class.getCanonicalName(),"0.1");
+	private static final ServiceNameVersion testActionService = new ServiceNameVersion(GamificationActionService.class.getCanonicalName(),"0.1");
+	private static final ServiceNameVersion testQuestService = new ServiceNameVersion(GamificationQuestService.class.getCanonicalName(),"0.1");
+
 	private static String appId = "test";
 	private static String memberId = "user1";
 	private static String questId = "quest1";
@@ -73,6 +92,15 @@ public class GamificationVisualizationServiceTest {
 	private static String achievementId = "achievement1";
 	
 	private static final String mainPath = "visualization/";
+	
+	private static String jdbcDriverClassName;
+	private static String jdbcLogin;
+	private static String jdbcPass;
+	private static String jdbcHost;
+	private static int jdbcPort;
+	private static String jdbcSchema;
+
+	private static SQLDatabase DBManager;
 	
 	// to fetch data per batch
 	int currentPage = 1;
@@ -90,6 +118,38 @@ public class GamificationVisualizationServiceTest {
 	@BeforeClass
 	public static void startServer() throws Exception {
 
+		Properties properties = new Properties();
+	    String propertiesFile =
+	        "./etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties";
+	    FileReader reader = new FileReader(propertiesFile);
+	    properties.load(reader);
+
+//	    jdbcDriverClassName = properties.getProperty("jdbcDriverClassName");
+//	    jdbcLogin = properties.getProperty("jdbcLogin");
+//	    jdbcPass = properties.getProperty("jdbcPass");
+//	    jdbcHost = properties.getProperty("gitHubUser");
+//	    jdbcPort = Integer.parseInt(properties.getProperty("jdbcPort"));
+//	    jdbcSchema = properties.getProperty("gitHubUser");
+//	    
+//	    DBManager = new SQLDatabase(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcSchema, jdbcHost, jdbcPort);
+//		try {
+//			DBManager.connect();
+//			Connection conn = DBManager.getConnection();
+//			
+//			PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+appId+".member_badge (mmeber_id,badge_id) VALUES (?, ?)");
+//			stmt.setString(1, memberId);
+//			stmt.setString(2, badgeId);
+//			stmt.executeUpdate();
+//			stmt = conn.prepareStatement("INSERT INTO "+appId+".member_achievement (mmeber_id,achievement_id) VALUES (?, ?)");
+//			stmt.setString(1, memberId);
+//			stmt.setString(2, achievementId);
+//			stmt.executeUpdate();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail("Exception: " + e);
+//			System.exit(0);
+//		}
+	    
 		// start node
 		node = LocalNode.newNode();
 		
@@ -128,9 +188,32 @@ public class GamificationVisualizationServiceTest {
 		
 		ServiceAgent testService = ServiceAgent.createServiceAgent(testGamificationVisualizationService, "a pass");
 		testService.unlockPrivateKey("a pass");
-
 		node.registerReceiver(testService);
 
+		ServiceAgent badgeService = ServiceAgent.createServiceAgent(testBadgeService, "a pass");
+		badgeService.unlockPrivateKey("a pass");
+		node.registerReceiver(badgeService);
+
+		ServiceAgent pointService = ServiceAgent.createServiceAgent(testPointService, "a pass");
+		pointService.unlockPrivateKey("a pass");
+		node.registerReceiver(pointService);
+
+		ServiceAgent levelService = ServiceAgent.createServiceAgent(testLevelService, "a pass");
+		levelService.unlockPrivateKey("a pass");
+		node.registerReceiver(levelService);
+
+		ServiceAgent achievementService = ServiceAgent.createServiceAgent(testAchievementService, "a pass");
+		achievementService.unlockPrivateKey("a pass");
+		node.registerReceiver(achievementService);
+
+		ServiceAgent actionService = ServiceAgent.createServiceAgent(testActionService, "a pass");
+		actionService.unlockPrivateKey("a pass");
+		node.registerReceiver(actionService);
+
+		ServiceAgent questService = ServiceAgent.createServiceAgent(testQuestService, "a pass");
+		questService.unlockPrivateKey("a pass");
+		node.registerReceiver(questService);
+				
 		// start connector
 		logStream = new ByteArrayOutputStream();
 
@@ -192,161 +275,6 @@ public class GamificationVisualizationServiceTest {
 
 	}
 
-//	// Application Test
-//	/**
-//	 * 
-//	 * Validate user, register if not registered yet
-//	 * 
-//	 */
-//	@Test
-//	public void testA1_userLoginValidation()
-//	{
-//
-//		System.out.println("Test --- User Login Validation");
-//		try
-//		{
-//			ClientResponse result = c1.sendRequest("POST", mainPath + "validation", ""); // testInput is
-//			System.out.println(result.getResponse());
-//			assertEquals(200, result.getHttpCode());
-//			result = c2.sendRequest("POST", mainPath + "validation", ""); // testInput is
-//			System.out.println(result.getResponse());
-//			assertEquals(200, result.getHttpCode());
-//			result = c3.sendRequest("POST", mainPath + "validation", ""); // testInput is
-//			System.out.println(result.getResponse());
-//			assertEquals(200, result.getHttpCode());
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail("Exception: " + e);
-//			System.exit(0);
-//		}
-//	}
-//	
-//	@Test
-//	public void testA2_createNewApp(){
-//		System.out.println("Test --- Create New App");
-//		try
-//		{
-//			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
-//			
-//			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-//			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-//			builder.setBoundary(boundary);
-//			
-//
-//			builder.addPart("appid", new StringBody(appId, ContentType.TEXT_PLAIN));
-//			builder.addPart("appdesc", new StringBody("New App", ContentType.TEXT_PLAIN));
-//			builder.addPart("commtype", new StringBody("com_type", ContentType.TEXT_PLAIN));
-//			
-//			HttpEntity formData = builder.build();
-//			ByteArrayOutputStream out = new ByteArrayOutputStream();
-//			
-//			formData.writeTo(out);
-//		
-//			Pair<String>[] headers = new Pair[2];
-//			
-//			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
-//			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
-//			
-//			ClientResponse result = c1.sendRequest("POST", mainPath + "apps/data", out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
-//			System.out.println(result.getResponse());
-//			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
-//				assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
-//			}
-//			else{
-//
-//				assertEquals(HttpURLConnection.HTTP_CREATED,result.getHttpCode());
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail("Exception: " + e);
-//			System.exit(0);
-//		}
-//	}
-//	 // Remove a member from the application
-//	@Test
-//	public void testA3_removeMemberFromApp()
-//	{
-//
-//		System.out.println("Test --- Remove Member From App");
-//		try
-//		{
-//			String memberId = user1.getLoginName();
-//			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "apps/data/"+appId+"/"+memberId, ""); // testInput is
-//			System.out.println(result.getResponse());
-//			assertEquals(200, result.getHttpCode());
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail("Exception: " + e);
-//			System.exit(0);
-//		}
-//	}
-//	@Test
-//	public void testA4_addMemberToApp()
-//	{
-//		// Add user 2 to app
-//		System.out.println("Test --- Add Member To App");
-//		try
-//		{
-//			String memberId = user2.getLoginName();
-//			ClientResponse result = c2.sendRequest("POST",  mainPath + "apps/data/"+appId+"/"+memberId, ""); // testInput is
-//			System.out.println(result.getResponse());
-//			assertEquals(200, result.getHttpCode());
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail("Exception: " + e);
-//			System.exit(0);
-//		}
-//	}
-//
-//	@Test
-//	public void testA4_getAppWithId(){
-//
-//		System.out.println("Test --- Get App With Id");
-//		try
-//		{
-//			ClientResponse result = c1.sendRequest("GET",  mainPath + "apps/data/" + appId, "");
-//	        assertEquals(HttpURLConnection.HTTP_OK, result.getHttpCode());
-//		} catch (Exception e)
-//		{
-//			e.printStackTrace();
-//			fail("Exception: " + e);
-//			System.exit(0);
-//		}
-//	}
-//	
-//	@Test
-//	public void testA4_getAppListSeparated(){
-//
-//		System.out.println("Test --- Get App List Separated");
-//		try
-//		{
-//			ClientResponse result = c1.sendRequest("GET",  mainPath + "apps/list/separated", "");
-//	        assertEquals(HttpURLConnection.HTTP_OK, result.getHttpCode());
-//		} catch (Exception e)
-//		{
-//			e.printStackTrace();
-//			fail("Exception: " + e);
-//			System.exit(0);
-//		}
-//	}
-//	
-//	
-//	// Point Test -----------------------------------------------------
-//	@Test
-//	public void testA4_changeUnitName()
-//	{
-//		System.out.println("Test --- Change Unit Name");
-//		try
-//		{
-//			String memberId = user1.getLoginName();
-//			ClientResponse result = c1.sendRequest("PUT", mainPath + "points/"+appId+"/name/"+unitName, ""); // testInput is
-//			System.out.println(result.getResponse());
-//			assertEquals(200, result.getHttpCode());
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail("Exception: " + e);
-//		}
-//	}
 	
 	@Test
 	public void testA4_getPointOfMember()
@@ -538,9 +466,10 @@ public class GamificationVisualizationServiceTest {
 	public void testA4_getLocalLeaderboard()
 	{
 		System.out.println("Test --- Get Local Leaderboard");
+		
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET", mainPath + "leaderboard/local/"+appId+"/"+memberId, ""); // testInput is
+			ClientResponse result = c1.sendRequest("GET", mainPath + "leaderboard/local/"+appId+"/"+memberId+"?current=1&rowCount=10&searchPhrase=", ""); // testInput is
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {

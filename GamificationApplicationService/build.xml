@@ -74,6 +74,16 @@
         </ivy:settings>
     	<ivy:retrieve type="jar, bundle" conf="platform" pattern="${lib}/[artifact]-[revision].[ext]"/>
     	<ivy:retrieve type="jar, bundle" conf="bundle" pattern="${service}/[artifact]-[revision].[ext]"/>
+    
+    	<!-- GamificationService Dependency -->
+    	<copy file="../GamificationBadgeService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties" tofile="etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties"/>
+    	<copy file="../GamificationPointService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties" tofile="etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties"/>
+    	<copy file="../GamificationAchievementService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties" tofile="etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties"/>
+    	<copy file="../GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties" tofile="etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties"/>
+    	<copy file="../GamificationLevelService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties" tofile="etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties"/>
+    	<copy file="../GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties" tofile="etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties"/>
+    	<copy file="../GamificationVisualizationService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties" tofile="etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties"/>
+
     </target>
     
     

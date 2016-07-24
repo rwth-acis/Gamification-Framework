@@ -404,8 +404,16 @@ public class GamificationAchievementService extends Service {
 					objResponse.put("message", "Achievement not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-				String achievementString = getAchievementWithIdMethod( appId, achievementId);
-
+				achievement = achievementAccess.getAchievementWithId(appId, achievementId);
+				if(achievement == null){
+					throw new SQLException("Achievement Null, Cannot find achievement with " + achievementId);
+				}
+				ObjectMapper objectMapper = new ObjectMapper();
+		    	//Set pretty printing of json
+		    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		    	
+		    	String achievementString = objectMapper.writeValueAsString(achievement);
+		    	
 				return new HttpResponse(achievementString, HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -422,18 +430,6 @@ public class GamificationAchievementService extends Service {
 		}
 	}
 
-	public String getAchievementWithIdMethod(String appId, String achievementId) throws SQLException, JsonProcessingException {
-		AchievementModel achievement = achievementAccess.getAchievementWithId(appId, achievementId);
-		if(achievement == null){
-			throw new SQLException("Achievement Null, Cannot find achievement with " + achievementId);
-		}
-		ObjectMapper objectMapper = new ObjectMapper();
-    	//Set pretty printing of json
-    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-    	
-    	String achievementString = objectMapper.writeValueAsString(achievement);
-    	return achievementString;
-	}
 	
 	/**
 	 * Update an achievement
@@ -747,25 +743,45 @@ public class GamificationAchievementService extends Service {
 	}
 
 	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-		ApplicationDAO applicationAccess = null;
-		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
-			return false;
-		}
-		try {
-			applicationAccess = new ApplicationDAO(this.DBManager.getConnection());
-			if(applicationAccess.isAppIdExist(appId)){
-				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
+		
+		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
+		
+		if (result != null) {
+			if((int)result == 1){
 				return true;
 			}
-			else{
-				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
-				return false;
+		}
+		return false;
+	}
+	
+	
+	// RMI
+	public String getAchievementWithIdRMI(String appId, String achievementId)  {
+		AchievementModel achievement;
+		try {
+			if(!initializeDBConnection()){
+				logger.info("Cannot connect to database >> ");
+				return null;
 			}
+			achievement = achievementAccess.getAchievementWithId(appId, achievementId);
+			if(achievement == null){
+				return null;
+			}
+			ObjectMapper objectMapper = new ObjectMapper();
+	    	//Set pretty printing of json
+	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+	    	
+	    	String achievementString = objectMapper.writeValueAsString(achievement);
+	    	return achievementString;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return false;
+			logger.warning("Get Achievement with ID RMI failed. " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			logger.warning("Get Achievement with ID RMI failed. " + e.getMessage());
 		}
+		return null;
+		
 	}
 
 	// //////////////////////////////////////////////////////////////////////////////////////

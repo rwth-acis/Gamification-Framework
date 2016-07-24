@@ -47,7 +47,6 @@ import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeModel;
 import i5.las2peer.services.gamificationBadgeService.database.SQLDatabase;
@@ -803,7 +802,17 @@ public class GamificationBadgeService extends Service {
 				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			String badgeString = getBadgeWithIdMethod(appId, badgeId);
+			badge = badgeAccess.getBadgeWithId(appId, badgeId);
+			if(badge == null){
+				logger.info("Badge model is null. >> ");
+				objResponse.put("message", "Badge model is null. >> ");
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			}
+			ObjectMapper objectMapper = new ObjectMapper();
+	    	//Set pretty printing of json
+	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+	    	
+	    	String badgeString = objectMapper.writeValueAsString(badge);
 			return new HttpResponse(badgeString, HttpURLConnection.HTTP_OK);
 
 		} catch (JsonProcessingException e) {
@@ -818,23 +827,7 @@ public class GamificationBadgeService extends Service {
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
-	}
-
-	public String getBadgeWithIdMethod(String appId, String badgeId) throws SQLException, JsonProcessingException {
-		BadgeModel badge = badgeAccess.getBadgeWithId(appId, badgeId);
-		if(badge != null){
-			ObjectMapper objectMapper = new ObjectMapper();
-	    	//Set pretty printing of json
-	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-	    	
-	    	String badgeString = objectMapper.writeValueAsString(badge);
-	    	return badgeString;
-					}
-		else{
-			throw new SQLException("Badge Model is null");
-			
-		}
-	}
+	}	
 	
 	/**
 	 * Delete a badge data with specified ID
@@ -1066,7 +1059,7 @@ public class GamificationBadgeService extends Service {
 		return filecontent;
 	}
 	
-	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
 		
 		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
 		
@@ -1077,6 +1070,35 @@ public class GamificationBadgeService extends Service {
 		}
 		return false;
 	}
+	
+	// RMI
+	public String getBadgeWithIdRMI(String appId, String badgeId) {
+		BadgeModel badge;
+		try {
+			if(!initializeDBConnection()){
+				logger.info("Cannot connect to database >> ");
+				return null;
+			}
+			badge = badgeAccess.getBadgeWithId(appId, badgeId);
+			if(badge == null){
+				return null;
+			}
+			ObjectMapper objectMapper = new ObjectMapper();
+	    	//Set pretty printing of json
+	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+	    	
+	    	String badgeString = objectMapper.writeValueAsString(badge);
+	    	return badgeString;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.warning("Get Badge with ID RMI failed. " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			logger.warning("Get Badge with ID RMI failed. " + e.getMessage());
+		}
+		return null;
+	}
+	
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Methods required by the LAS2peer framework.
 	// //////////////////////////////////////////////////////////////////////////////////////

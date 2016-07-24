@@ -221,7 +221,7 @@ public class MemberDAO {
 	 * @throws SQLException sql exception
 	 */
 	public boolean isMemberHasAchievement(String appId, String memberId, String achievementId) throws SQLException{
-		stmt = conn.prepareStatement("SELECT badge_id FROM "+appId+".member_achievement WHERE member_id=? AND achievement_id=?");
+		stmt = conn.prepareStatement("SELECT achievement_id FROM "+appId+".member_achievement WHERE member_id=? AND achievement_id=?");
 		stmt.setString(1, memberId);
 		stmt.setString(2, achievementId);
 	

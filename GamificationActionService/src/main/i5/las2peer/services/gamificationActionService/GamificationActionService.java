@@ -930,26 +930,16 @@ public class GamificationActionService extends Service {
 	}
 	
 	
-	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-		ApplicationDAO applicationAccess = null;
-		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
-			return false;
-		}
-		try {
-			applicationAccess = new ApplicationDAO(this.DBManager.getConnection());
-			if(applicationAccess.isAppIdExist(appId)){
-				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
+	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+		
+		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
+		
+		if (result != null) {
+			if((int)result == 1){
 				return true;
 			}
-			else{
-				L2pLogger.logEvent(this, Event.RMI_SUCCESSFUL, "RMI isAppWithIdExist is invoked");
-				return false;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
 		}
+		return false;
 	}
 
 	// //////////////////////////////////////////////////////////////////////////////////////

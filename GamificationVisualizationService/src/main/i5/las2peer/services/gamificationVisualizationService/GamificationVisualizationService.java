@@ -1124,7 +1124,7 @@ public class GamificationVisualizationService extends Service {
 			// RMI call with parameters
 			String result;
 			try {
-				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeWithIdMethod",
+				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeWithIdRMI",
 						new Serializable[] { appId, badgeId });
 
 				System.out.println("BADGE STRING " + result);
@@ -1208,7 +1208,7 @@ public class GamificationVisualizationService extends Service {
 			// RMI call with parameters
 			String result;
 			try {
-				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1", "getQuestWithIdMethod",
+				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1", "getQuestWithIdRMI",
 						new Serializable[] { appId, questId });
 				if (result != null) {
 					return new HttpResponse(result, HttpURLConnection.HTTP_OK);
@@ -1290,17 +1290,18 @@ public class GamificationVisualizationService extends Service {
 			}
 			if(!memberAccess.isMemberHasAchievement(appId, memberId, achievementId)){
 				logger.info("Error. member "+ memberId +" does not have an achievement " + achievementId +".");
-				objResponse.put("message", "Error. member "+ memberId +" does not have an achievement " + achievementId +".");
+				objResponse.put("message", "Member "+ memberId +" does not have an achievement " + achievementId +".");
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			// RMI call with parameters
-			String result;
 			try {
-				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1", "getAchievementWithIdMethod",
+				Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1", "getAchievementWithIdRMI",
 						new Serializable[] { appId, achievementId });
 				if (result != null) {
-					return new HttpResponse(result, HttpURLConnection.HTTP_OK);
+					L2pLogger.logEvent(Event.RMI_SUCCESSFUL, "Get Achievement with ID RMI success");
+					return new HttpResponse((String) result, HttpURLConnection.HTTP_OK);
 				}
+				L2pLogger.logEvent(Event.RMI_FAILED, "Get Achievement with ID RMI failed");
 				logger.info("Cannot find badge with " + achievementId);
 				objResponse.put("message", "Cannot find badge with " + achievementId);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
@@ -1308,8 +1309,9 @@ public class GamificationVisualizationService extends Service {
 			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
 					| TimeoutException e) {
 				e.printStackTrace();
-				logger.info("Cannot find badge with " + achievementId + ". " + e.getMessage());
-				objResponse.put("message", "Cannot find badge with " + achievementId + ". " + e.getMessage());
+				logger.info("Cannot find achievement with " + achievementId + ". " + e.getMessage());
+				L2pLogger.logEvent(Event.RMI_FAILED, "Get Achievement with ID RMI failed. " + e.getMessage());
+				objResponse.put("message", "Cannot find achievement with " + achievementId + ". " + e.getMessage());
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
@@ -1327,6 +1329,7 @@ public class GamificationVisualizationService extends Service {
 	 * Trigger an action
 	 * @param appId applicationId
 	 * @param actionId actionId
+	 * @param memberId memberId
 	 * @return Notifications in JSON
 	 */
 	@POST

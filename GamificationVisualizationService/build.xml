@@ -84,6 +84,13 @@
     	<copy file="../GamificationLevelService/service/i5.las2peer.services.gamificationLevelService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationLevelService-0.1.jar"/>
     	<copy file="../GamificationQuestService/service/i5.las2peer.services.gamificationQuestService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationQuestService-0.1.jar"/>
 
+    	<copy file="../GamificationBadgeService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties" tofile="etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties"/>
+    	<copy file="../GamificationPointService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties" tofile="etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties"/>
+    	<copy file="../GamificationAchievementService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties" tofile="etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties"/>
+    	<copy file="../GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties" tofile="etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties"/>
+    	<copy file="../GamificationLevelService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties" tofile="etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties"/>
+    	<copy file="../GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties" tofile="etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties"/>
+    	    	     	    	
     </target>
     
     

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class LocalFileManager
 {
-	private static String baseDir = "./files/";
+	private static String baseDir = "../GamificationBadgeService/files/";
 	private static LocalFileManager manager;
 
 	protected LocalFileManager()
