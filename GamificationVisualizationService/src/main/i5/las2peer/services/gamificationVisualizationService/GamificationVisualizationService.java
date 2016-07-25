@@ -1423,7 +1423,7 @@ public class GamificationVisualizationService extends Service {
 	@Path("/leaderboard/local/{appId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found an achievement"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return local leaderboard"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
 	@ApiOperation(value = "Get the local leaderboard", 
@@ -1468,7 +1468,7 @@ public class GamificationVisualizationService extends Service {
 			
 			int offset = (currentPage - 1) * windowSize;
 			int totalNum = memberAccess.getNumberOfMembers(appId);
-			JSONArray arrResult = memberAccess.getMemberLeaderboard(appId, offset, windowSize, searchPhrase);
+			JSONArray arrResult = memberAccess.getMemberLocalLeaderboard(appId, offset, windowSize, searchPhrase);
 			
 			objResponse.put("current", currentPage);
 			objResponse.put("rowCount", windowSize);
@@ -1485,6 +1485,80 @@ public class GamificationVisualizationService extends Service {
 		}
 	}
 	
+	/**
+	 * Get global leaderboard
+	 * @param appId applicationId
+	 * @param memberId member id
+	 * @param currentPage current cursor page
+	 * @param windowSize size of fetched data
+	 * @param searchPhrase search word
+	 * @return HttpResponse Returned as JSON object
+	 */
+	@GET
+	@Path("/leaderboard/global/{appId}/{memberId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return global leaderboard"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
+	@ApiOperation(value = "Get the local leaderboard", 
+				  notes = "Returns a leaderboard array",
+				  authorizations = @Authorization(value = "api_key")
+				  )
+	public HttpResponse getGlobalLeaderboard(
+			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
+			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
+			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
+			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
+	{
+		JSONObject objResponse = new JSONObject();
+		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+		String name = userAgent.getLoginName();
+		if(name.equals("anonymous")){
+			return unauthorizedMessage();
+		}
+		if(!initializeDBConnection()){
+			logger.info("Cannot connect to database >> ");
+			objResponse.put("message", "Cannot connect to database");
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+		}
+		
+		try {
+			if(!managerAccess.isAppIdExist(appId)){
+				logger.info("App not found >> ");
+				objResponse.put("message", "App not found");
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			if(!managerAccess.isMemberRegistered(memberId)){
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
+				logger.info("Member is not registered in App >> ");
+				objResponse.put("message", "Member is not registered in App");
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			
+			int offset = (currentPage - 1) * windowSize;
+			int totalNum = memberAccess.getNumberOfMembers(appId);
+			JSONArray arrResult = memberAccess.getMemberGlobalLeaderboard(appId, offset, windowSize, searchPhrase);
+			
+			objResponse.put("current", currentPage);
+			objResponse.put("rowCount", windowSize);
+			objResponse.put("rows", arrResult);
+			objResponse.put("total", totalNum);
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.info("DB Error >> " + e.getMessage());
+			objResponse.put("message", "DB Error. " + e.getMessage());
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+
+		}
+	}
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Methods required by the LAS2peer framework.

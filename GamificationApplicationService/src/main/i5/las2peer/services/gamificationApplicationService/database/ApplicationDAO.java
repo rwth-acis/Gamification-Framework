@@ -4,6 +4,8 @@ package i5.las2peer.services.gamificationApplicationService.database;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.media.jfxmedia.logging.Logger;
+
 import i5.las2peer.services.gamificationApplicationService.database.MemberModel;
 
 import java.sql.Connection;
@@ -37,7 +39,6 @@ public class ApplicationDAO {
 		// Copy template schema
 		Statement statement;
 		try {
-			// Turn transactions off.
 			statement = this.conn.createStatement();
 			ResultSet rs = statement.executeQuery("SELECT create_new_application('"+ app_id +"')");
 			if(rs.next()){
@@ -50,10 +51,13 @@ public class ApplicationDAO {
 	}
 
 	public boolean deleteApplicationDB(String app_id) {
+		Statement statement;
 		try {
-			stmt = conn.prepareStatement("DROP SCHEMA " +app_id+ " CASCADE");
-			stmt.executeUpdate();
-			return true;
+			statement = this.conn.createStatement();
+			ResultSet rs = statement.executeQuery("SELECT delete_application('"+ app_id +"')");
+			if(rs.next()){
+				return true;				
+			}
 		} catch (SQLException e1){
 		}
 		return false;
@@ -77,25 +81,25 @@ public class ApplicationDAO {
 		return false;
 	}
 	
-	/**
-	 * Delete application information form application_info table
-	 * as well as drop the application database
-	 * 
-	 * @param app_id application id
-	 * @return true if removed
-	 */
-	public boolean removeApplicationInfo(String app_id){
-
-		try {
-			stmt = conn.prepareStatement("DELETE FROM manager.application_info WHERE app_id = ?");
-			stmt.setString(1, app_id);
-			stmt.executeUpdate();
-			return true;
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-		}
-		return false;
-	}
+//	/**
+//	 * Delete application information form application_info table
+//	 * as well as drop the application database
+//	 * 
+//	 * @param app_id application id
+//	 * @return true if removed
+//	 */
+//	public boolean removeApplicationInfo(String app_id){
+//
+//		try {
+//			stmt = conn.prepareStatement("DELETE FROM manager.application_info WHERE app_id = ?");
+//			stmt.setString(1, app_id);
+//			stmt.executeUpdate();
+//			return true;
+//		} catch (SQLException e) {
+//			System.out.println("SQLException " + e.getMessage());
+//		}
+//		return false;
+//	}
 	
 	public void addNewApplication(ApplicationModel app) throws SQLException{
 		PreparedStatement managerSt = null, dbcreationSt = null;

@@ -1,235 +1,0 @@
-Testsuite: i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationServiceTest
-Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 53.527 sec
-------------- Standard Output ---------------
-Class: GamificationVisualizationService using: jdbcLogin -> gameadmin
-Class: GamificationVisualizationService using: jdbcSchema -> gamificationdb
-Class: GamificationVisualizationService using: jdbcPort -> 5432
-Class: GamificationVisualizationService using: jdbcHost -> jdbc:postgresql://localhost
-Class: GamificationVisualizationService using: jdbcPass -> gameadmin
-Class: GamificationVisualizationService using: jdbcDriverClassName -> org.postgresql.Driver
-Service i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService has been started!
-Class: GamificationBadgeService using: jdbcLogin -> gameadmin
-Class: GamificationBadgeService using: jdbcSchema -> gamificationdb
-Class: GamificationBadgeService using: jdbcPort -> 5432
-Class: GamificationBadgeService using: jdbcHost -> jdbc:postgresql://localhost
-Class: GamificationBadgeService using: jdbcPass -> gameadmin
-Class: GamificationBadgeService using: epURL -> http://localhost:8081/
-Class: GamificationBadgeService using: jdbcDriverClassName -> org.postgresql.Driver
-Service i5.las2peer.services.gamificationBadgeService.GamificationBadgeService has been started!
-Class: GamificationPointService using: jdbcLogin -> gameadmin
-Class: GamificationPointService using: jdbcSchema -> gamificationdb
-Class: GamificationPointService using: jdbcPort -> 5432
-Class: GamificationPointService using: jdbcHost -> jdbc:postgresql://localhost
-Class: GamificationPointService using: jdbcPass -> gameadmin
-Class: GamificationPointService using: epURL -> http://localhost:8081/
-Class: GamificationPointService using: jdbcDriverClassName -> org.postgresql.Driver
-Service i5.las2peer.services.gamificationPointService.GamificationPointService has been started!
-Class: GamificationLevelService using: jdbcLogin -> gameadmin
-Class: GamificationLevelService using: jdbcSchema -> gamificationdb
-Class: GamificationLevelService using: jdbcPort -> 5432
-Class: GamificationLevelService using: jdbcHost -> jdbc:postgresql://localhost
-Class: GamificationLevelService using: jdbcPass -> gameadmin
-Class: GamificationLevelService using: epURL -> http://localhost:8081/
-Class: GamificationLevelService using: jdbcDriverClassName -> org.postgresql.Driver
-Service i5.las2peer.services.gamificationLevelService.GamificationLevelService has been started!
-Class: GamificationAchievementService using: jdbcLogin -> gameadmin
-Class: GamificationAchievementService using: jdbcSchema -> gamificationdb
-Class: GamificationAchievementService using: jdbcPort -> 5432
-Class: GamificationAchievementService using: jdbcHost -> jdbc:postgresql://localhost
-Class: GamificationAchievementService using: jdbcPass -> gameadmin
-Class: GamificationAchievementService using: epURL -> http://localhost:8081/
-Class: GamificationAchievementService using: jdbcDriverClassName -> org.postgresql.Driver
-Service i5.las2peer.services.gamificationAchievementService.GamificationAchievementService has been started!
-Class: GamificationActionService using: jdbcLogin -> gameadmin
-Class: GamificationActionService using: jdbcSchema -> gamificationdb
-Class: GamificationActionService using: jdbcPort -> 5432
-Class: GamificationActionService using: jdbcHost -> jdbc:postgresql://localhost
-Class: GamificationActionService using: jdbcPass -> gameadmin
-Class: GamificationActionService using: epURL -> http://localhost:8081/
-Class: GamificationActionService using: jdbcDriverClassName -> org.postgresql.Driver
-Service i5.las2peer.services.gamificationActionService.GamificationActionService has been started!
-Class: GamificationQuestService using: jdbcLogin -> gameadmin
-Class: GamificationQuestService using: jdbcSchema -> gamificationdb
-Class: GamificationQuestService using: jdbcPort -> 5432
-Class: GamificationQuestService using: jdbcHost -> jdbc:postgresql://localhost
-Class: GamificationQuestService using: jdbcPass -> gameadmin
-Class: GamificationQuestService using: epURL -> http://localhost:8081/
-Class: GamificationQuestService using: jdbcDriverClassName -> org.postgresql.Driver
-Service i5.las2peer.services.gamificationQuestService.GamificationQuestService has been started!
-Class: WebConnector using: enableCrossOriginResourceSharing -> TRUE
-Class: WebConnector using: sslKeystore -> etc/example.jks
-Class: WebConnector using: httpsPort -> 8090
-Class: WebConnector using: startHttps -> FALSE
-Class: WebConnector using: sslKeyPassword -> secretpassword
-Class: WebConnector using: oidcProviders -> https://api.learning-layers.eu/o/oauth2,https://accounts.google.com
-Class: WebConnector using: preferLocalServices -> TRUE
-Class: WebConnector using: defaultLoginPassword -> anonymous
-Class: WebConnector using: httpPort -> 8081
-Class: WebConnector using: xmlPath -> 
-Class: WebConnector using: crossOriginResourceDomain -> *
-Class: WebConnector using: defaultLoginUser -> anonymous
-Class: WebConnector using: startHttp -> TRUE
-Class: WebConnector using: crossOriginResourceMaxAge -> 60
-Web-Connector in HTTP mode running on port 8081
-found 7 services on the network
-handling service i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1
-adding new service i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1
-adding xml for i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1
-handling service i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService@0.1
-adding new service i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService@0.1
-checking for expired messages
-waiting for 0 agents 
-adding xml for i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService@0.1
-handling service i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1
-adding new service i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1
-adding xml for i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1
-handling service i5.las2peer.services.gamificationActionService.GamificationActionService@0.1
-adding new service i5.las2peer.services.gamificationActionService.GamificationActionService@0.1
-adding xml for i5.las2peer.services.gamificationActionService.GamificationActionService@0.1
-handling service i5.las2peer.services.gamificationLevelService.GamificationLevelService@0.1
-adding new service i5.las2peer.services.gamificationLevelService.GamificationLevelService@0.1
-adding xml for i5.las2peer.services.gamificationLevelService.GamificationLevelService@0.1
-handling service i5.las2peer.services.gamificationPointService.GamificationPointService@0.1
-adding new service i5.las2peer.services.gamificationPointService.GamificationPointService@0.1
-adding xml for i5.las2peer.services.gamificationPointService.GamificationPointService@0.1
-handling service i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1
-adding new service i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1
-checking for expired messages
-waiting for 0 agents 
-adding xml for i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1
-found 7 services on the network
-handling service i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1
-handling service i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService@0.1
-handling service i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1
-handling service i5.las2peer.services.gamificationActionService.GamificationActionService@0.1
-handling service i5.las2peer.services.gamificationLevelService.GamificationLevelService@0.1
-handling service i5.las2peer.services.gamificationPointService.GamificationPointService@0.1
-handling service i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1
-waiting..
-Test --- Get Achievement Detail With ID
-Request: GET URI: visualization/achievements/test/user1/achievement1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-{  "name" : "achievement 1",  "description" : "The achievement number 1",  "id" : "achievement1",  "pointValue" : 1,  "badgeId" : "badge1",  "notificationMessage" : "achievement1messagethisis",  "useNotification" : false}
-Test --- Get Quests With Progress Of Member
-Request: GET URI: visualization/achievements/test/user1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-[ {  "name" : "achievement 1",  "description" : "The achievement number 1",  "id" : "achievement1",  "pointValue" : 1,  "badgeId" : "badge1",  "notificationMessage" : "achievement1messagethisis",  "useNotification" : false} ]
-Test --- Get Badge Detail With ID
-Request: GET URI: visualization/badges/test/user1/badge1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-BADGE STRING {
-  "id" : "badge1",
-  "name" : "Badge 1",
-  "description" : "The badge number 1",
-  "imagePath" : "http://badge1.example.com",
-  "notificationMessage" : "badge1messagethisis",
-  "useNotification" : true
-}
-{  "id" : "badge1",  "name" : "Badge 1",  "description" : "The badge number 1",  "imagePath" : "http://badge1.example.com",  "notificationMessage" : "badge1messagethisis",  "useNotification" : true}
-Test --- Get Badge Image Detail
-Request: GET URI: visualization/badges/test/user1/badge1/img Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-
-Test --- Get Badges Of Member
-Request: GET URI: visualization/badges/test/user1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-[ {  "id" : "badge1",  "name" : "Badge 1",  "description" : "The badge number 1",  "imagePath" : "http://badge1.example.com",  "notificationMessage" : "badge1messagethisis",  "useNotification" : true} ]
-Test --- Get Local Leaderboard
-Request: GET URI: visualization/leaderboard/local/test/user1?current=1&rowCount=10&searchPhrase= Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-{"current":1,"total":4,"rowCount":10,"rows":[{"pointValue":0,"rank":1,"memberId":"user1"},{"pointValue":0,"rank":2,"memberId":"user2"},{"pointValue":0,"rank":3,"memberId":"user3"},{"pointValue":0,"rank":4,"memberId":"user4"}]}
-Test --- Get Point And Level Of Member
-Request: GET URI: visualization/levels/test/user1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-{"memberLevel":0,"nextLevelPoint":1,"progress":0,"nextLevel":1,"memberPoint":0}
-Test --- Get Point Of Member
-Request: GET URI: visualization/points/test/user1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-{"message":0}
-Test --- Get Quest Detail With ID
-Request: GET URI: visualization/quests/test/user1/quest1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-{  "name" : "Quest 1",  "description" : "The quest number 1",  "status" : "COMPLETED",  "id" : "quest1",  "pointValue" : 5,  "notificationMessage" : "quest1messagethisis",  "questIdCompleted" : null,  "actionIds" : [ {    "left" : "action1",    "right" : 1,    "value" : 1,    "key" : "action1"  }, {    "left" : "action2",    "right" : 2,    "value" : 2,    "key" : "action2"  }, {    "left" : "action3",    "right" : 3,    "value" : 3,    "key" : "action3"  } ],  "achievementId" : "achievement1",  "questFlag" : false,  "pointFlag" : false,  "useNotification" : true}
-Test --- Get Quests With Progress Of Member
-Request: GET URI: visualization/quests/test/user1/progress/quest1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-{"progress":0,"actionArray":[{"times":1,"action":"action1","isCompleted":false},{"times":2,"action":"action2","isCompleted":false},{"times":3,"action":"action3","isCompleted":false}]}
-Test --- Get Quests With Status Of Member
-Request: GET URI: visualization/quests/test/user1/status/COMPLETED Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-[ {  "name" : "Quest 1",  "description" : "The quest number 1",  "status" : "COMPLETED",  "id" : "quest1",  "pointValue" : 5,  "notificationMessage" : "quest1messagethisis",  "questIdCompleted" : null,  "actionIds" : [ {    "left" : "action1",    "right" : 1,    "value" : 1,    "key" : "action1"  }, {    "left" : "action2",    "right" : 2,    "value" : 2,    "key" : "action2"  }, {    "left" : "action3",    "right" : 3,    "value" : 3,    "key" : "action3"  } ],  "achievementId" : "achievement1",  "questFlag" : false,  "pointFlag" : false,  "useNotification" : true} ]
-Request: GET URI: visualization/quests/test/user1/status/REVEALED Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-null
-Test --- Trigger Action
-Request: POST URI: visualization/actions/test/action1/user1 Content:  Content-type: text/plain accept: */* headers: 0
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-org.postgresql.Driver gameadmin
-Monitoring: Database connected!
-[]
-Class: GamificationVisualizationService using: jdbcLogin -> gameadmin
-Class: GamificationVisualizationService using: jdbcSchema -> gamificationdb
-Class: GamificationVisualizationService using: jdbcPort -> 5432
-Class: GamificationVisualizationService using: jdbcHost -> jdbc:postgresql://localhost
-Class: GamificationVisualizationService using: jdbcPass -> gameadmin
-Class: GamificationVisualizationService using: jdbcDriverClassName -> org.postgresql.Driver
-Web-Connector has been stopped
-Service i5.las2peer.services.gamificationPointService.GamificationPointService has been stopped!
-Service i5.las2peer.services.gamificationAchievementService.GamificationAchievementService has been stopped!
-Service i5.las2peer.services.gamificationActionService.GamificationActionService has been stopped!
-Service i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService has been stopped!
-Service i5.las2peer.services.gamificationLevelService.GamificationLevelService has been stopped!
-Service i5.las2peer.services.gamificationQuestService.GamificationQuestService has been stopped!
-Service i5.las2peer.services.gamificationBadgeService.GamificationBadgeService has been stopped!
-checking for expired messages
-waiting for 0 agents 
-Connector-Log:
---------------
-Web-Connector in HTTP mode running on port 8081
-Web-Connector has been stopped
-
-------------- ---------------- ---------------
-------------- Standard Error -----------------
-No library found for i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService! Trying default classpath. This should not happen in a productive environment!
-field not found: epURL
-No library found for i5.las2peer.services.gamificationBadgeService.GamificationBadgeService! Trying default classpath. This should not happen in a productive environment!
-No library found for i5.las2peer.services.gamificationPointService.GamificationPointService! Trying default classpath. This should not happen in a productive environment!
-No library found for i5.las2peer.services.gamificationLevelService.GamificationLevelService! Trying default classpath. This should not happen in a productive environment!
-No library found for i5.las2peer.services.gamificationAchievementService.GamificationAchievementService! Trying default classpath. This should not happen in a productive environment!
-No library found for i5.las2peer.services.gamificationActionService.GamificationActionService! Trying default classpath. This should not happen in a productive environment!
-No library found for i5.las2peer.services.gamificationQuestService.GamificationQuestService! Trying default classpath. This should not happen in a productive environment!
-field not found: epURL
-------------- ---------------- ---------------
-
-Testcase: testA4_getAchievementDetailWithId took 0.562 sec
-Testcase: testA4_getAchievementsOfMember took 0.031 sec
-Testcase: testA4_getBadgeDetailWithId took 0.109 sec
-Testcase: testA4_getBadgeImageDetail took 0.032 sec
-Testcase: testA4_getBadgesOfMember took 0.015 sec
-Testcase: testA4_getLocalLeaderboard took 0.047 sec
-Testcase: testA4_getPointAndLevelOfMember took 0.016 sec
-Testcase: testA4_getPointOfMember took 0.015 sec
-Testcase: testA4_getQuestDetailWithId took 0.125 sec
-Testcase: testA4_getQuestProgressOfMember took 0.016 sec
-Testcase: testA4_getQuestsWithStatusOfMember took 0.046 sec
-Testcase: testA4_triggerAction took 0.11 sec
-Testcase: testDebugMapping took 0.078 sec

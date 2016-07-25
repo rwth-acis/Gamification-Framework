@@ -62,6 +62,7 @@ DECLARE
   completed text;
   revealed text;
   hidden text;
+  comm_type text;
 BEGIN
 	EXECUTE 'CREATE SCHEMA ' || new_schema;
 
@@ -265,6 +266,17 @@ BEGIN
 	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
 	);';
 
+	-- Create global leaderboard  community type table
+	EXECUTE 'SELECT community_type FROM manager.application_info WHERE app_id = '||quote_literal(new_schema)||'' INTO comm_type;
+	EXECUTE 'CREATE TABLE IF NOT EXISTS global_leaderboard.'||comm_type||'(
+	  member_id character varying(20) NOT NULL
+	, point_value integer NOT NULL DEFAULT 0
+	, CONSTRAINT '||comm_type||'_pkey PRIMARY KEY (member_id)
+	, CONSTRAINT member_id FOREIGN KEY (member_id)
+	      REFERENCES manager.member_info (member_id) ON UPDATE CASCADE ON DELETE CASCADE
+	, CHECK (point_value >= 0)
+	);';
+
 
 	-- trigger
 	
@@ -274,9 +286,38 @@ BEGIN
 	EXECUTE 'SELECT create_trigger_member_achievement_observer(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_member_badge_observer(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_member_level_observer(' || quote_literal(new_schema) || ');';
+	EXECUTE 'SELECT create_trigger_global_leaderboard_table_update(' || quote_literal(new_schema) || ');';
+
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION delete_application(app_id text) RETURNS void AS
+$BODY$
+DECLARE 
+comm_type text;
+_found int;
+BEGIN
+	EXECUTE 'SELECT community_type FROM manager.application_info WHERE app_id = '||quote_literal(app_id)||'' INTO comm_type;
+	RAISE NOTICE 'Community type : %', comm_type;
+	-- check comm type table, delete table if no app with specific community type
+	EXECUTE 'DROP SCHEMA '|| app_id ||' CASCADE;';
+	-- drop table if no app with community type
+	EXECUTE format($f$SELECT 1 FROM manager.application_info WHERE  community_type = '%s'$f$, comm_type);
+	GET DIAGNOSTICS _found = ROW_COUNT;
+	IF _found > 0 THEN
+		-- There is still an app with the community type comm_type, do nothing
+		--EXECUTE 'UPDATE global_leaderboard.'|| comm_type ||' SET point_value = '|| NEW.point_value ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
+	ELSE
+		RAISE NOTICE 'Found zero --> %', comm_type;
+		-- No more app with the community type comm_type, drop table
+		EXECUTE 'DROP TABLE global_leaderboard.'|| comm_type ||';';
+	END IF;
+	EXECUTE 'DELETE FROM manager.application_info WHERE app_id = '||quote_literal(app_id)||';';
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
 
 CREATE OR REPLACE FUNCTION add_mock_data(schema text) RETURNS void AS
 $BODY$
@@ -424,7 +465,6 @@ LANGUAGE plpgsql VOLATILE;
 
 
 -- Trigger to reveal quest if some point reached
-
 CREATE OR REPLACE FUNCTION update_quest_status_with_point() RETURNS trigger AS
 $BODY$
 DECLARE
@@ -464,7 +504,6 @@ $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 -- Trigger to reveal quest if other quest completed
-
 CREATE OR REPLACE FUNCTION update_quest_status_with_quest() RETURNS trigger AS
 $BODY$
 DECLARE
@@ -706,6 +745,51 @@ BEGIN
 		AFTER INSERT ON '|| app_id ||'.member_level 
 		FOR EACH ROW
 		EXECUTE PROCEDURE member_level_observer_function();';
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+-- GLOBAL LEADERBOARD
+
+CREATE OR REPLACE FUNCTION global_leaderboard_table_update_function() RETURNS trigger AS
+$BODY$
+DECLARE
+app_id character varying(20);
+comm_type text;
+_found int;
+BEGIN
+	app_id = TG_TABLE_SCHEMA;
+	-- Get community type
+	EXECUTE 'SELECT community_type FROM manager.application_info WHERE app_id = '||quote_literal(app_id)||'' INTO comm_type;
+
+	-- assume the table of community type is exist
+	
+	-- Check if the member already registered in global leaderboard
+	EXECUTE format($f$SELECT 1 FROM global_leaderboard.%s WHERE  member_id = '%s'$f$, comm_type, NEW.member_id);
+	GET DIAGNOSTICS _found = ROW_COUNT;
+-- 	IF EXISTS EXECUTE '(SELECT * FROM global_leaderboard.'|| comm_type ||' WHERE member_id = '||quote_literal(NEW.member_id)||')' THEN
+	IF _found > 0 THEN
+		-- Update
+		EXECUTE 'UPDATE global_leaderboard.'|| comm_type ||' SET point_value = '|| NEW.point_value ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
+	ELSE
+		-- Insert
+		EXECUTE 'INSERT INTO global_leaderboard.'|| comm_type ||' VALUES ('|| quote_literal(NEW.member_id) ||','|| NEW.point_value ||');';
+	END IF;
+
+	-- sort the table	
+	
+	RETURN NULL;  -- result is ignored since this is an AFTER trigger
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION create_trigger_global_leaderboard_table_update(app_id text) RETURNS void AS
+$BODY$
+BEGIN
+	EXECUTE 'CREATE TRIGGER global_leaderboard_table_update 
+		AFTER UPDATE ON '|| app_id ||'.member_point 
+		FOR EACH ROW
+		EXECUTE PROCEDURE global_leaderboard_table_update_function();';
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;

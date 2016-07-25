@@ -331,7 +331,7 @@ public class MemberDAO {
 	}
 	
 	/**
-	 * Get level of a member
+	 * Get local leaderboard of a member
 	 * 
 	 * @param appId application id
 	 * @param offset offset
@@ -340,13 +340,50 @@ public class MemberDAO {
 	 * @return JSONObject leaderboard
 	 * @throws SQLException sql exception
 	 */
-	public JSONArray getMemberLeaderboard(String appId, int offset, int window_size, String searchPhrase) throws SQLException{
+	public JSONArray getMemberLocalLeaderboard(String appId, int offset, int window_size, String searchPhrase) throws SQLException{
 
 		JSONArray arr = new JSONArray();
 		String pattern = "%"+searchPhrase+"%";
 		
 		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+appId+".member_point) SELECT * FROM sorted WHERE member_id LIKE '"+pattern+"' LIMIT "+window_size+" OFFSET "+offset);
 		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("pointValue", rs.getInt("point_value"));
+			arr.add(obj);
+		}
+		
+		return arr;
+	}
+	
+	/**
+	 * Get global leaderboard of a member
+	 * 
+	 * @param appId application id
+	 * @param offset offset
+	 * @param window_size number of fetched data
+	 * @param searchPhrase search phrase
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberGlobalLeaderboard(String appId, int offset, int window_size, String searchPhrase) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		String pattern = "%"+searchPhrase+"%";
+		String commType = null;
+		
+		// Get community type from an app
+		stmt = conn.prepareStatement("SELECT community_type FROM manager.application_info WHERE app_id = ?");
+		stmt.setString(1, appId);
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) {
+			commType = rs.getString("community_type");
+		}
+		
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM global_leaderboard."+commType+") SELECT * FROM sorted WHERE member_id LIKE '"+pattern+"' LIMIT "+window_size+" OFFSET "+offset);
+		rs = stmt.executeQuery();
 		while (rs.next()) {
 			JSONObject obj = new JSONObject();
 			obj.put("rank", rs.getInt("row_number"));

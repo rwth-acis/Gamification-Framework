@@ -449,12 +449,12 @@ public class GamificationApplicationService extends Service {
 			return ErrorResponse.BadRequest(this, logger, e, objResponse);
 		}		
 			if(StorageManagerGamification.cleanStorage(appId)){
-				if(applicationAccess.removeApplicationInfo(appId)){
+				//if(applicationAccess.removeApplicationInfo(appId)){
 					if(applicationAccess.deleteApplicationDB(appId)){
 						objResponse.put("message", "Application deleted");
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					}
-				}
+				//}
 				objResponse.put("message", "Database error. ");
 				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}

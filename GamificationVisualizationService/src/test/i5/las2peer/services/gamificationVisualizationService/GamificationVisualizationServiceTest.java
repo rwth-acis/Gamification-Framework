@@ -478,6 +478,23 @@ public class GamificationVisualizationServiceTest {
 			System.exit(0);
 		}
 	}
+	
+	@Test
+	public void testA4_getGlobalLeaderboard()
+	{
+		System.out.println("Test --- Get Global Leaderboard");
+		
+		try
+		{
+			ClientResponse result = c1.sendRequest("GET", mainPath + "leaderboard/global/"+appId+"/"+memberId+"?current=1&rowCount=10&searchPhrase=", ""); // testInput is
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception: " + e);
+			System.exit(0);
+		}
+	}
 //	// Badge Test --------------------------------------------------
 //	@Test
 //	public void testB1_createNewBadge(){
