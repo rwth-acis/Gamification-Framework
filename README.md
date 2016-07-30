@@ -14,18 +14,32 @@ The default framework database name is 'gamificationdb'. Each created applicatio
 * Create database with the name *gamificationdb* or run sql script in dbcreation.sql
 * Initialize the database by running sql script in db.sql
 
-2. Build the code
+2. Configure las2peer project properties
+
+All projects have the same properties configuration. All of las2peer project properties (database driver name and credentials) can be configured by changing the content of *gamification.properties*. Then, run ```
+```
+set_properties(.bat|.sh)
+```
+
+3. Build the code
 
 To build all projects in Gamification-Framework, go to GamificationApplicationService and run
 ```
-ant all
-```
-then,
-```
-ant build_all_others
+ant build_all_projects
 ```
 
-3. Run
+To test all projects, run
+```
+ant test_all_projects
+```
+
+To clean all projects, run
+```
+ant clean_all_projects
+```
+
+
+4. Run
 
 To run all services, in main folder project execute 
 ```

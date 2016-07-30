@@ -2,8 +2,6 @@ package i5.las2peer.services.gamificationQuestService.database;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -24,6 +22,25 @@ public class QuestDAO {
 	
 	public QuestDAO( Connection conn){
 		this.conn = conn;
+	}
+	
+	/**
+	 * Check whether the application id is already exist
+	 * 
+	 * @param app_id application id
+	 * @return true app_id is already exist
+	 * @throws SQLException SQL Exception
+	 */
+	public boolean isAppIdExist(String app_id) throws SQLException  {
+			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
+			stmt.setString(1, app_id);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()){
+				//if(rs.getString("app_id").equals(app_id)){
+					return true;
+				//}
+			}
+			return false;
 	}
 	
 	/**

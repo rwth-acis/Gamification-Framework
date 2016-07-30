@@ -5,7 +5,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.List;
@@ -419,17 +418,16 @@ public class GamificationBadgeService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!badgeAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			
 			Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
@@ -610,7 +608,7 @@ public class GamificationBadgeService extends Service {
 		// Badge ID for the filesystem is appended with app id to make sure it is unique
 		String badgename = null;
 		String badgedescription = null;
-		boolean badgeusenotification = false;
+		//boolean badgeusenotification = false;
 		String badgenotificationmessage = null;
 
 		String badgeImageURI = null;
@@ -627,17 +625,16 @@ public class GamificationBadgeService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!badgeAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 			
@@ -790,17 +787,16 @@ public class GamificationBadgeService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!badgeAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			badge = badgeAccess.getBadgeWithId(appId, badgeId);
 			if(badge == null){
@@ -861,17 +857,16 @@ public class GamificationBadgeService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!badgeAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!badgeAccess.isBadgeIdExist(appId, badgeId)){
 				logger.info("Badge not found >> ");
@@ -946,23 +941,30 @@ public class GamificationBadgeService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!badgeAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			// Check app id exist or not
 			
 			int offset = (currentPage - 1) * windowSize;
-			badges = badgeAccess.getBadgesWithOffsetAndSearchPhrase(appId, offset, windowSize, searchPhrase);
+			
 			int totalNum = badgeAccess.getNumberOfBadges(appId);
+			
+			if(windowSize == -1){
+				offset = 0;
+				windowSize = totalNum;
+			}
+			
+			badges = badgeAccess.getBadgesWithOffsetAndSearchPhrase(appId, offset, windowSize, searchPhrase);
+			
 			
 			ObjectMapper objectMapper = new ObjectMapper();
 	    	//Set pretty printing of json
@@ -1026,17 +1028,16 @@ public class GamificationBadgeService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!badgeAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!badgeAccess.isBadgeIdExist(appId, badgeId)){
 				logger.info("Badge not found >> ");
@@ -1059,17 +1060,17 @@ public class GamificationBadgeService extends Service {
 		return filecontent;
 	}
 	
-	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-		
-		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
-		
-		if (result != null) {
-			if((int)result == 1){
-				return true;
-			}
-		}
-		return false;
-	}
+//	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+//		
+//		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
+//		
+//		if (result != null) {
+//			if((int)result == 1){
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 	
 	// RMI
 	public String getBadgeWithIdRMI(String appId, String badgeId) {
@@ -1097,6 +1098,18 @@ public class GamificationBadgeService extends Service {
 			logger.warning("Get Badge with ID RMI failed. " + e.getMessage());
 		}
 		return null;
+	}
+	
+	public Integer cleanStorageRMI(String appId) {
+		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
+		
+		try {
+			recursiveDelete(appFolder);
+			return 1;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return 0;
+		}
 	}
 	
 	// //////////////////////////////////////////////////////////////////////////////////////

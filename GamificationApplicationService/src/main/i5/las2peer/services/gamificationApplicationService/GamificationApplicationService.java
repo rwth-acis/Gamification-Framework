@@ -25,8 +25,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import i5.las2peer.api.Service;
+import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
+import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -34,6 +37,7 @@ import i5.las2peer.restMapper.annotations.ContentParam;
 import i5.las2peer.restMapper.annotations.Version;
 import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
+import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
 import i5.las2peer.services.gamificationApplicationService.database.ApplicationModel;
@@ -42,7 +46,6 @@ import i5.las2peer.services.gamificationApplicationService.database.SQLDatabase;
 import i5.las2peer.services.gamificationApplicationService.helper.ErrorResponse;
 import i5.las2peer.services.gamificationApplicationService.helper.FormDataPart;
 import i5.las2peer.services.gamificationApplicationService.helper.MultipartHelper;
-import i5.las2peer.services.gamificationApplicationService.helper.StorageManagerGamification;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -138,6 +141,25 @@ public class GamificationApplicationService extends Service {
 			logger.info("Monitoring: Could not connect to database!. " + e.getMessage());
 			return false;
 		}
+	}
+	
+	private boolean cleanStorage(String appId) throws AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException {
+
+		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "cleanStorageRMI", new Serializable[] { appId });
+		
+		if (result != null) {
+			if((int)result == 1){
+				
+				Object res = this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "cleanStorageRMI", new Serializable[] { appId });
+				if (res != null) {
+					if((int)res == 1){
+						
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
@@ -443,21 +465,31 @@ public class GamificationApplicationService extends Service {
 				objResponse.put("message", "App not found");
 				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 			}
+			try {
+				if(cleanStorage(appId)){
+					//if(applicationAccess.removeApplicationInfo(appId)){
+						if(applicationAccess.deleteApplicationDB(appId)){
+							objResponse.put("message", "Application deleted");
+							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+						}
+					//}
+					objResponse.put("message", "Database error. ");
+					return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+				}
+			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
+					| TimeoutException e) {
+				e.printStackTrace();
+				L2pLogger.logEvent(Event.RMI_FAILED, "Failed to clean storage");
+				objResponse.put("message", "RMI error. Failed to clean storage. ");
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			objResponse.put("message", "Error checking app ID exist "  + e.getMessage());
 			return ErrorResponse.BadRequest(this, logger, e, objResponse);
 		}		
-			if(StorageManagerGamification.cleanStorage(appId)){
-				//if(applicationAccess.removeApplicationInfo(appId)){
-					if(applicationAccess.deleteApplicationDB(appId)){
-						objResponse.put("message", "Application deleted");
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-					}
-				//}
-				objResponse.put("message", "Database error. ");
-				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
-			}
+			
 			objResponse.put("message", "Error delete storage");
 			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
 	}

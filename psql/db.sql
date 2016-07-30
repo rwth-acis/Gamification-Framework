@@ -414,15 +414,17 @@ CREATE OR REPLACE FUNCTION init_member_to_app(member_id text, app_id text) RETUR
 $BODY$
 BEGIN
 	EXECUTE 'DELETE FROM manager.member_application WHERE member_id = '|| quote_literal(member_id) ||' AND app_id = '|| quote_literal(app_id) ||';';
+	EXECUTE 'DELETE FROM '|| app_id ||'.member WHERE member_id = '|| quote_literal(member_id) ||';';
+	
 	-- add and copy member info
-	EXECUTE 'INSERT INTO manager.member_application (member_id, app_id) VALUES ( '|| quote_literal(member_id) ||', '|| quote_literal(app_id) ||');
-		INSERT INTO '|| app_id ||'.member (member_id, first_name, last_name, email) 
-		(SELECT member_id, first_name, last_name, email FROM manager.member_info WHERE member_id='||quote_literal(member_id)||');
+	EXECUTE 'INSERT INTO manager.member_application (member_id, app_id) VALUES ( '|| quote_literal(member_id) ||', '|| quote_literal(app_id) ||');';
+	EXECUTE 'INSERT INTO '|| app_id ||'.member (member_id, first_name, last_name, email) 
+		(SELECT member_id, first_name, last_name, email FROM manager.member_info WHERE member_id='||quote_literal(member_id)||');';
 	-- initialize relation table
 	-- Point
- 	INSERT INTO '|| app_id ||'.member_point VALUES('|| quote_literal(member_id) ||',0);
+ 	EXECUTE 'INSERT INTO '|| app_id ||'.member_point VALUES('|| quote_literal(member_id) ||',0);';
 -- 	-- Level
- 	INSERT INTO '|| app_id ||'.member_level VALUES('|| quote_literal(member_id) ||',0);';
+ 	EXECUTE 'INSERT INTO '|| app_id ||'.member_level VALUES('|| quote_literal(member_id) ||',0);';
 -- 	-- Quest
 -- 	-- Cross join member_id with (quest_ids and statuses)
  	EXECUTE 'INSERT INTO '|| app_id ||'.member_quest (member_id, quest_id, status) 

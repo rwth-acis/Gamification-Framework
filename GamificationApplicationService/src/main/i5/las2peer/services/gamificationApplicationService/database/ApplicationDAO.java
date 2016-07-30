@@ -4,8 +4,6 @@ package i5.las2peer.services.gamificationApplicationService.database;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.media.jfxmedia.logging.Logger;
-
 import i5.las2peer.services.gamificationApplicationService.database.MemberModel;
 
 import java.sql.Connection;

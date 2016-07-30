@@ -1,22 +1,13 @@
 package i5.las2peer.services.gamificationActionService;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
+
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import javax.imageio.ImageIO;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -29,20 +20,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
-import org.apache.commons.lang3.tuple.Pair;
-import org.imgscalr.Scalr;
-import org.imgscalr.Scalr.Mode;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import i5.las2peer.api.Service;
-import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
-import i5.las2peer.p2p.AgentNotKnownException;
-import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -50,15 +35,12 @@ import i5.las2peer.restMapper.annotations.ContentParam;
 import i5.las2peer.restMapper.annotations.Version;
 import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
-import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationActionService.database.ActionDAO;
 import i5.las2peer.services.gamificationActionService.database.ActionModel;
 import i5.las2peer.services.gamificationActionService.database.SQLDatabase;
 import i5.las2peer.services.gamificationActionService.helper.FormDataPart;
 import i5.las2peer.services.gamificationActionService.helper.MultipartHelper;
-import i5.las2peer.services.gamificationApplicationService.database.ApplicationDAO;
-import i5.las2peer.services.gamificationActionService.helper.ErrorResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -73,7 +55,6 @@ import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import net.minidev.json.parser.ParseException;
 
 
 // TODO Describe your own service
@@ -353,17 +334,16 @@ public class GamificationActionService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!actionAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 			FormDataPart partID = parts.get("actionid");
@@ -504,17 +484,16 @@ public class GamificationActionService extends Service {
 			
 			try {
 				try {
-					if(!isAppWithIdExist(appId)){
+					if(!actionAccess.isAppIdExist(appId)){
 						logger.info("App not found >> ");
 						objResponse.put("message", "App not found");
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
-				} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-						| TimeoutException e1) {
+				} catch (SQLException e1) {
 					e1.printStackTrace();
-					logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-					objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+					objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 				if(!actionAccess.isActionIdExist(appId, actionId)){
 					logger.info("Action not found >> ");
@@ -583,7 +562,7 @@ public class GamificationActionService extends Service {
 		String actiondesc = null;
 		int actionpointvalue = 0;
 		
-		boolean actionnotifcheck = false;
+		//boolean actionnotifcheck = false;
 		String actionnotifmessage = null;
 		
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -605,11 +584,12 @@ public class GamificationActionService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			try{
-				if(!isAppWithIdExist(appId)){
+				if(!actionAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
+				
 				
 				ActionModel action = actionAccess.getActionWithId(appId, actionId);
 	
@@ -669,12 +649,6 @@ public class GamificationActionService extends Service {
 				objResponse.put("message", "Cannot connect to database");
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 	
-			}catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
-				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			
 		} catch (MalformedStreamException e) {
@@ -726,17 +700,16 @@ public class GamificationActionService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!actionAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!actionAccess.isActionIdExist(appId, actionId)){
 				logger.info("Failed to delete the action. Action ID is not exist!");
@@ -801,20 +774,25 @@ public class GamificationActionService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!actionAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			int offset = (currentPage - 1) * windowSize;
 			int totalNum = actionAccess.getNumberOfActions(appId);
+			
+			if(windowSize == -1){
+				offset = 0;
+				windowSize = totalNum;
+			}
+			
 			achs = actionAccess.getActionsWithOffsetAndSearchPhrase(appId, offset, windowSize, searchPhrase);
 
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -930,17 +908,17 @@ public class GamificationActionService extends Service {
 	}
 	
 	
-	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-		
-		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
-		
-		if (result != null) {
-			if((int)result == 1){
-				return true;
-			}
-		}
-		return false;
-	}
+//	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+//		
+//		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
+//		
+//		if (result != null) {
+//			if((int)result == 1){
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Methods required by the LAS2peer framework.

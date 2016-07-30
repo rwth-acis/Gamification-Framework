@@ -58,7 +58,5 @@
 	<classpathentry kind="lib" path="lib/httpclient-4.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.3.jar"/>
 	<classpathentry kind="lib" path="lib/imgscalr-lib-4.2.jar"/>
-	<classpathentry kind="lib" path="lib/i5.las2peer.services.gamificationActionService-0.1.jar"/>
-	<classpathentry kind="lib" path="service/i5.las2peer.services.gamificationApplicationService-0.1.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>
