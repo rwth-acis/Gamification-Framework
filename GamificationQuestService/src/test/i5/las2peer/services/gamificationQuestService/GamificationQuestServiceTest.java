@@ -34,7 +34,6 @@ import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.restMapper.data.Pair;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.gamificationApplicationService.GamificationApplicationService;
 import i5.las2peer.services.gamificationQuestService.GamificationQuestService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
@@ -65,8 +64,6 @@ public class GamificationQuestServiceTest {
 
 	// during testing, the specified service version does not matter
 	private static final ServiceNameVersion testGamificationQuestService = new ServiceNameVersion(GamificationQuestService.class.getCanonicalName(),"0.1");
-
-	private static final ServiceNameVersion depGamificationApplicationService = new ServiceNameVersion(GamificationApplicationService.class.getCanonicalName(),"0.1");
 
 	
 	private static String appId = "test";
@@ -130,11 +127,6 @@ public class GamificationQuestServiceTest {
 		ServiceAgent testService = ServiceAgent.createServiceAgent(testGamificationQuestService, "a pass");
 		testService.unlockPrivateKey("a pass");
 		node.registerReceiver(testService);
-		
-		ServiceAgent depService = ServiceAgent.createServiceAgent(depGamificationApplicationService, "a pass");
-		depService.unlockPrivateKey("a pass");
-		node.registerReceiver(depService);
-
 
 		// start connector
 		logStream = new ByteArrayOutputStream();

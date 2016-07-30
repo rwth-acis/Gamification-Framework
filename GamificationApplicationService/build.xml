@@ -75,15 +75,20 @@
     	<ivy:retrieve type="jar, bundle" conf="platform" pattern="${lib}/[artifact]-[revision].[ext]"/>
     	<ivy:retrieve type="jar, bundle" conf="bundle" pattern="${service}/[artifact]-[revision].[ext]"/>
     
-    	<!-- GamificationService Dependency -->
+    	<!-- GamificationService Dependency for unit test-->
     	<copy file="../GamificationBadgeService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties" tofile="etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties"/>
     	<copy file="../GamificationPointService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties" tofile="etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties"/>
+    	
+    	
     	<copy file="../GamificationAchievementService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties" tofile="etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties"/>
     	<copy file="../GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties" tofile="etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties"/>
     	<copy file="../GamificationLevelService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties" tofile="etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties"/>
     	<copy file="../GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties" tofile="etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties"/>
     	<copy file="../GamificationVisualizationService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties" tofile="etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties"/>
 
+    	<copy file="../GamificationBadgeService/service/i5.las2peer.services.gamificationBadgeService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationBadgeService-0.1.jar"/>
+    	<copy file="../GamificationPointService/service/i5.las2peer.services.gamificationPointService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationPointService-0.1.jar"/>
+    	
     </target>
     
     
@@ -313,10 +318,44 @@ agent-${service.class}.xml;${service.password}
     
     <target name="all" depends="clean, jar, startscripts, generate_agents, junit, javadoc" />
     
-	<target name="build_all_others">
+	<target name="build_only" depends="clean, jar, startscripts, generate_agents, javadoc" />
+
+    <target name="clean_all_projects">
+        <subant>
+            <filelist dir="../">
+                <file name="GamificationApplicationService/build.xml"/>
+                <file name="GamificationBadgeService/build.xml"/>
+                <file name="GamificationAchievementService/build.xml"/>
+                <file name="GamificationActionService/build.xml"/>
+                <file name="GamificationLevelService/build.xml"/>
+                <file name="GamificationPointService/build.xml"/>
+                <file name="GamificationQuestService/build.xml"/>
+                <file name="GamificationVisualizationService/build.xml"/>
+            </filelist>
+            <target name="clean_all"/>
+        </subant>
+    </target>
+
+	<target name="build_all_projects">
 		<subant>
             <filelist dir="../">
                 <file name="GamificationBadgeService/build.xml"/>
+                <file name="GamificationPointService/build.xml"/>
+				<file name="GamificationApplicationService/build.xml"/>
+                <file name="GamificationAchievementService/build.xml"/>
+                <file name="GamificationActionService/build.xml"/>
+                <file name="GamificationLevelService/build.xml"/>
+                <file name="GamificationQuestService/build.xml"/>
+            	<file name="GamificationVisualizationService/build.xml"/>
+            </filelist>
+            <target name="build_only"/>
+        </subant>
+	</target>
+	<target name="test_all_projects">
+		<subant>
+            <filelist dir="../">
+            	<file name="GamificationApplicationService/build.xml"/>
+            	<file name="GamificationBadgeService/build.xml"/>
                 <file name="GamificationAchievementService/build.xml"/>
                 <file name="GamificationActionService/build.xml"/>
                 <file name="GamificationLevelService/build.xml"/>
@@ -324,7 +363,7 @@ agent-${service.class}.xml;${service.password}
                 <file name="GamificationQuestService/build.xml"/>
             	<file name="GamificationVisualizationService/build.xml"/>
             </filelist>
-            <target name="all"/>
+            <target name="junit"/>
         </subant>
 	</target>
 	

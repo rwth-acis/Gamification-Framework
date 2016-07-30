@@ -1,7 +1,6 @@
 package i5.las2peer.services.gamificationQuestService;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -26,11 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import i5.las2peer.api.Service;
-import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
-import i5.las2peer.p2p.AgentNotKnownException;
-import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -38,7 +34,6 @@ import i5.las2peer.restMapper.annotations.ContentParam;
 import i5.las2peer.restMapper.annotations.Version;
 import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
-import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationQuestService.database.ActionDAO;
 import i5.las2peer.services.gamificationQuestService.database.QuestDAO;
@@ -421,20 +416,20 @@ public class GamificationQuestService extends Service {
 				textResponse = "Cannot connect to database";
 				return new HttpResponse(textResponse, HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
-			try {
-				if(!isAppWithIdExist(appId)){
-					logger.info("App not found >> ");
-					textResponse = "App not found";
-					return new HttpResponse(textResponse, HttpURLConnection.HTTP_BAD_REQUEST);
-				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
-				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				textResponse = "Cannot check whether application ID exist or not. >> " + e1.getMessage();
-				return new HttpResponse(textResponse, HttpURLConnection.HTTP_BAD_REQUEST);
-			}
+			
 			JSONObject obj = (JSONObject) JSONValue.parseWithException(content);
+			try {
+				if(!questAccess.isAppIdExist(appId)){
+					logger.info("App not found >> ");
+					obj.put("message", "App not found");
+					return new HttpResponse(obj.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				obj.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(obj.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			}
 			questid = stringfromJSON(obj,"questid");
 			if(questAccess.isQuestIdExist(appId, questid)){
 				logger.info("Failed to add the quest. Quest ID already exist!");
@@ -550,17 +545,16 @@ public class GamificationQuestService extends Service {
 		
 		try {
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!questAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!questAccess.isQuestIdExist(appId, questId)){
 				logger.info("Quest not found >> ");
@@ -623,6 +617,7 @@ public class GamificationQuestService extends Service {
 			@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB) {
 		// parse given multipart form data
 		String textResponse = null;
+		JSONObject objResponse = new JSONObject();
 		
 		String content = new String(contentB);
 		if(content.equals(null)){
@@ -655,17 +650,16 @@ public class GamificationQuestService extends Service {
 				return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!questAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
-					textResponse = "App not found";
-					return new HttpResponse(textResponse, HttpURLConnection.HTTP_BAD_REQUEST);
+					objResponse.put("message", "App not found");
+					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				textResponse = "Cannot check whether application ID exist or not. >> " + e1.getMessage();
-				return new HttpResponse(textResponse, HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if (questId == null) {
 				logger.info("quest ID cannot be null >> " );
@@ -785,17 +779,16 @@ public class GamificationQuestService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!questAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!questAccess.isQuestIdExist(appId, questId)){
 				logger.info("Failed to delete the quest. Quest ID is not exist!");
@@ -860,21 +853,25 @@ public class GamificationQuestService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
-				if(!isAppWithIdExist(appId)){
+				if(!questAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
 					objResponse.put("message", "App not found");
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-					| TimeoutException e1) {
+			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			int offset = (currentPage - 1) * windowSize;
 			int totalNum = actionAccess.getNumberOfActions(appId);
 
+			if(windowSize == -1){
+				offset = 0;
+				windowSize = totalNum;
+			}
+			
 			qs = questAccess.getQuestsWithOffsetAndSearchPhrase(appId, offset, windowSize, searchPhrase);
 
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -922,17 +919,17 @@ public class GamificationQuestService extends Service {
 		}
 	}
 
-	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-		
-		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
-		
-		if (result != null) {
-			if((int)result == 1){
-				return true;
-			}
-		}
-		return false;
-	}
+//	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
+//		
+//		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
+//		
+//		if (result != null) {
+//			if((int)result == 1){
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	// RMI
 	public String getQuestWithIdRMI(String appId, String questId) {

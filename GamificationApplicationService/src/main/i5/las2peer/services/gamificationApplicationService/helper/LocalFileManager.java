@@ -11,24 +11,11 @@ import java.util.List;
 
 public class LocalFileManager
 {
-	private static String baseDir = "./files/";
 	private static LocalFileManager manager;
 
 	protected LocalFileManager()
 	{
 
-	}
-
-
-	public static String getBasedir()
-	{
-		return baseDir;
-	}
-
-	
-	public static void setBasedir(String dir)
-	{
-		baseDir = dir;
 	}
 
 	protected static LocalFileManager getManager()
@@ -44,14 +31,14 @@ public class LocalFileManager
 		getManager();
 		/* if(file.contains(".."))//ignore
 		     return null;*/
-		return getFile(new File(baseDir + file));
+		return getFile(new File(file));
 	}
 
 	public static List<String> getDir(String dir)
 	{
 		try
 		{
-			File directory = new File(baseDir + dir);
+			File directory = new File(dir);
 
 			List<String> dirs = new ArrayList<String>();
 			List<String> files = new ArrayList<String>();

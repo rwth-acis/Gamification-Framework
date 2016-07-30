@@ -4,23 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
-
-import javax.imageio.ImageIO;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.junit.AfterClass;
@@ -34,15 +26,12 @@ import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.restMapper.data.Pair;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.gamificationApplicationService.GamificationApplicationService;
 import i5.las2peer.services.gamificationBadgeService.GamificationBadgeService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
 import i5.las2peer.webConnector.client.MiniClient;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.
@@ -65,7 +54,6 @@ public class GamificationBadgeServiceTest {
 
 	// during testing, the specified service version does not matter
 	private static final ServiceNameVersion testGamificationBadgeService = new ServiceNameVersion(GamificationBadgeService.class.getCanonicalName(),"0.1");
-	private static final ServiceNameVersion depGamificationApplicationService = new ServiceNameVersion(GamificationApplicationService.class.getCanonicalName(),"0.1");
 
 	private static String appId = "test";
 	private static String badgeId = "badge_test_id";
@@ -126,11 +114,6 @@ public class GamificationBadgeServiceTest {
 		ServiceAgent testService = ServiceAgent.createServiceAgent(testGamificationBadgeService, "a pass");
 		testService.unlockPrivateKey("a pass");
 		node.registerReceiver(testService);
-		
-		ServiceAgent depService = ServiceAgent.createServiceAgent(depGamificationApplicationService, "a pass");
-		depService.unlockPrivateKey("a pass");
-		node.registerReceiver(depService);
-
 		
 		// start connector
 		logStream = new ByteArrayOutputStream();

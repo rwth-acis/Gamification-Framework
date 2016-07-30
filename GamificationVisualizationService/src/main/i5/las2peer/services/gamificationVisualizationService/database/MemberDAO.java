@@ -2,24 +2,19 @@ package i5.las2peer.services.gamificationVisualizationService.database;
 
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import i5.las2peer.services.gamificationVisualizationService.database.MemberModel;
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel.QuestStatus;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
 import java.io.IOException;
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
 
 /**
  * Class to maintain the model that are used in the application management

@@ -27,16 +27,17 @@ public class StorageManagerGamification {
 	 */
 	public static boolean cleanStorage(String appId){
 			// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
+		File appFolder = new File("../GamificationBadgeService/files/"+appId);
+		File appFolder2 = new File("../GamificationPointService/files/"+appId);
 		
 		try {
 			recursiveDelete(appFolder);
+			recursiveDelete(appFolder2);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
-
     }
 	
 	public static void recursiveDelete(File appFolder) throws IOException{
@@ -110,7 +111,7 @@ public class StorageManagerGamification {
 	 */
 	public static void storeBadgeData(String appId, String badgeId, String filename, byte[] filecontent, String mimeType, String description) throws AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException, IOException{
 			// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
+		File appFolder = new File("../GamificationBadgeService/files/"+appId);
 		if(!appFolder.exists()){
 			if(appFolder.mkdir()){
 				System.out.println("New directory "+ appId +" is created!");
@@ -119,20 +120,20 @@ public class StorageManagerGamification {
 				System.out.println("Failed to create directory");
 			}
 		}
-		LocalFileManager.writeByteArrayToFile(LocalFileManager.getBasedir()+"/"+appId+"/"+badgeId, filecontent);
+		LocalFileManager.writeByteArrayToFile("../GamificationBadgeService/files/"+appId+"/"+badgeId, filecontent);
 
 //		Object result = this.invokeServiceMethod("i5.las2peer.services.fileService.FileService@1.0", "storeFile", new Serializable[] {(String) badgeid, (String) filename, (byte[]) filecontent, (String) mimeType, (String) description});
 	}
 	
 	public static byte[] fetchBadgeData(String appId, String badgeId){
-		byte[] filecontent = LocalFileManager.getFile(appId+"/"+badgeId);
+		byte[] filecontent = LocalFileManager.getFile("../GamificationBadgeService/files/"+appId+"/"+badgeId);
 		return filecontent;
 	}
 
 	public static JSONObject fetchConfigurationToSystem(String appId) throws IOException {
-		String confPath = LocalFileManager.getBasedir()+"/"+appId+"/conf.json";
+		String confPath = "../GamificationPointService/files/"+appId+"/conf.json";
 		// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
+		File appFolder = new File("../GamificationPointService/files/"+appId);
 		if(!appFolder.exists()){
 			if(appFolder.mkdir()){
 				System.out.println("New directory "+ appId +" is created!");
@@ -163,9 +164,9 @@ public class StorageManagerGamification {
 	 * @throws IOException IO Exception
 	 */
 	public static void storeConfigurationToSystem(String appId, JSONObject obj) throws IOException{
-		String confPath = LocalFileManager.getBasedir()+"/"+appId+"/conf.json";
+		String confPath = "../GamificationPointService/files/"+appId+"/conf.json";
 			// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
+		File appFolder = new File("../GamificationPointService/files/"+appId);
 		if(!appFolder.exists()){
 			if(appFolder.mkdir()){
 				System.out.println("New directory "+ appId +" is created!");
@@ -185,6 +186,6 @@ public class StorageManagerGamification {
 				System.out.println("Failed to create file");
 			}
 		} 
-		LocalFileManager.writeFile(LocalFileManager.getBasedir()+"/"+appId+"/conf.json", obj.toJSONString());
+		LocalFileManager.writeFile("../GamificationPointService/files/"+appId+"/conf.json", obj.toJSONString());
 	}
 }
