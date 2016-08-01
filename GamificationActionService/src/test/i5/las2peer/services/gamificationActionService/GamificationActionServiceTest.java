@@ -66,7 +66,7 @@ public class GamificationActionServiceTest {
 	private static final ServiceNameVersion testGamificationActionService = new ServiceNameVersion(GamificationActionService.class.getCanonicalName(),"0.1");
 
 	private static String appId = "test";
-	private static String actionId = "action_test_id";
+	private static String actionId = "action_test_2";
 
 	private static final String mainPath = "gamification/actions/";
 	

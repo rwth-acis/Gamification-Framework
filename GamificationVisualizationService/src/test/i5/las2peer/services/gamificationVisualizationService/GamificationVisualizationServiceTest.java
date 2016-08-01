@@ -118,11 +118,11 @@ public class GamificationVisualizationServiceTest {
 	@BeforeClass
 	public static void startServer() throws Exception {
 
-		Properties properties = new Properties();
-	    String propertiesFile =
-	        "./etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties";
-	    FileReader reader = new FileReader(propertiesFile);
-	    properties.load(reader);
+//		Properties properties = new Properties();
+//	    String propertiesFile =
+//	        "./etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties";
+//	    FileReader reader = new FileReader(propertiesFile);
+//	    properties.load(reader);
 
 //	    jdbcDriverClassName = properties.getProperty("jdbcDriverClassName");
 //	    jdbcLogin = properties.getProperty("jdbcLogin");
@@ -277,7 +277,7 @@ public class GamificationVisualizationServiceTest {
 
 	
 	@Test
-	public void testA4_getPointOfMember()
+	public void testA1_getPointOfMember()
 	{
 		System.out.println("Test --- Get Point Of Member");
 		try
@@ -293,7 +293,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getPointAndLevelOfMember()
+	public void testA2_getPointAndLevelOfMember()
 	{
 		System.out.println("Test --- Get Point And Level Of Member");
 		try
@@ -309,7 +309,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getBadgesOfMember()
+	public void testA3_getBadgesOfMember()
 	{
 		System.out.println("Test --- Get Badges Of Member");
 		try
@@ -351,7 +351,7 @@ public class GamificationVisualizationServiceTest {
 	}
 
 	@Test
-	public void testA4_getQuestProgressOfMember()
+	public void testA5_getQuestProgressOfMember()
 	{
 		System.out.println("Test --- Get Quests With Progress Of Member");
 		try
@@ -367,7 +367,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getAchievementsOfMember()
+	public void testA6_getAchievementsOfMember()
 	{
 		System.out.println("Test --- Get Quests With Progress Of Member");
 		try
@@ -383,7 +383,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getBadgeImageDetail()
+	public void testA7_getBadgeImageDetail()
 	{
 		System.out.println("Test --- Get Badge Image Detail");
 		try
@@ -399,7 +399,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getBadgeDetailWithId()
+	public void testA8_getBadgeDetailWithId()
 	{
 		System.out.println("Test --- Get Badge Detail With ID");
 		try
@@ -415,7 +415,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getQuestDetailWithId()
+	public void testA9_getQuestDetailWithId()
 	{
 		System.out.println("Test --- Get Quest Detail With ID");
 		try
@@ -431,7 +431,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getAchievementDetailWithId()
+	public void testB1_getAchievementDetailWithId()
 	{
 		System.out.println("Test --- Get Achievement Detail With ID");
 		try
@@ -447,7 +447,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_triggerAction()
+	public void testB2_triggerAction()
 	{
 		System.out.println("Test --- Trigger Action");
 		try
@@ -463,7 +463,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getLocalLeaderboard()
+	public void testB3_getLocalLeaderboard()
 	{
 		System.out.println("Test --- Get Local Leaderboard");
 		
@@ -480,7 +480,7 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA4_getGlobalLeaderboard()
+	public void testB4_getGlobalLeaderboard()
 	{
 		System.out.println("Test --- Get Global Leaderboard");
 		

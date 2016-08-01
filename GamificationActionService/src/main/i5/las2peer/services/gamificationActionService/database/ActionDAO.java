@@ -209,11 +209,12 @@ public class ActionDAO {
 	public JSONArray triggerAction(String appId, String memberId, String actionId) throws SQLException {
 		
 		JSONArray resArray = new JSONArray();
-		
+		System.out.println("data : " + appId + " " + memberId);
 		// Submit action into member_action
 		stmt = conn.prepareStatement("INSERT INTO "+appId+".member_action (member_id, action_id) VALUES (?, ?)");
 		stmt.setString(1, memberId);
 		stmt.setString(2, actionId);
+		stmt.executeUpdate();	
 		
 		// Fetch notifications caused by action
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".notification WHERE member_id = ?");
