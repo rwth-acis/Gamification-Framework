@@ -366,6 +366,7 @@ BEGIN
 	INSERT INTO '|| schema ||'.action VALUES (''action3'',''action3'',''The action number 3'',3,true,''action3messagethisis'');
 	INSERT INTO '|| schema ||'.action VALUES (''action4'',''action4'',''The action number 4'',4,true,''action4messagethisis'');
 	INSERT INTO '|| schema ||'.action VALUES (''action5'',''action5'',''The action number 5'',5,false,''action5messagethisis'');
+	INSERT INTO '|| schema ||'.action VALUES (''actionquestid'',''actionquestid'',''The action quest id'',5,false,''the action quest id notification'');
 
 	INSERT INTO ' || schema || '.quest VALUES (''quest1'',''Quest 1'',''The quest number 1'',''COMPLETED'',''achievement1'',false,NULL,false,5,true,''quest1messagethisis'');
 	INSERT INTO ' || schema || '.quest VALUES (''quest2'',''Quest 2'',''The quest number 2'',''HIDDEN'',''achievement2'',true,''quest1'',true,10,true,''quest2messagethisis'');

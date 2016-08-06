@@ -447,6 +447,7 @@ public class GamificationBadgeService extends Service {
 				}
 				FormDataPart partFilecontent = parts.get("badgeimageinput");
 				if (partFilecontent != null) {
+					System.out.println(partFilecontent.getContent());
 					// these data belong to the file input form element
 						filename = partFilecontent.getHeader(HEADER_CONTENT_DISPOSITION).getParameter("filename");
 						byte[] filecontentbefore = partFilecontent.getContentRaw();

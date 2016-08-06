@@ -68,7 +68,7 @@ public class GamificationQuestServiceTest {
 	
 	private static String appId = "test";
 	private static String achievementId = "achievement1";
-	private static String actionId = "action_test_id";
+	private static String actionId = "actionquestid";
 	private static String questId = "quest_test_id";
 	private static final String mainPath = "gamification/quests/";
 	
