@@ -145,20 +145,47 @@ public class MemberDAO {
 		ResultSet rs = stmt.executeQuery();
 
 		Integer truecount = 0;
+		Integer totalcount = 0;
 		while (rs.next()) {
 			JSONObject resObj = new JSONObject();
-			resObj.put("times", rs.getInt("times"));
+			resObj.put("maxTimes", rs.getInt("times"));
 			resObj.put("action", rs.getString("action_id"));
 			resObj.put("isCompleted", rs.getBoolean("completed"));
+			
+			//check if action is completed
 			if(rs.getBoolean("completed")){
-				truecount++;
+				
+				// Ignore how many times player has performed an action
+				// number have performed = number max times
+				resObj.put("times", rs.getInt("times"));
+				truecount = truecount + rs.getInt("times");
 			}
+			else{
+				// get how many times player has performed an action
+				stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".member_action WHERE member_id = ? AND action_id = ?");
+				stmt.setString(1, memberId);
+				stmt.setString(2, rs.getString("action_id"));
+				ResultSet rs2 = stmt.executeQuery();
+
+				Integer totalTimesPerformed = 0;
+				if (rs2.next()) {
+					totalTimesPerformed = rs2.getInt("count");
+				}
+				resObj.put("times", totalTimesPerformed);
+				truecount = truecount + totalTimesPerformed;
+			}
+			totalcount = totalcount + rs.getInt("times");
 			resArr.add(resObj);
 		}
-
-		outObj.put("actionArray", resArr);
-		outObj.put("progress", Math.round(truecount/resArr.size()));
 		
+		System.out.println("arr " + resArr.toJSONString());
+		outObj.put("actionArray", resArr);
+		float progress = (float) (((float)truecount/(float)totalcount) * 100.0);
+		outObj.put("progress", Math.round(progress));
+
+		System.out.println("count " + truecount);
+		System.out.println("total " + totalcount);
+		System.out.println("progress " + progress);
 		return outObj;
 	}
 	

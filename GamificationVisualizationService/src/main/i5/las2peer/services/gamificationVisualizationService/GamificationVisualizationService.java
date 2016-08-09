@@ -1250,13 +1250,14 @@ public class GamificationVisualizationService extends Service {
 		if(name.equals("anonymous")){
 			return unauthorizedMessage();
 		}
-		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
-			objResponse.put("message", "Cannot connect to database");
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
+
 		
-		try {
+		try {		
+				if(!initializeDBConnection()){
+				logger.info("Cannot connect to database >> ");
+				objResponse.put("message", "Cannot connect to database");
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			}
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
@@ -1286,8 +1287,8 @@ public class GamificationVisualizationService extends Service {
 					return new HttpResponse((String) result, HttpURLConnection.HTTP_OK);
 				}
 				L2pLogger.logEvent(Event.RMI_FAILED, "Get Achievement with ID RMI failed");
-				logger.info("Cannot find badge with " + achievementId);
-				objResponse.put("message", "Cannot find badge with " + achievementId);
+				logger.info("Cannot find achievement with " + achievementId);
+				objResponse.put("message", "Cannot find achievement with " + achievementId);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
