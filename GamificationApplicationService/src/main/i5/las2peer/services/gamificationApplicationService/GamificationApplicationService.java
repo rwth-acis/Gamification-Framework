@@ -77,7 +77,7 @@ import java.util.Vector;
  * 
  */
 
-@Path("")
+@Path("/gamification/applications")
 @Version("0.1")
 @Api( value = "/gamification/applications", authorizations = {
 		@Authorization(value = "application_auth",
@@ -137,6 +137,10 @@ public class GamificationApplicationService extends Service {
 		
 	}
 
+	/**
+	 * Initialize database connection
+	 * @return true if database is connected
+	 */
 	private boolean initializeDBConnection() {
 
 		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
@@ -153,6 +157,10 @@ public class GamificationApplicationService extends Service {
 		}
 	}
 	
+	/**
+	 * Function to delete directories of an application in badge service and point service file system
+	 * @return true if directories are deleted
+	 */
 	private boolean cleanStorage(String appId) throws AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException {
 
 		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "cleanStorageRMI", new Serializable[] { appId });
@@ -160,7 +168,7 @@ public class GamificationApplicationService extends Service {
 		if (result != null) {
 			if((int)result == 1){
 				
-				Object res = this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "cleanStorageRMI", new Serializable[] { appId });
+				Object res = this.invokeServiceMethod("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "cleanStorageRMI", new Serializable[] { appId });
 				if (res != null) {
 					if((int)res == 1){
 						
@@ -171,140 +179,7 @@ public class GamificationApplicationService extends Service {
 		}
 		return false;
 	}
-	
-	private String fillPlaceHolder(String data, String placeholder, String value){
-		// detect all  tags used by questionnaire author throughout the form 
-		// and replace them by the respective values.
-		Pattern p = Pattern.compile("\\$\\{" + placeholder + "\\}");
-		Matcher m = p.matcher(data);
 
-		String adaptedform = new String(data);
-
-		// replace any occurring author tags within questionnaire form
-		Vector<String> foundTags = new Vector<String>();
-		while(m.find()){
-			String tag = m.group().substring(2,m.group().length()-1);
-			adaptedform = adaptedform.replaceAll("\\$\\{"+tag+"\\}",value);
-		}
-
-		return adaptedform;
-	} 
-	
-	/**
-	 * TODO: write documentation
-	 * 
-	 * @param onAction
-	 * @return
-	 */
-	private HttpResponse internalError(String onAction){
-		HttpResponse result = new HttpResponse("Internal error while " + onAction + "!");
-		result.setHeader("Content-Type", MediaType.TEXT_PLAIN);
-		result.setStatus(500);
-		return result;
-	}
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Serve page.
-	// //////////////////////////////////////////////////////////////////////////////////////
-	/**
-	 */
-//	@GET
-//	@Path("/web/js/{jsFilePath}")
-//	@Produces(MediaType.TEXT_JAVASCRIPT)
-//	public HttpResponse getJavascriptFile(
-//			@ApiParam(value = "JS File Path", required = true)@PathParam("jsFilePath") String jsFilePath)
-//	{
-//		String onAction = "Load JS file";
-//
-//		try{
-//			String js = new Scanner(new File("./webapp/js/" + jsFilePath)).useDelimiter("\\A").next();
-//
-//		// fill in placeholders
-//			js = fillPlaceHolder(js,"EP_WEB_URL", epWebURL);
-//			js = fillPlaceHolder(js,"EP_URL", epURL);
-//			//js = fillPlaceHolder(js,"SC_URL", staticContentUrl);
-//	
-////			js = fillPlaceHolder(js,"OIDC_PROV_NAME", oidcProviderName);
-////			js = fillPlaceHolder(js,"OIDC_PROV_LOGO", oidcProviderLogo);
-////			js = fillPlaceHolder(js,"OIDC_PROV_URL", oidcProviderUrl);
-////			js = fillPlaceHolder(js,"OIDC_CLNT_ID", oidcClientId);
-//	
-//			// finally return resulting HTML
-//			HttpResponse result = new HttpResponse(js);
-//			result.setStatus(200);
-//			return result;
-//		} catch (FileNotFoundException e) {
-//			return internalError(onAction);
-//		}
-//
-//	}
-	
-	@GET
-	@Path("/web")
-	@Produces(MediaType.TEXT_HTML)
-	public HttpResponse getIndexHTML()
-	{
-		String onAction = "Load index file";
-
-		try{
-			String html = new Scanner(new File("./webapp/index.html")).useDelimiter("\\A").next();
-
-		// fill in placeholders
-			html = fillPlaceHolder(html,"WEBRES_URL", WEBRES_URL);
-			html = fillPlaceHolder(html,"EP_URL", epURL);
-			//js = fillPlaceHolder(js,"SC_URL", staticContentUrl);
-	
-//			js = fillPlaceHolder(js,"OIDC_PROV_NAME", oidcProviderName);
-//			js = fillPlaceHolder(js,"OIDC_PROV_LOGO", oidcProviderLogo);
-//			js = fillPlaceHolder(js,"OIDC_PROV_URL", oidcProviderUrl);
-//			js = fillPlaceHolder(js,"OIDC_CLNT_ID", oidcClientId);
-	
-			// finally return resulting HTML
-			HttpResponse result = new HttpResponse(html);
-			result.setStatus(200);
-			return result;
-		} catch (FileNotFoundException e) {
-			return internalError(onAction);
-		}
-
-	}
-	
-	@GET
-	@Path("/web/{htmlFilePath}")
-	@Produces(MediaType.TEXT_HTML)
-	public HttpResponse getOtherFileHTML(
-			@ApiParam(value = "HTML File Path", required = true)@PathParam("htmlFilePath") String htmlFilePath,
-			@Context UriInfo ui)
-	{
-		System.out.println("PATH " + htmlFilePath);
-		System.out.println("URI " + ui.getPath());
-		System.out.println("URI " + ui.getAbsolutePath());
-		System.out.println("URI " + ui.getBaseUri());
-		System.out.println("URI " + ui.getPathParameters());
-		String onAction = "Load HTML file";
-
-		try{
-			String html = new Scanner(new File("./webapp/" + htmlFilePath)).useDelimiter("\\A").next();
-
-		// fill in placeholders
-			html = fillPlaceHolder(html,"WEBRES_URL", WEBRES_URL);
-			html = fillPlaceHolder(html,"EP_URL", epURL);
-			//js = fillPlaceHolder(js,"SC_URL", staticContentUrl);
-	
-//			js = fillPlaceHolder(js,"OIDC_PROV_NAME", oidcProviderName);
-//			js = fillPlaceHolder(js,"OIDC_PROV_LOGO", oidcProviderLogo);
-//			js = fillPlaceHolder(js,"OIDC_PROV_URL", oidcProviderUrl);
-//			js = fillPlaceHolder(js,"OIDC_CLNT_ID", oidcClientId);
-	
-			// finally return resulting HTML
-			HttpResponse result = new HttpResponse(html);
-			result.setStatus(200);
-			return result;
-		} catch (FileNotFoundException e) {
-			return internalError(onAction);
-		}
-
-	}
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Application PART --------------------------------------
@@ -320,9 +195,9 @@ public class GamificationApplicationService extends Service {
 	 * @return Application data in JSON
 	 */
 	@POST
-	@Path("/gamification/applications/data")
+	@Path("/data")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Create a new application",
+	@ApiOperation(value = "createApplication",
 			notes = "Method to create a new application")
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
@@ -334,8 +209,8 @@ public class GamificationApplicationService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
 			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "New application created")
 	})
-	public HttpResponse createNewApp(
-			@ApiParam(value = "App detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
+	public HttpResponse createApplication(
+			@ApiParam(value = "Application detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
 			@ApiParam(value = "Content of form data", required = true)@ContentParam byte[] formData) {
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -422,9 +297,9 @@ public class GamificationApplicationService extends Service {
 	 * @return Application data in JSON
 	 */
 	@GET
-	@Path("/gamification/applications/data/{appId}")
+	@Path("/data/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Get an application data with specific ID",
+	@ApiOperation(value = "getApplicationDetails",
 				notes = "Get an application data with specific ID")
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return application data with specific ID"),
@@ -434,7 +309,7 @@ public class GamificationApplicationService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Failed to process JSON")
 	})
-	public HttpResponse getAppDetails(
+	public HttpResponse getApplicationDetails(
 			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId)
 	{
 		JSONObject objResponse = new JSONObject();
@@ -480,9 +355,9 @@ public class GamificationApplicationService extends Service {
 	 * @return HttpResponse Application updated status
 	 */
 	@PUT
-	@Path("/gamification/applications/data/{appId}")
+	@Path("/data/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Update an application",
+	@ApiOperation(value = "updateApplication",
 	 			 	notes = "A method to update an application detail")
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Application Updated"),
@@ -495,8 +370,8 @@ public class GamificationApplicationService extends Service {
 	})
 	public HttpResponse updateApplication(
 			@ApiParam(value = "Application ID to be updated", required = true) @PathParam("appId") String appId,
-			@ApiParam(value = "Application detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-			@ApiParam(value = "Form of application detail", required = true) @ContentParam byte[] formData)  {
+			@ApiParam(value = "Content type in header of the retrieved application data", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
+			@ApiParam(value = "Application detail in multiple/form-data type", required = true) @ContentParam byte[] formData)  {
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
 
@@ -566,26 +441,26 @@ public class GamificationApplicationService extends Service {
 	
 	
 	/**
-	 * Delete an app data with specified ID
+	 * Delete an application data with specified ID
 	 * @param appId applicationId
 	 * @return HttpResponse with the returnString
 	 */
 	@DELETE
-	@Path("/gamification/applications/data/{appId}")
+	@Path("/data/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)	
-	@ApiOperation(value = "Delete App",
+	@ApiOperation(value = "Delete Application",
 	  			notes = "This method deletes an App")
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Deleted"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App not found"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Application Deleted"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Application not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Application not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error checking app ID exist"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error delete storage"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
 
-	public HttpResponse deleteApp(
+	public HttpResponse deleteApplication(
 			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId)
 	{
 		JSONObject objResponse = new JSONObject();
@@ -641,9 +516,9 @@ public class GamificationApplicationService extends Service {
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
-	@Path("/gamification/applications/list/separated")
+	@Path("/list/separated")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "getSeparateAppInfo",
+	@ApiOperation(value = "getSeparateApplicationInfo",
 			notes = "Get all application list separated into two categories. All apps registered for the member and other apps.")
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "List of apps"),
@@ -651,7 +526,7 @@ public class GamificationApplicationService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "JsonProcessingException")
 	})
-	public HttpResponse getSeparateAppInfo() {
+	public HttpResponse getSeparateApplicationInfo() {
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -703,7 +578,7 @@ public class GamificationApplicationService extends Service {
 	 * @return HttpResponse status if a member is removed
 	 */
 	@DELETE
-	@Path("/gamification/applications/data/{appId}/{memberId}")
+	@Path("/data/{appId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "removeMemberFromApp",
 				notes = "delete a member from an app")

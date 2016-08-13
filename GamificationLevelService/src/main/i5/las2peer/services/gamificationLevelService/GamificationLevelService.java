@@ -128,7 +128,11 @@ public class GamificationLevelService extends Service {
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		setFieldValues();
 	}
-
+	
+	/**
+	 * Initialize database connection
+	 * @return true if database is connected
+	 */
 	private boolean initializeDBConnection() {
 
 		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
@@ -145,7 +149,11 @@ public class GamificationLevelService extends Service {
 		}
 	}
 
-
+	
+	/**
+	 * Function to return http unauthorized message
+	 * @return HTTP response unauthorized
+	 */
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
 		logger.info("You are not authorized >> " );
@@ -185,9 +193,9 @@ public class GamificationLevelService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "{\"status\": 2, \"message\": \"Failed to upload (levelnum)\"}"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "{\"status\": 3, \"message\": \"Level upload success ( (levelnum) )}")
 	})
-	@ApiOperation(value = "createNewLevel",
+	@ApiOperation(value = "createLevel",
 				 notes = "A method to store a new level with details (Level number, level name, level point value, level point id)")
-	public HttpResponse createNewLevel(
+	public HttpResponse createLevel(
 			@ApiParam(value = "Application ID to store a new level", required = true) @PathParam("appId") String appId,
 			@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
@@ -335,10 +343,9 @@ public class GamificationLevelService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find level for specific App ID and level ID", 
-				  notes = "Returns a level",
-				  response = LevelModel.class,
-				  authorizations = @Authorization(value = "api_key")
+	@ApiOperation(value = "getlevelWithNum", 
+				  notes = "Get level details with specific level number",
+				  response = LevelModel.class
 				  )
 	public HttpResponse getlevelWithNum(
 			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
@@ -422,13 +429,13 @@ public class GamificationLevelService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad request"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")
 	})
-	@ApiOperation(value = "Update a level",
+	@ApiOperation(value = "updateLevel",
 				 notes = "A method to update an level with details (Level number, level name, level point value, level point id)")
 	public HttpResponse updateLevel(
 			@ApiParam(value = "Application ID to store a new level", required = true) @PathParam("appId") String appId,
 				@PathParam("levelNum") int levelNum,
-			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-									 @ContentParam byte[] formData)  {
+			@ApiParam(value = "Content type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
+			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
 
@@ -570,10 +577,11 @@ public class GamificationLevelService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Level not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
-	@ApiOperation(value = "",
+	@ApiOperation(value = "deleteLevel",
 				  notes = "delete a level")
-	public HttpResponse deleteLevel(@PathParam("appId") String appId,
-								 @PathParam("levelNum") int levelNum)
+	public HttpResponse deleteLevel(
+			@ApiParam(value = "Application ID to delete a level", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Level number that will be deleted", required = true)@PathParam("levelNum") int levelNum)
 	{
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -637,11 +645,10 @@ public class GamificationLevelService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of levels"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find levels for specific App ID", 
+	@ApiOperation(value = "getLevelList", 
 				  notes = "Returns a list of levels",
 				  response = LevelModel.class,
-				  responseContainer = "List",
-				  authorizations = @Authorization(value = "api_key")
+				  responseContainer = "List"
 				  )
 	public HttpResponse getLevelList(
 			@ApiParam(value = "Application ID to return")@PathParam("appId") String appId,

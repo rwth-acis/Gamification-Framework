@@ -19,18 +19,31 @@ public class LocalFileManager
 
 	}
 
-
+	/**
+	 * Get defined base directory path
+	 * 
+	 * @return base directory path
+	 */
 	public static String getBasedir()
 	{
 		return baseDir;
 	}
 
-	
+	/**
+	 * Set base directory path
+	 * 
+	 * @param dir base directory path
+	 */
 	public static void setBasedir(String dir)
 	{
 		baseDir = dir;
 	}
 
+	/**
+	 * Get current local file manager
+	 * 
+	 * @return current local file manager
+	 */
 	protected static LocalFileManager getManager()
 	{
 		if (manager == null)
@@ -39,6 +52,12 @@ public class LocalFileManager
 		return manager;
 	}
 
+	/**
+	 * Static function get file with the specified file name
+	 * 
+	 * @param file file name as string
+	 * @return getFile function with File type parameter
+	 */
 	public static byte[] getFile(String file)
 	{
 		getManager();
@@ -47,6 +66,12 @@ public class LocalFileManager
 		return getFile(new File(baseDir + file));
 	}
 
+	/**
+	 * Get directory in base directory
+	 * 
+	 * @param dir directory name
+	 * @return directories name in base directory
+	 */
 	public static List<String> getDir(String dir)
 	{
 		try
@@ -116,7 +141,12 @@ public class LocalFileManager
 		}
 	}
 	
-
+	/**
+	 * Write byte array to file in the specified file path
+	 * 
+	 * @param content file content as byte array
+	 * @param filepath file path
+	 */
 	public static void writeByteArrayToFile(String filepath, byte[] content) throws IOException
 	{
 		
@@ -134,6 +164,11 @@ public class LocalFileManager
 		}
 	}
 	
+	/**
+	 * Delete file in the specified filepath
+	 * 
+	 * @return true if the file in filepath is deleted
+	 */
 	public static boolean deleteFile(String filepath)
 	{
 		try{

@@ -125,6 +125,10 @@ public class GamificationQuestService extends Service {
 		setFieldValues();
 	}
 
+	/**
+	 * Initialize database connection
+	 * @return true if database is connected
+	 */
 	private boolean initializeDBConnection() {
 
 		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
@@ -142,7 +146,10 @@ public class GamificationQuestService extends Service {
 			}
 	}
 
-
+	/**
+	 * Function to return http unauthorized message
+	 * @return HTTP response unauthorized
+	 */
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
 		logger.info("You are not authorized >> " );
@@ -151,6 +158,11 @@ public class GamificationQuestService extends Service {
 
 	}
 	
+	/**
+	 * Get an element of JSON object with specified key as string
+	 * @return string value
+	 * @throws IOException IO exception
+	 */
 	private static String stringfromJSON(JSONObject obj, String key) throws IOException {
 		String s = (String) obj.get(key);
 		if (s == null) {
@@ -159,6 +171,11 @@ public class GamificationQuestService extends Service {
 		return s;
 	}
 
+	/**
+	 * Get an element of JSON object with specified key as string array
+	 * @return list of string value
+	 * @throws IOException IO exception
+	 */
 	private static List<String> stringArrayfromJSON(JSONObject obj, String key) throws IOException {
 		JSONArray arr = (JSONArray)obj.get(key);
 		List<String> ss = new ArrayList<String>();
@@ -171,10 +188,20 @@ public class GamificationQuestService extends Service {
 		return ss;
 	}
 
+	/**
+	 * Get an element of JSON object with specified key as integer
+	 * @return integer value
+	 * @throws IOException IO exception
+	 */
 	private static int intfromJSON(JSONObject obj, String key) {
 		return (int) obj.get(key);
 	}
 
+	/**
+	 * Get an element of JSON object with specified key as boolean
+	 * @return boolean value
+	 * @throws IOException IO exception
+	 */
 	private static boolean boolfromJSON(JSONObject obj, String key) {
 		try {
 			return (boolean) obj.get(key);
@@ -187,6 +214,11 @@ public class GamificationQuestService extends Service {
 		}
 	}
 	
+	/**
+	 * Get an element of JSON object with specified key as list of pair string and integer
+	 * @return list of pair string and integer value
+	 * @throws IOException IO exception
+	 */
 	private static List<Pair<String, Integer>> listPairfromJSON(JSONObject obj, String mainkey, String keykey, String keyval) throws IOException {
 		
 		List<Pair<String, Integer>> listpair = new ArrayList<Pair<String, Integer>>();
@@ -211,6 +243,11 @@ public class GamificationQuestService extends Service {
 		return listpair;
 	}
 	
+	/**
+	 * Convert list of pair string and integer to JSON array
+	 * @return JSON array list of pair string and integer
+	 * @throws IOException IO exception
+	 */
 	private static JSONArray listPairtoJSONArray(List<Pair<String, Integer>> listpair) throws IOException {
 		JSONArray arr = new JSONArray();
 
@@ -229,132 +266,7 @@ public class GamificationQuestService extends Service {
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Service methods.
 	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Application PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD -------------------------------------
-	
-	
-	
-//	/**
-//	 * Get a list of users apps from database
-//	 * 
-//	 * @param currentPage current cursor page
-//	 * @param windowSize size of fetched data
-//	 * @param memberId member id
-//	 * @return HttpResponse Returned as JSON object
-//	 */
-//	@GET
-//	@Path("/data/{memberId}/{windowSize}")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@ApiResponses(value = {
-//			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of badges"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-//	@ApiOperation(value = "Find applications", 
-//				  notes = "Returns a list of applications",
-//				  response = ApplicationModel.class,
-//				  responseContainer = "List",
-//				  authorizations = @Authorization(value = "api_key")
-//				  )
-//	public HttpResponse getUsersAppsList(
-//			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
-//			@ApiParam(value = "Member ID")@PathParam("memberId") String memberId,
-//			@ApiParam(value = "Number of data size")@PathParam("windowSize") int windowSize)
-//	{
-//		List<ApplicationModel> apps = null;
-//		JSONObject objResponse = new JSONObject();
-//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-//		String name = userAgent.getLoginName();
-//		if(!name.equals("anonymous")){
-//			try {
-//				if(!initializeDBConnection()){
-//					logger.info("Cannot connect to database >> ");
-//					objResponse.put("message", "Cannot connect to database");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//				}
-//				if(!managerAccess.isMemberRegistered(memberId)){
-//					logger.info("No member found >> ");
-//					objResponse.put("message", "No member found");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-//				}
-//				int offset = (currentPage - 1) * windowSize;
-//				apps = managerAccess.getUsersApplicationsWithOffset(offset, windowSize, memberId);
-//				int totalNum = managerAccess.getNumberOfUsersApplications(memberId);
-//				
-//				JSONArray appArray = new JSONArray();
-//				appArray.addAll(apps);
-//				
-//				objResponse.put("current", currentPage);
-//				objResponse.put("rowCount", windowSize);
-//				objResponse.put("rows", appArray);
-//				objResponse.put("total", totalNum);
-//				logger.info(objResponse.toJSONString());
-//				
-//				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-//
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				String response = "Internal Error. Database connection failed. ";
-//				
-//				// return HTTP Response on error
-//				return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//			}
-//		}
-//		else{
-//
-//			logger.info("Unauthorized >> ");
-//			objResponse.put("success", false);
-//			objResponse.put("message", "You are not authorized");
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-//
-//		}
-//		
-//	}
-	
-	
-
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Badge PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD ---------------------------------
-	
-	
-	
-	// TODO Batch processing --------------------
-	
-	
-	
-	// TODO Other functions ---------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Achievement PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	// TODO  Basic single CRUD --------------------------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Level PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic Single CRUD
-	
-	
-
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Action PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	
+		
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Quest PART --------------------------------------
@@ -512,7 +424,7 @@ public class GamificationQuestService extends Service {
 	 * Get a quest data with specific ID from database
 	 * @param appId applicationId
 	 * @param questId quest id
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{appId}/{questId}")
@@ -521,10 +433,9 @@ public class GamificationQuestService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a quest"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find quest for specific App ID and quest ID", 
-				  notes = "Returns a quest",
-				  response = QuestModel.class,
-				  authorizations = @Authorization(value = "api_key")
+	@ApiOperation(value = "getQuestWithId", 
+				  notes = "Returns quest detail with specific ID",
+				  response = QuestModel.class
 				  )
 	public HttpResponse getQuestWithId(
 			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
@@ -609,7 +520,7 @@ public class GamificationQuestService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad request"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")
 	})
-	@ApiOperation(value = "Update a quest",
+	@ApiOperation(value = "updateQuest",
 				 notes = "A method to update a quest with details")
 	public HttpResponse updateQuest(
 			@ApiParam(value = "Application ID to store a new quest", required = true) @PathParam("appId") String appId,
@@ -761,7 +672,7 @@ public class GamificationQuestService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "quest not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
-	@ApiOperation(value = "",
+	@ApiOperation(value = "deleteQuest",
 				  notes = "delete a quest")
 	public HttpResponse deleteQuest(@PathParam("appId") String appId,
 								 @PathParam("questId") String questId)
@@ -811,7 +722,6 @@ public class GamificationQuestService extends Service {
 		}
 	}
 	
-	// TODO Batch Processing ----------------------------
 	/**
 	 * Get a list of quests from database
 	 * @param appId applicationId
@@ -827,11 +737,10 @@ public class GamificationQuestService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of quests"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find points for specific App ID", 
+	@ApiOperation(value = "getQuestList", 
 				  notes = "Returns a list of quests",
 				  response = QuestModel.class,
-				  responseContainer = "List",
-				  authorizations = @Authorization(value = "api_key")
+				  responseContainer = "List"
 				  )
 	public HttpResponse getQuestList(
 			@ApiParam(value = "Application ID to return")@PathParam("appId") String appId,
@@ -919,19 +828,14 @@ public class GamificationQuestService extends Service {
 		}
 	}
 
-//	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-//		
-//		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
-//		
-//		if (result != null) {
-//			if((int)result == 1){
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
 
 	// RMI
+	/**
+	 * RMI function to get quest detail with specific ID
+	 * @param appId applicationId
+	 * @param questId questId
+	 * @return Serialized JSON string of a quest detail
+	 */
 	public String getQuestWithIdRMI(String appId, String questId) {
 		QuestModel quest;
 		try {
