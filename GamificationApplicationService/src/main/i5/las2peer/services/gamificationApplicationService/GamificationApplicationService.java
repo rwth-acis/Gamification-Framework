@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,13 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.treewalk.TreeWalk;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,8 +57,10 @@ import i5.las2peer.services.gamificationApplicationService.database.ApplicationD
 import i5.las2peer.services.gamificationApplicationService.database.ApplicationModel;
 import i5.las2peer.services.gamificationApplicationService.database.MemberModel;
 import i5.las2peer.services.gamificationApplicationService.database.SQLDatabase;
+import i5.las2peer.services.gamificationApplicationService.exception.GitHubException;
 import i5.las2peer.services.gamificationApplicationService.helper.ErrorResponse;
 import i5.las2peer.services.gamificationApplicationService.helper.FormDataPart;
+import i5.las2peer.services.gamificationApplicationService.helper.RepositoryHelper;
 import i5.las2peer.services.gamificationApplicationService.helper.MultipartHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -65,6 +75,8 @@ import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import net.minidev.json.parser.ParseException;
+
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -118,7 +130,13 @@ public class GamificationApplicationService extends Service {
 	private int jdbcPort;
 	private String jdbcSchema;
 	private String epURL;
-	private String WEBRES_URL;
+
+	private String gitHubOrganizationOrigin;
+	  
+	private String gitHubUserNewRepo;
+	private String gitHubUserMailNewRepo;
+	private String gitHubOrganizationNewRepo;
+	private String gitHubPasswordNewRepo;
 	
 	private SQLDatabase DBManager;
 	private ApplicationDAO applicationAccess;
@@ -180,6 +198,18 @@ public class GamificationApplicationService extends Service {
 		return false;
 	}
 
+	/**
+	 * Get an element of JSON object with specified key as string
+	 * @return string value
+	 * @throws IOException IO exception
+	 */
+	private static String stringfromJSON(JSONObject obj, String key) throws IOException {
+		String s = (String) obj.get(key);
+		if (s == null) {
+			throw new IOException("Key " + key + " is missing in JSON");
+		}
+		return s;
+	}
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Application PART --------------------------------------
@@ -288,8 +318,6 @@ public class GamificationApplicationService extends Service {
 				return ErrorResponse.BadRequest(this, logger, e, objResponse);
 		} 
 	}
-	
-	
 
 	/**
 	 * Get an app data with specified ID
@@ -637,7 +665,7 @@ public class GamificationApplicationService extends Service {
 	 * @return HttpResponse status if the member is added
 	 */
 	@POST
-	@Path("/gamification/applications/data/{appId}/{memberId}")
+	@Path("/data/{appId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is Added"),
@@ -689,7 +717,7 @@ public class GamificationApplicationService extends Service {
 	 * @return HttpResponse status if validation success
 	 */
 	@POST
-	@Path("/gamification/applications/validation")
+	@Path("/validation")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "memberLoginValidation",
 			notes = "Simple function to validate a member login.")
@@ -775,6 +803,165 @@ public class GamificationApplicationService extends Service {
 			}
 				
 		
+	}
+	
+	/**
+	 * Validate member and add to the database as the new member if he/she is not registered yet
+	 * @return HttpResponse status if validation success
+	 */
+	@POST
+	@Path("/repo")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "memberLoginValidation",
+			notes = "Simple function to validate a member login.")
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is registered"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "User data error to be retrieved"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "User data error to be retrieved. Not JSON object")
+	})
+	public HttpResponse updateRepository(
+			@ApiParam(value = "Data in JSON", required = true)@ContentParam byte[] contentB) {
+		JSONObject objResponse = new JSONObject();
+		String content = new String(contentB);
+		if(content.equals(null)){
+			objResponse.put("message", "Cannot parse json data into string >> ");
+			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+		}
+
+			MemberModel member;
+			UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+			// take username as default name
+			String name = userAgent.getLoginName();
+			System.out.println("User name : " + name);
+			if(name.equals("anonymous")){
+				return ErrorResponse.Unauthorized(this, logger, objResponse);
+			}
+			if(!initializeDBConnection()){
+				objResponse.put("message", "Cannot connect to database");
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+			}
+			
+			JSONObject obj;
+			String originRepositoryName;
+			String fileContent;
+			String appId;
+			String epURL;
+			String aopScript;
+			
+			try {
+				obj = (JSONObject) JSONValue.parseWithException(content);
+				originRepositoryName = stringfromJSON(obj,"originRepositoryName");
+				//fileContent = stringfromJSON(obj,"fileContent");
+				appId = stringfromJSON(obj,"appId");
+				epURL = stringfromJSON(obj,"epURL");
+				aopScript = stringfromJSON(obj,"aopScript");
+			} catch (ParseException e) {
+				e.printStackTrace();
+				objResponse.put("message", "Cannot parse json data into string >> ");
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+			} catch (IOException e) {
+				e.printStackTrace();		objResponse.put("message", "Cannot parse json data into string >> ");
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+			}
+			// check if repo exist
+			TreeWalk treeWalk = null;
+			Repository newRepository = null;	
+			Repository originRepository = null;			
+			      
+			// helper variables
+		    // variables holding content to be modified and added to repository later
+		    String widget = null;
+			String newRepositoryName = originRepositoryName;
+			
+		    try {
+	
+				PersonIdent caeUser = new PersonIdent(gitHubUserNewRepo, gitHubUserMailNewRepo);
+				
+				RepositoryHelper.deleteRemoteRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
+				
+				originRepository = RepositoryHelper.getRemoteRepository(originRepositoryName, gitHubOrganizationOrigin);
+				newRepository = RepositoryHelper.generateNewRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
+				File originDir = originRepository.getDirectory();
+		        // now load the TreeWalk containing the origin repository content
+				treeWalk = RepositoryHelper.getRepositoryContent(originRepositoryName, gitHubOrganizationOrigin);
+			
+				
+
+				 //System.out.println("PATH " + treeWalk.getPathString());
+				 System.out.println("PATH2 " + originDir.getParent());
+				 System.out.println("PATH3 " + newRepository.getDirectory().getParent());
+		        // treeWalk.setFilter(PathFilter.create("frontend/"));
+			    ObjectReader reader = treeWalk.getObjectReader();
+			    // walk through the tree and retrieve the needed templates
+		    	while (treeWalk.next()) {
+					ObjectId objectId = treeWalk.getObjectId(0);
+					ObjectLoader loader = reader.open(objectId);
+						switch (treeWalk.getNameString()) {
+				            case "widget.xml":
+				              widget = new String(loader.getBytes(), "UTF-8");
+				              break;
+						}
+		        }
+			    	
+		    	// replace widget.xml 
+				//widget = createWidgetCode(widget, htmlElementTemplate, yjsImports, gitHubOrganization, repositoryName, frontendComponent);
+				widget = RepositoryHelper.appendWidget(widget, gitHubOrganizationNewRepo, newRepositoryName);
+		    	
+				RepositoryHelper.copyFolder(originRepository.getDirectory().getParentFile(), newRepository.getDirectory().getParentFile());
+		    	
+				String aopfilestring = RepositoryHelper.readFile("jsfiles/aop.pack.js", Charset.forName("UTF-8"));
+				String oidcwidgetfilestring = RepositoryHelper.readFile("jsfiles/oidc-widget.js", Charset.forName("UTF-8"));
+				String gamifierstring = RepositoryHelper.readFile("jsfiles/gamifier.js", Charset.forName("UTF-8"));
+				
+				gamifierstring = gamifierstring.replace("$Application_Id$", appId);
+				gamifierstring = gamifierstring.replace("$Endpoint_URL$", epURL);
+				gamifierstring = gamifierstring.replace("$AOP_Script$", aopScript);
+				
+				// add files to new repository
+				newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "", "widget.xml", widget);
+				newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "aop.pack.js", aopfilestring);
+				newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "oidc-widget.js", oidcwidgetfilestring);
+				newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "gamifier.js", gamifierstring);
+
+				 // stage file
+			    Git.wrap(newRepository).add().addFilepattern(".").call();
+				   
+				// commit files
+				Git.wrap(newRepository).commit()
+				.setMessage("Generated new repo  ")
+				.setCommitter(caeUser).call();
+				
+				// push (local) repository content to GitHub repository "gh-pages" branch
+				RepositoryHelper.pushToRemoteRepository(newRepository, gitHubUserNewRepo, gitHubPasswordNewRepo, "master", "gh-pages");
+
+
+		      // close all open resources
+		    } catch (GitHubException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();		
+				objResponse.put("message", "Github exception ");
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				objResponse.put("message", "Github exception ");
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+			} catch (Exception e) {
+		        logger.printStackTrace(e);
+		        objResponse.put("message", "Github exception ");
+				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+
+			}
+		    finally {
+			  newRepository.close();
+			  originRepository.close();
+		      treeWalk.close();
+		    }
+		  
+			objResponse.put("message", "Updated");
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+
 	}
 	
 	

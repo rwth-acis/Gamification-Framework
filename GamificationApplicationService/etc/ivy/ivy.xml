@@ -23,6 +23,7 @@
 		<!-- Need multipartentitybuilder for unit test -->
 		<dependency org="org.apache.httpcomponents" name="httpmime" rev="4.3.1" conf="platform->default" />
 		<!-- https://mvnrepository.com/artifact/org.imgscalr/imgscalr-lib -->
+      <dependency org="org.eclipse.jgit" name="org.eclipse.jgit" rev="4.0.1.201506240215-r" conf="platform->default"/>
 		
 		
     </dependencies>

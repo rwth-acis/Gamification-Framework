@@ -122,7 +122,7 @@ public class GamificationApplicationServiceTest {
 		badgeService.unlockPrivateKey("a pass");
 		node.registerReceiver(badgeService);
 		
-		ServiceAgent pointService = ServiceAgent.createServiceAgent(testBadgeService, "a pass");
+		ServiceAgent pointService = ServiceAgent.createServiceAgent(testPointService, "a pass");
 		pointService.unlockPrivateKey("a pass");
 		node.registerReceiver(pointService);
 
