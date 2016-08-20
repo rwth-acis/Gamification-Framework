@@ -874,12 +874,18 @@ public class GamificationApplicationService extends Service {
 		    // variables holding content to be modified and added to repository later
 		    String widget = null;
 			String newRepositoryName = originRepositoryName;
+			try {
+				RepositoryHelper.deleteRemoteRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
+			} catch (GitHubException e) {
+				e.printStackTrace();		
+				
+//				objResponse.put("message", "Github exception when deleting the repository");
+//				return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+			}
 			
 		    try {
 	
 				PersonIdent caeUser = new PersonIdent(gitHubUserNewRepo, gitHubUserMailNewRepo);
-				
-				RepositoryHelper.deleteRemoteRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
 				
 				originRepository = RepositoryHelper.getRemoteRepository(originRepositoryName, gitHubOrganizationOrigin);
 				newRepository = RepositoryHelper.generateNewRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
