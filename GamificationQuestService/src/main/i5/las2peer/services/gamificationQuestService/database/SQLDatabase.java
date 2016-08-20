@@ -153,34 +153,60 @@ public class SQLDatabase{
 		return true;
 		
 	}
-	
-	
+	/**
+	 * Get user name that access the database
+	 * 
+	 * @return user name
+	 */
 	public String getUser(){
 		return this.username;
 	}
 	
-	
+	/**
+	 * Get password used to access the database
+	 * 
+	 * @return password
+	 */
 	public String getPassword(){
 		return this.password;
 	}
 	
-	
+	/**
+	 * Get database name
+	 * 
+	 * @return database name
+	 */
 	public String getDatabase(){
 		return this.database;
 	}
 	
-	
+	/**
+	 * Get host of database
+	 * 
+	 * @return host of database
+	 */
 	public String getHost(){
 		return this.host;
 	}
 	
+	/**
+	 * Get port of host of database
+	 * 
+	 * @return port of host of database
+	 */
 	public int getPort(){
 		return this.port;
 	}
 	
+	/**
+	 * Get connection to access the database
+	 * 
+	 * @return connection
+	 */
 	public Connection getConnection(){
 		return this.connection;
 	}
+	
 	
 	
 }

@@ -59,9 +59,9 @@ import net.minidev.json.JSONValue;
 
 // TODO Describe your own service
 /**
- * Gamification Manager Service
+ * Gamification Achievement Service
  * 
- * This is Gamification Manager service to manage top level application in Gamification Framework
+ * This Gamification Achievement Service is to manage achievement element in Gamification Framework.
  * It uses the LAS2peer Web-Connector for RESTful access to it.
  * 
  * Note:
@@ -131,6 +131,10 @@ public class GamificationAchievementService extends Service {
 		setFieldValues();
 	}
 
+	/**
+	 * Initialize database connection
+	 * @return true if database is connected
+	 */
 	private boolean initializeDBConnection() {
 
 		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
@@ -147,7 +151,10 @@ public class GamificationAchievementService extends Service {
 			}
 	}
 
-
+	/**
+	 * Function to return http unauthorized message
+	 * @return HTTP response unauthorized
+	 */
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
 		logger.info("You are not authorized >> " );
@@ -162,7 +169,7 @@ public class GamificationAchievementService extends Service {
 	 * @param appId applicationId
 	 * @param formData form data
 	 * @param contentType content type
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@POST
 	@Path("/{appId}")
@@ -332,7 +339,7 @@ public class GamificationAchievementService extends Service {
 	 * Get an achievement data with specific ID from database
 	 * @param appId applicationId
 	 * @param achievementId achievement id
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{appId}/{achievementId}")
@@ -341,10 +348,9 @@ public class GamificationAchievementService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found an achievement"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find point for specific App ID and achievement ID", 
-				  notes = "Returns a achievement",
-				  response = AchievementModel.class,
-				  authorizations = @Authorization(value = "api_key")
+	@ApiOperation(value = "getAchievementWithId", 
+				  notes = "Get achievement data with specified ID",
+				  response = AchievementModel.class
 				  )
 	public HttpResponse getAchievementWithId(
 			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
@@ -415,7 +421,7 @@ public class GamificationAchievementService extends Service {
 	 * @param achievementId achievementId
 	 * @param formData form data
 	 * @param contentType content type
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@PUT
 	@Path("/{appId}/{achievementId}")
@@ -426,12 +432,12 @@ public class GamificationAchievementService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad request"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")
 	})
-	@ApiOperation(value = "Update an achievement",
+	@ApiOperation(value = "updateAchievement",
 				 notes = "A method to update an achievement with details (achievement ID, achievement name, achievement description, achievement point value, achievement point id, achievement badge id")
 	public HttpResponse updateAchievement(
-			@ApiParam(value = "Application ID to store a new achievement", required = true) @PathParam("appId") String appId,
+			@ApiParam(value = "Application ID to update an achievement", required = true) @PathParam("appId") String appId,
 				@PathParam("achievementId") String achievementId,
-			@ApiParam(value = "Achievement detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
+			@ApiParam(value = "Achievement data in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 									 @ContentParam byte[] formData)  {
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
@@ -571,10 +577,10 @@ public class GamificationAchievementService extends Service {
 	
 
 	/**
-	 * Delete a achievement data with specified ID
+	 * Delete an achievement data with specified ID
 	 * @param appId applicationId
 	 * @param achievementId achievementId
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@DELETE
 	@Path("/{appId}/{achievementId}")
@@ -584,8 +590,8 @@ public class GamificationAchievementService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Achievements not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
-	@ApiOperation(value = "",
-				  notes = "delete a achievement")
+	@ApiOperation(value = "deleteAchievement",
+				  notes = "Delete an achievement")
 	public HttpResponse deleteAchievement(@PathParam("appId") String appId,
 								 @PathParam("achievementId") String achievementId)
 	{
@@ -640,7 +646,7 @@ public class GamificationAchievementService extends Service {
 	 * @param currentPage current cursor page
 	 * @param windowSize size of fetched data
 	 * @param searchPhrase search word
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{appId}")
@@ -649,11 +655,10 @@ public class GamificationAchievementService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of achievements"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find achievements for specific App ID", 
+	@ApiOperation(value = "getAchievementList", 
 				  notes = "Returns a list of achievements",
 				  response = AchievementModel.class,
-				  responseContainer = "List",
-				  authorizations = @Authorization(value = "api_key")
+				  responseContainer = "List"
 				  )
 	public HttpResponse getAchievementList(
 			@ApiParam(value = "Application ID to return")@PathParam("appId") String appId,
@@ -721,21 +726,15 @@ public class GamificationAchievementService extends Service {
 
 		}
 	}
-
-//	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-//		
-//		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
-//		
-//		if (result != null) {
-//			if((int)result == 1){
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
 	
 	
 	// RMI
+	/**
+	 * Function to be used by RMI, it returns achievement data with specific ID
+	 * @param appId applicationId
+	 * @param achievementId achievementId
+	 * @return Serialized JSON achievement data 
+	 */
 	public String getAchievementWithIdRMI(String appId, String achievementId)  {
 		AchievementModel achievement;
 		try {

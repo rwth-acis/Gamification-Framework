@@ -61,7 +61,7 @@ import net.minidev.json.JSONValue;
 /**
  * Gamification Action Service
  * 
- * This is Gamification Action service to manage actions in Gamification Framework
+ * This is Gamification Action service to manage action as gamification element in Gamification Framework
  * It uses the LAS2peer Web-Connector for RESTful access to it.
  * 
  * Note:
@@ -130,6 +130,10 @@ public class GamificationActionService extends Service {
 		setFieldValues();
 	}
 
+	/**
+	 * Initialize database connection
+	 * @return true if database is connected
+	 */
 	private boolean initializeDBConnection() {
 
 		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
@@ -146,140 +150,17 @@ public class GamificationActionService extends Service {
 			}
 	}
 
-
+	/**
+	 * Function to return http unauthorized message
+	 * @return HTTP response unauthorized
+	 */
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
 		logger.info("You are not authorized >> " );
 		objResponse.put("message", "You are not authorized");
 		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
-	}
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Service methods.
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Application PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD -------------------------------------
-	
-	
-	
-//	/**
-//	 * Get a list of users apps from database
-//	 * 
-//	 * @param currentPage current cursor page
-//	 * @param windowSize size of fetched data
-//	 * @param memberId member id
-//	 * @return HttpResponse Returned as JSON object
-//	 */
-//	@GET
-//	@Path("/data/{memberId}/{windowSize}")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@ApiResponses(value = {
-//			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of badges"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-//	@ApiOperation(value = "Find applications", 
-//				  notes = "Returns a list of applications",
-//				  response = ApplicationModel.class,
-//				  responseContainer = "List",
-//				  authorizations = @Authorization(value = "api_key")
-//				  )
-//	public HttpResponse getUsersAppsList(
-//			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
-//			@ApiParam(value = "Member ID")@PathParam("memberId") String memberId,
-//			@ApiParam(value = "Number of data size")@PathParam("windowSize") int windowSize)
-//	{
-//		List<ApplicationModel> apps = null;
-//		JSONObject objResponse = new JSONObject();
-//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-//		String name = userAgent.getLoginName();
-//		if(!name.equals("anonymous")){
-//			try {
-//				if(!initializeDBConnection()){
-//					logger.info("Cannot connect to database >> ");
-//					objResponse.put("message", "Cannot connect to database");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//				}
-//				if(!managerAccess.isMemberRegistered(memberId)){
-//					logger.info("No member found >> ");
-//					objResponse.put("message", "No member found");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-//				}
-//				int offset = (currentPage - 1) * windowSize;
-//				apps = managerAccess.getUsersApplicationsWithOffset(offset, windowSize, memberId);
-//				int totalNum = managerAccess.getNumberOfUsersApplications(memberId);
-//				
-//				JSONArray appArray = new JSONArray();
-//				appArray.addAll(apps);
-//				
-//				objResponse.put("current", currentPage);
-//				objResponse.put("rowCount", windowSize);
-//				objResponse.put("rows", appArray);
-//				objResponse.put("total", totalNum);
-//				logger.info(objResponse.toJSONString());
-//				
-//				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-//
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				String response = "Internal Error. Database connection failed. ";
-//				
-//				// return HTTP Response on error
-//				return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//			}
-//		}
-//		else{
-//
-//			logger.info("Unauthorized >> ");
-//			objResponse.put("success", false);
-//			objResponse.put("message", "You are not authorized");
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-//
-//		}
-//		
-//	}
-	
-	
-
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Badge PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD ---------------------------------
-	
-	
-	
-	// TODO Batch processing --------------------
-	
-	
-	
-	// TODO Other functions ---------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Achievement PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	// TODO  Basic single CRUD --------------------------------------
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Level PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic Single CRUD
-	
-	
+	}	
 
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Action PART --------------------------------------
@@ -291,7 +172,7 @@ public class GamificationActionService extends Service {
 	 * @param appId applicationId
 	 * @param formData form data
 	 * @param contentType content type
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@POST
 	@Path("/{appId}")
@@ -450,7 +331,7 @@ public class GamificationActionService extends Service {
 	 * Get an action data with specific ID from database
 	 * @param appId applicationId
 	 * @param actionId action id
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{appId}/{actionId}")
@@ -537,7 +418,7 @@ public class GamificationActionService extends Service {
 	 * @param actionId actionId
 	 * @param formData form data
 	 * @param contentType content type
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@PUT
 	@Path("/{appId}/{actionId}")
@@ -672,14 +553,14 @@ public class GamificationActionService extends Service {
 	 * Delete an action data with specified ID
 	 * @param appId applicationId
 	 * @param actionId actionId
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@DELETE
 	@Path("/{appId}/{actionId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "action Delete Success"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "action not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Action is deleted"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Action not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
 	@ApiOperation(value = "",
@@ -739,7 +620,7 @@ public class GamificationActionService extends Service {
 	 * @param currentPage current cursor page
 	 * @param windowSize size of fetched data
 	 * @param searchPhrase search word
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{appId}")
@@ -748,14 +629,13 @@ public class GamificationActionService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of actions"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find points for specific App ID", 
-				  notes = "Returns a list of points",
+	@ApiOperation(value = "getActionList", 
+				  notes = "Returns a list of actions",
 				  response = ActionModel.class,
-				  responseContainer = "List",
-				  authorizations = @Authorization(value = "api_key")
+				  responseContainer = "List"
 				  )
 	public HttpResponse getActionList(
-			@ApiParam(value = "Application ID to return")@PathParam("appId") String appId,
+			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
 			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
@@ -819,76 +699,16 @@ public class GamificationActionService extends Service {
 			return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
-	}
-	
-//	/**
-//	 * Trigger an action
-//	 * @param appId applicationId
-//	 * @param actionId actionId
-//	 * @return HttpResponse with the returnString
-//	 */
-//	@POST
-//	@Path("/{appId}/trigger/{actionId}")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@ApiResponses(value = {
-//			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "{\"status\": 3, \"message\": \"Action upload success ( (actionid) )\"}"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "{\"status\": 3, \"message\": \"Failed to upload (actionid)\"}"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "{\"status\": 1, \"message\": \"Failed to add the action. Action ID already exist!\"}"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "{\"status\": =, \"message\": \"Action ID cannot be null!\"}"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "{\"status\": 2, \"message\": \"File content null. Failed to upload (actionid)\"}"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "{\"status\": 2, \"message\": \"Failed to upload (actionid)\"}"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "{\"status\": 3, \"message\": \"Action upload success ( (actionid) )}")
-//	})
-//	@ApiOperation(value = "triggerAction",
-//				 notes = "A method to trigger an ")
-//	public HttpResponse triggerAction(
-//			@ApiParam(value = "Application ID", required = true) @PathParam("appId") String appId,
-//			@ApiParam(value = "Action ID", required = true) @PathParam("actionId") String actionId)  {
-//		// parse given multipart form data
-//		JSONObject objResponse = new JSONObject();
-//		
-//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-//		String name = userAgent.getLoginName();
-//		if(name.equals("anonymous")){
-//			return ErrorResponse.Unauthorized(this, logger, objResponse);
-//		}
-//		// Implicitly retrieve member ID
-//		String memberId = name;
-//		if(!initializeDBConnection()){
-//			logger.info("Cannot connect to database >> ");
-//			objResponse.put("message", "Cannot connect to database");
-//			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
-//		}
-//		
-//		JSONArray arr = new JSONArray();
-//		try {
-//			try {
-//				if(!isAppWithIdExist(appId)){
-//					objResponse.put("message", "App not found");
-//					return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
-//				}
-//			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-//					| TimeoutException e1) {
-//				e1.printStackTrace();
-//				objResponse.put("message", "Cannot check whether application ID exist or not. >> " + e1.getMessage());
-//				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
-//			}
-//			if(!actionAccess.isActionIdExist(appId, actionId)){
-//				objResponse.put("message", "Action not found");
-//				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
-//			}
-//			arr = actionAccess.triggerAction(appId, memberId, actionId);
-//			return new HttpResponse(arr.toJSONString(),HttpURLConnection.HTTP_OK);
-//			
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			objResponse.put("message", "Failed to trigger action " + actionId);
-//			return ErrorResponse.InternalError(this, logger, e, objResponse);
-//		}
-//	}
+	}	
 
-	
-
+	/**
+	 * Function to be accessed via RMI to trigger an action
+	 * @param appId applicationId
+	 * @param memberId memberId
+	 * @param actionId actionId
+	 * @return serialized JSON notification data caused by triggered action
+	 * @throws SQLException sql exception
+	 */
 	public String triggerActionRMI(String appId, String memberId, String actionId) throws SQLException  {
 
 		if(!initializeDBConnection()){
@@ -907,18 +727,6 @@ public class GamificationActionService extends Service {
 
 	}
 	
-	
-//	public boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-//		
-//		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
-//		
-//		if (result != null) {
-//			if((int)result == 1){
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
 
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// Methods required by the LAS2peer framework.

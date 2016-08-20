@@ -144,6 +144,10 @@ public class GamificationBadgeService extends Service {
 		badgeImageURIBase = epURL + "gamification/badges/";
 	}
 
+	/**
+	 * Initialize database connection
+	 * @return true if database is connected
+	 */
 	private boolean initializeDBConnection() {
 
 		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
@@ -161,25 +165,30 @@ public class GamificationBadgeService extends Service {
 	}
 
 
-	/**
-	 * Function to store configuration
-	 * @param appId appId
-	 * @throws IOException 
-	 */
-	private boolean cleanStorage(String appId){
-			// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
-		
-		try {
-			recursiveDelete(appFolder);
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-
-    }
+//	/**
+//	 * Function to store configuration
+//	 * @param appId appId
+//	 * @return true if the directory is deleted
+//	 */
+//	private boolean cleanStorage(String appId){
+//			// RMI call without parameters
+//		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
+//		
+//		try {
+//			recursiveDelete(appFolder);
+//			return true;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+//
+//    }
 	
+	/**
+	 * Function to delete a folder in the file system
+	 * @param appFolder folder path
+	 * @throws IOException IO exception
+	 */
 	private void recursiveDelete(File appFolder) throws IOException{
 		if(appFolder.isDirectory()){
     		//directory is empty, then delete it
@@ -217,6 +226,7 @@ public class GamificationBadgeService extends Service {
 	 * Function to resize image
 	 * @param inputImageRaw input image in byte array
 	 * @return return resized image in byte array
+	 * @throws IllegalArgumentException Illegal argument exception
 	 * @throws IOException IO exception
 	 * @throws NUllPointerException null pointer exception
 	 */
@@ -259,107 +269,18 @@ public class GamificationBadgeService extends Service {
 
 //		Object result = this.invokeServiceMethod("i5.las2peer.services.fileService.FileService@1.0", "storeFile", new Serializable[] {(String) badgeid, (String) filename, (byte[]) filecontent, (String) mimeType, (String) description});
 	}
-
+	
+	/**
+	 * Function to return http unauthorized message
+	 * @return HTTP response unauthorized
+	 */
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
 		logger.info("You are not authorized >> " );
 		objResponse.put("message", "You are not authorized");
 		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
-	}
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Service methods.
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Application PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// TODO Basic single CRUD -------------------------------------
-	
-	
-	
-//	/**
-//	 * Get a list of users apps from database
-//	 * 
-//	 * @param currentPage current cursor page
-//	 * @param windowSize size of fetched data
-//	 * @param memberId member id
-//	 * @return HttpResponse Returned as JSON object
-//	 */
-//	@GET
-//	@Path("/data/{memberId}/{windowSize}")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@ApiResponses(value = {
-//			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of badges"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-//	@ApiOperation(value = "Find applications", 
-//				  notes = "Returns a list of applications",
-//				  response = ApplicationModel.class,
-//				  responseContainer = "List",
-//				  authorizations = @Authorization(value = "api_key")
-//				  )
-//	public HttpResponse getUsersAppsList(
-//			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
-//			@ApiParam(value = "Member ID")@PathParam("memberId") String memberId,
-//			@ApiParam(value = "Number of data size")@PathParam("windowSize") int windowSize)
-//	{
-//		List<ApplicationModel> apps = null;
-//		JSONObject objResponse = new JSONObject();
-//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-//		String name = userAgent.getLoginName();
-//		if(!name.equals("anonymous")){
-//			try {
-//				if(!initializeDBConnection()){
-//					logger.info("Cannot connect to database >> ");
-//					objResponse.put("message", "Cannot connect to database");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//				}
-//				if(!managerAccess.isMemberRegistered(memberId)){
-//					logger.info("No member found >> ");
-//					objResponse.put("message", "No member found");
-//					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-//				}
-//				int offset = (currentPage - 1) * windowSize;
-//				apps = managerAccess.getUsersApplicationsWithOffset(offset, windowSize, memberId);
-//				int totalNum = managerAccess.getNumberOfUsersApplications(memberId);
-//				
-//				JSONArray appArray = new JSONArray();
-//				appArray.addAll(apps);
-//				
-//				objResponse.put("current", currentPage);
-//				objResponse.put("rowCount", windowSize);
-//				objResponse.put("rows", appArray);
-//				objResponse.put("total", totalNum);
-//				logger.info(objResponse.toJSONString());
-//				
-//				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-//
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				String response = "Internal Error. Database connection failed. ";
-//				
-//				// return HTTP Response on error
-//				return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//			}
-//		}
-//		else{
-//
-//			logger.info("Unauthorized >> ");
-//			objResponse.put("success", false);
-//			objResponse.put("message", "You are not authorized");
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-//
-//		}
-//		
-//	}
-	
-	
+	}	
 
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
@@ -373,7 +294,7 @@ public class GamificationBadgeService extends Service {
 	 * @param appId application id
 	 * @param formData form data
 	 * @param contentType content type
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@POST
 	@Path("/{appId}")
@@ -583,7 +504,7 @@ public class GamificationBadgeService extends Service {
 	 * @param badgeId badge id
 	 * @param formData form data
 	 * @param contentType content type
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@PUT
 	@Path("/{appId}/{badgeId}")
@@ -755,7 +676,7 @@ public class GamificationBadgeService extends Service {
 	 * Get a badge data with specific ID from database
 	 * @param appId applicationId
 	 * @param badgeId badge id
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{appId}/{badgeId}")
@@ -830,7 +751,7 @@ public class GamificationBadgeService extends Service {
 	 * Delete a badge data with specified ID
 	 * @param appId application id
 	 * @param badgeId badge id
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@DELETE
 	@Path("/{appId}/{badgeId}")
@@ -904,7 +825,7 @@ public class GamificationBadgeService extends Service {
 	 * @param currentPage current cursor page
 	 * @param windowSize size of fetched data
 	 * @param searchPhrase search word
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{appId}")
@@ -1002,7 +923,7 @@ public class GamificationBadgeService extends Service {
 	 * Fetch a badge image with specified ID
 	 * @param appId application id
 	 * @param badgeId badge id
-	 * @return HttpResponse with the return image
+	 * @return HttpResponse and return the image
 	 */
 	@GET
 	@Path("/{appId}/{badgeId}/img")
@@ -1056,24 +977,25 @@ public class GamificationBadgeService extends Service {
 		}
 	}
 	
+	//RMI
+	/**
+	 * RMI function to get the badge image
+	 * @param appId application id
+	 * @param badgeId badge id
+	 * @return badge image as byte array
+	 */
 	public byte[] getBadgeImageMethod(String appId, String badgeId){
 		byte[] filecontent = LocalFileManager.getFile(appId+"/"+badgeId);
 		return filecontent;
 	}
 	
-//	private boolean isAppWithIdExist(String appId) throws SQLException, AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException{
-//		
-//		Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1", "isAppWithIdExist", new Serializable[] { appId });
-//		
-//		if (result != null) {
-//			if((int)result == 1){
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
-	
 	// RMI
+	/**
+	 * RMI function to get badge data detail with specific ID
+	 * @param appId application id
+	 * @param badgeId badge id
+	 * @return serialized JSON badge data
+	 */
 	public String getBadgeWithIdRMI(String appId, String badgeId) {
 		BadgeModel badge;
 		try {
@@ -1101,6 +1023,11 @@ public class GamificationBadgeService extends Service {
 		return null;
 	}
 	
+	/**
+	 * RMI function to clean the directory in badge service file system
+	 * @param appId application id
+	 * @return 1 if the directory is deleted
+	 */
 	public Integer cleanStorageRMI(String appId) {
 		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
 		
