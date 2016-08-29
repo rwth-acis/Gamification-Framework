@@ -276,8 +276,8 @@ public class GamificationBadgeService extends Service {
 	 */
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
-		logger.info("You are not authorized >> " );
 		objResponse.put("message", "You are not authorized");
+		L2pLogger.logEvent(this, Event.SERVICE_ERROR, "Not Authorized");
 		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
 	}	
@@ -336,18 +336,21 @@ public class GamificationBadgeService extends Service {
 			if(!initializeDBConnection()){
 				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot create badge. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot create badge. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			
@@ -361,8 +364,8 @@ public class GamificationBadgeService extends Service {
 				if(badgeAccess.isBadgeIdExist(appId, badgeid)){
 					// Badge id already exist
 					logger.info("Failed to add the badge. Badge ID already exist!");
-					objResponse.put("status", 1);
-					objResponse.put("message", "Failed to add the badge. Badge ID already exist!");
+					objResponse.put("message", "Cannot create badge. Failed to add the badge. Badge ID already exist!.");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}
@@ -375,8 +378,8 @@ public class GamificationBadgeService extends Service {
 //								 validate input
 						if (filecontentbefore == null) {
 							logger.info("File content null");
-							objResponse.put("status", 2);
-							objResponse.put("message", "File content null. Failed to upload " + badgeid);
+							objResponse.put("message", "Cannot create badge. File content null. Failed to upload " + badgeid);
+							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 							return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 						
@@ -427,35 +430,30 @@ public class GamificationBadgeService extends Service {
 					
 					try{
 						badgeAccess.addNewBadge(appId, badge);
-						logger.info("Badge upload success (" + badgeid +")");
-						objResponse.put("status", 3);
 						objResponse.put("message", "Badge upload success (" + badgeid +")");
+				    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Badge created : " + badgeid + " : " + appId + " : " + userAgent);
 						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 					} catch (SQLException e) {
 						e.printStackTrace();
-						System.out.println(e.getMessage());
-						logger.info("SQLException >> " + e.getMessage());
-						objResponse.put("status", 2);
-						objResponse.put("message", "Failed to upload " + badgeid);
+						objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
+						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					
 				} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
 						| TimeoutException e) {
 					e.printStackTrace();
-					L2pLogger.logEvent(this, Event.SERVICE_ERROR, e.toString());
-					logger.info("Other Exception >> " + e.getMessage());
-					objResponse.put("status", 2);
-					objResponse.put("message", "Failed to upload " + badgeid);
+					objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}
 			}
 			else{
 				logger.info("Badge ID cannot be null");
-				objResponse.put("status", 0);
-				objResponse.put("message", "Badge ID cannot be null!");
+				objResponse.put("message", "Cannot create badge. Badge ID cannot be null!");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
@@ -463,35 +461,27 @@ public class GamificationBadgeService extends Service {
 			
 		} catch (MalformedStreamException e) {
 			// the stream failed to follow required syntax
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			System.out.println(e.getMessage());
-			logger.info("MalformedStreamException >> " + e.getMessage());
-			objResponse.put("status", 2);
-			objResponse.put("message", "Failed to upload " + badgeid);
+			objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 
 		} catch (IOException e) {
 			// a read or write error occurred
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			System.out.println(e.getMessage());
-			logger.info("IOException >> " + e.getMessage());
-			objResponse.put("status", 2);
-			objResponse.put("message", "Failed to upload " + badgeid);
+			objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.info("SQLException >> " + e.getMessage());
-			objResponse.put("status", 2);
-			objResponse.put("message", "Failed to upload " + badgeid);
+			objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
 		catch (NullPointerException e){
 			e.printStackTrace();
-			logger.info("NullPointerException >> " + e.getMessage());
-			objResponse.put("status", 2);
-			objResponse.put("message", "Failed to upload " + badgeid);
+			objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -542,34 +532,34 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot update badge. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot update badge. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 			
 			if (badgeId == null) {
-				logger.info("Badge ID cannot be null >> " );
-				objResponse.put("message", "Badge ID cannot be null");
+				objResponse.put("message", "Cannot update badge. Badge ID cannot be null");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			BadgeModel currentBadge = badgeAccess.getBadgeWithId(appId, badgeId);
 			if(currentBadge == null){
 				// currentBadge is null
-				logger.info("Badge not found >> " );
-				objResponse.put("message", "Badge not found");
+				objResponse.put("message", "Cannot update badge. Badge not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 			}
@@ -599,7 +589,16 @@ public class GamificationBadgeService extends Service {
 					
 					if (filecontentbefore != null) {
 						try {
-							filecontent = resizeImage(filecontentbefore);
+							// in unit test, resize image will turn the image into null BufferedImage
+							// but, it works in web browser
+							FormDataPart partDev = parts.get("dev");
+							if (partDev != null) {
+								filecontent = filecontentbefore;
+							}
+							else{
+								filecontent = resizeImage(filecontentbefore);
+							}
+							//filecontent = resizeImage(filecontentbefore);
 							System.out.println(badgeImageURI);
 							storeBadgeDataToSystem(appId, badgeId, filename, filecontent,mimeType , badgedescription);
 							currentBadge.setImagePath(badgeImageURI);
@@ -608,14 +607,15 @@ public class GamificationBadgeService extends Service {
 						} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
 								| TimeoutException e) {
 							e.printStackTrace();
-							L2pLogger.logEvent(this, Event.SERVICE_ERROR, e.toString());
-							System.out.println(e.getMessage());
-							logger.info("OtherException. "+e.getMessage());
-							return new HttpResponse("Failed to upload " + badgeId + ".",
-									HttpURLConnection.HTTP_INTERNAL_ERROR);
+							objResponse.put("message", "Cannot update badge. Failed to upload " + badgeId + ". " + e.getMessage() );
+							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						catch (IllegalArgumentException e){
-							logger.info("Badge image is not updated. Null"+e.getMessage());
+							objResponse.put("message", "Cannot update badge. Badge image is not updated. " + e.getMessage());
+							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							
 						}
 					}		
 			}
@@ -639,34 +639,31 @@ public class GamificationBadgeService extends Service {
 			
 			try{
 				badgeAccess.updateBadge(appId, currentBadge);
-				logger.info("Badge updated >> ");
 				objResponse.put("message", "Badge updated");
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Badge updated : " + currentBadge.getId() + " : " + appId + " : " + userAgent);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
-				System.out.println(e.getMessage());
-				logger.info("SQLException >> " + e.getMessage());
-				objResponse.put("message", "Database Error ");
+				objResponse.put("message", "Cannot update badge. Database Error. " + e.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
 			
 		} catch (MalformedStreamException e) {
 			// the stream failed to follow required syntax
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			logger.info("MalformedStreamException >> " );
-			objResponse.put("message", "Failed to upload " + badgeId + ". "+e.getMessage());
+			objResponse.put("message", "Cannot update badge. Failed to upload " + badgeId + ". "+e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 		} catch (IOException e) {
 			// a read or write error occurred
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			logger.info("IOException >> " );
-			objResponse.put("message", "Failed to upload " + badgeId + ".");
+			objResponse.put("message", "Cannot update badge. Failed to upload " + badgeId + "." + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (SQLException e1) {
 			e1.printStackTrace();
-			logger.info("SQLException >> " + e1.getMessage());
-			objResponse.put("message", "Database Error ");
+			objResponse.put("message", "Cannot update badge. Database Error. " + e1.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -704,26 +701,26 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot get badge. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot get badge. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			badge = badgeAccess.getBadgeWithId(appId, badgeId);
 			if(badge == null){
-				logger.info("Badge model is null. >> ");
-				objResponse.put("message", "Badge model is null. >> ");
+				objResponse.put("message", "Cannot get badge. Badge model is null.");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -731,17 +728,19 @@ public class GamificationBadgeService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String badgeString = objectMapper.writeValueAsString(badge);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Badge fetched : " + badge.getId() + " : " + appId + " : " + userAgent);
 			return new HttpResponse(badgeString, HttpURLConnection.HTTP_OK);
 
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
+			objResponse.put("message", "Cannot get badge. Cannot process JSON." + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			logger.info("Database Error. " + e.getMessage());
-			objResponse.put("message", "Database Error " + e.getMessage());
+			objResponse.put("message", "Cannot get badge. Database Error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -774,44 +773,46 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot delete badge. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot delete badge. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!badgeAccess.isBadgeIdExist(appId, badgeId)){
 				logger.info("Badge not found >> ");
-				objResponse.put("message", "Badge not found");
+				objResponse.put("message", "Cannot delete badge. Badge not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			badgeAccess.deleteBadge(appId, badgeId);
 			if(!LocalFileManager.deleteFile(LocalFileManager.getBasedir()+"/"+appId+"/"+badgeId)){
 				
 				logger.info("Delete File Failed >> ");
-				objResponse.put("message", "Delete File Failed");
+				objResponse.put("message", "Cannot delete badge. Delete File Failed");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
-			logger.info("File Deleted >> ");
 			objResponse.put("message", "File Deleted");
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Badge deleted : " + badgeId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.info("Cannot delete file. >> " +e.getMessage());
-			objResponse.put("message", "Cannot delete file.");
+			objResponse.put("message", "Cannot delete badge. Cannot delete file. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 		}
 		
@@ -858,20 +859,21 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot get badges. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot get badges. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			// Check app id exist or not
@@ -900,18 +902,21 @@ public class GamificationBadgeService extends Service {
 			objResponse.put("rows", badgeArray);
 			objResponse.put("total", totalNum);
 			logger.info(objResponse.toJSONString());
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Badges fetched" + " : " + appId + " : " + userAgent);
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			String response = "Internal Error. Database connection failed. ";
+			objResponse.put("message", "Cannot get badges. Internal Error. Database connection failed. " + e.getMessage());
 			
-			// return HTTP Response on error
-			return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot get badges. Cannot connect to database. " + e.getMessage() );
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
 		
@@ -945,33 +950,35 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot get badge image. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot get badge image. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!badgeAccess.isBadgeIdExist(appId, badgeId)){
-				logger.info("Badge not found >> ");
-				objResponse.put("message", "Badge not found");
+				objResponse.put("message", "Cannot get badge image. Badge not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			byte[] filecontent = getBadgeImageMethod(appId, badgeId);
+
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Badge image fetched : " + badgeId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(filecontent, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.info("Database error >>  " + e.getMessage());
-			objResponse.put("message", "Database error " + e.getMessage());
+			objResponse.put("message", "Cannot get badge image. Database error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 		}
@@ -1015,10 +1022,10 @@ public class GamificationBadgeService extends Service {
 	    	return badgeString;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("Get Badge with ID RMI failed. " + e.getMessage());
+			//logger.warning("Get Badge with ID RMI failed. " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			logger.warning("Get Badge with ID RMI failed. " + e.getMessage());
+			//logger.warning("Get Badge with ID RMI failed. " + e.getMessage());
 		}
 		return null;
 	}

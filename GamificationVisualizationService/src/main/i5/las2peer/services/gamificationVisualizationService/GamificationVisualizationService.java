@@ -311,8 +311,8 @@ public class GamificationVisualizationService extends Service {
 
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
-		logger.info("You are not authorized >> " );
 		objResponse.put("message", "You are not authorized");
+		L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
 	}
@@ -556,15 +556,15 @@ public class GamificationVisualizationService extends Service {
 			return unauthorizedMessage();
 		}
 		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 
 		try {
 			if(!managerAccess.isAppIdExist(appId)){
-				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){

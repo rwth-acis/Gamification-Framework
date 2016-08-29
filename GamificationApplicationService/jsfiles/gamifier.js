@@ -1,4 +1,7 @@
-﻿  var memberId, appId = '$Application_Id$',epURL = '$Endpoint_URL$';
+﻿  var memberId, 
+  appId = '$Application_Id$',
+  epURL = '$Endpoint_URL$',
+  iwcGamification;
 
   var useAuthentication = function(rurl){
     if(rurl.indexOf("\?") > 0){ 
@@ -14,8 +17,7 @@
       useAuthentication(epURL + 'visualization/actions/' + appId + '/' + actionId + '/' + memberId), 
       ''
       ).done(function() {
-        console.log('Trigger success : ' + actionId)
-        alert( "second success" );
+        console.log('Trigger success : ' + actionId);
       })
       .fail(function() {
         alert( "Trigger failed " + actionId );
@@ -25,7 +27,33 @@
 
   var initGamification = function() {
     $AOP_Script$
+
+    iwcGamification = new iwc.Client();
+    iwcGamification.connect(
+      function(intent) {
+        // define your reactions on incoming iwc events here
+
+        if (intent.action == "FETCH_APPID") {
+          sendRefreshAppIdIntent();
+        }
+
+    });
+    sendRefreshAppIdIntent();
   };
+
+  function sendRefreshAppIdIntent(){
+    var data = appId;
+    var intent = {
+      "component": "",
+      "data": data,
+      "dataType": "text/xml",
+      "action": "REFRESH_APPID",
+      "categories": ["", ""],
+      "flags": [void 0],
+      "extras": {}
+    };
+    iwcGamification.publish(intent);
+  }
 
   function signInCallback(result) {
     if (result === 'success') {
