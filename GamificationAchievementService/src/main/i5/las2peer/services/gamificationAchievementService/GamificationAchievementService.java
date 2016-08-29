@@ -157,8 +157,8 @@ public class GamificationAchievementService extends Service {
 	 */
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
-		logger.info("You are not authorized >> " );
 		objResponse.put("message", "You are not authorized");
+		L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
 	}
@@ -209,18 +209,19 @@ public class GamificationAchievementService extends Service {
 			if(!initializeDBConnection()){
 				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!achievementAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot create achievement. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot create achievement. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
@@ -230,9 +231,8 @@ public class GamificationAchievementService extends Service {
 				
 				if(achievementAccess.isAchievementIdExist(appId, achievementid)){
 					// Achievement id already exist
-					logger.info("Failed to add the achievement. Achievement ID already exist!");
-					objResponse.put("status", 1);
-					objResponse.put("message", "Failed to add the achievement. achievement ID already exist!");
+					objResponse.put("message", "Cannot create achievement. Failed to add the achievement. achievement ID already exist!");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}
@@ -276,24 +276,20 @@ public class GamificationAchievementService extends Service {
 				
 				try{
 					achievementAccess.addNewAchievement(appId, achievement);
-					logger.info("achievement upload success (" + achievementid +")");
-					objResponse.put("status", 3);
 					objResponse.put("message", "Achievement upload success (" + achievementid +")");
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Achievement created : " + achievementid + " : " + appId + " : " + userAgent);
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 				} catch (SQLException e) {
 					e.printStackTrace();
-					System.out.println(e.getMessage());
-					logger.info("SQLException >> " + e.getMessage());
-					objResponse.put("status", 2);
-					objResponse.put("message", "Failed to upload " + achievementid);
+					objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 			}
 			else{
-				logger.info("Achievement ID cannot be null");
-				objResponse.put("status", 0);
-				objResponse.put("message", "Achievement ID cannot be null!");
+				objResponse.put("message", "Cannot create achievement. Achievement ID cannot be null!");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
@@ -301,35 +297,27 @@ public class GamificationAchievementService extends Service {
 			
 		} catch (MalformedStreamException e) {
 			// the stream failed to follow required syntax
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			System.out.println(e.getMessage());
-			logger.info("MalformedStreamException >> " + e.getMessage());
-			objResponse.put("status", 2);
-			objResponse.put("message", "Failed to upload " + achievementid);
+			objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 
 		} catch (IOException e) {
 			// a read or write error occurred
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			System.out.println(e.getMessage());
-			logger.info("IOException >> " + e.getMessage());
-			objResponse.put("status", 2);
-			objResponse.put("message", "Failed to upload " + achievementid);
+			objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.info("SQLException >> " + e.getMessage());
-			objResponse.put("status", 2);
-			objResponse.put("message", "Failed to upload " + achievementid);
+			objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
 		catch (NullPointerException e){
 			e.printStackTrace();
-			logger.info("NullPointerException >> " + e.getMessage());
-			objResponse.put("status", 2);
-			objResponse.put("message", "Failed to upload " + achievementid);
+			objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -365,27 +353,27 @@ public class GamificationAchievementService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			
 			try {
 				try {
 					if(!achievementAccess.isAppIdExist(appId)){
-						logger.info("App not found >> ");
-						objResponse.put("message", "App not found");
+						objResponse.put("message", "Cannot get achievement detail. App not found");
+						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
-					logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-					objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+					objResponse.put("message", "Cannot get achievement detail. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 				if(!achievementAccess.isAchievementIdExist(appId, achievementId)){
-					logger.info("Achievement not found >> ");
-					objResponse.put("message", "Achievement not found");
+					objResponse.put("message", "Cannot get achievement detail. Achievement not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 				achievement = achievementAccess.getAchievementWithId(appId, achievementId);
@@ -397,18 +385,21 @@ public class GamificationAchievementService extends Service {
 		    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 		    	
 		    	String achievementString = objectMapper.writeValueAsString(achievement);
-		    	
+		    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Achievement fetched : " + achievement.getId() + " : " + appId + " : " + userAgent);
+				
 				return new HttpResponse(achievementString, HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
-				logger.info("DB Error >> " + e.getMessage());
-				objResponse.put("message", "DB Error. " + e.getMessage());
+				objResponse.put("message", "Cannot get achievement detail. DB Error. " + e.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 			}
 			
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
+			objResponse.put("message", "Cannot get achievement detail. JSON processing error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -456,34 +447,34 @@ public class GamificationAchievementService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 			
 			if (achievementId == null) {
-				logger.info("Achievement ID cannot be null >> " );
-				objResponse.put("message", "Achievement ID cannot be null");
+				objResponse.put("message", "Cannot update achievement. Achievement ID cannot be null");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			
 			try {
 				try {
 					if(!achievementAccess.isAppIdExist(appId)){
-						logger.info("App not found >> ");
-						objResponse.put("message", "App not found");
+						objResponse.put("message", "Cannot update achievement. App not found");
+						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
-					logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-					objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+					objResponse.put("message", "Cannot update achievement. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 				if(!achievementAccess.isAchievementIdExist(appId, achievementId)){
-					logger.info("Achievement not found >> ");
-					objResponse.put("message", "Achievement not found");
+					objResponse.put("message", "Cannot update achievement. Achievement not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 				
@@ -491,8 +482,8 @@ public class GamificationAchievementService extends Service {
 
 				if(currentAchievement == null){
 					// currentAchievement is null
-					logger.info("Achievement not found in database >> " );
-					objResponse.put("message", "Achievement not found in database");
+					objResponse.put("message", "Cannot update achievement. Achievement not found in database");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 				
@@ -547,29 +538,27 @@ public class GamificationAchievementService extends Service {
 					}
 				}
 				achievementAccess.updateAchievement(appId, currentAchievement);
-				logger.info("Achievement updated >> ");
 				objResponse.put("message", "Achievement updated");
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Achievement updated : " + achievementId + " : " + appId + " : " + userAgent);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 			} catch (SQLException e) {
 				e.printStackTrace();
-				logger.info("DB Error >> " + e.getMessage());
-				objResponse.put("message", "DB Error. " + e.getMessage());
+				objResponse.put("message", "Cannot update achievement. DB Error. " + e.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 			}
 			
 		} catch (MalformedStreamException e) {
 			// the stream failed to follow required syntax
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			logger.info("MalformedStreamException >> " );
-			objResponse.put("message", "Failed to upload " + achievementId + ". "+e.getMessage());
+			objResponse.put("message", "Cannot update achievement. Failed to upload " + achievementId + ". "+e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 		} catch (IOException e) {
 			// a read or write error occurred
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			logger.info("IOException >> " );
-			objResponse.put("message", "Failed to upload " + achievementId + ".");
+			objResponse.put("message", "Cannot update achievement. Failed to upload " + achievementId + ".");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 
@@ -603,38 +592,38 @@ public class GamificationAchievementService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!achievementAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot delete achievement. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot delete achievement. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!achievementAccess.isAchievementIdExist(appId, achievementId)){
-				logger.info("Achievement not found >> ");
-				objResponse.put("message", "Achievement not found");
+				objResponse.put("message", "Cannot delete achievement. Achievement not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			achievementAccess.deleteAchievement(appId, achievementId);
 			
-			logger.info(" Deleted >> ");
-			objResponse.put("message", "Achievement Deleted");
+			objResponse.put("message", "Cannot delete achievement. Achievement Deleted");
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Achievement deleted : " + achievementId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.info("Cannot delete Achievement. >> " +e.getMessage());
-			objResponse.put("message", "Cannot delete Achievement.");
+			objResponse.put("message", "Cannot delete achievement. Cannot delete Achievement. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
@@ -675,20 +664,20 @@ public class GamificationAchievementService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!achievementAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot get achievements. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot get achievements. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			int offset = (currentPage - 1) * windowSize;
@@ -712,16 +701,19 @@ public class GamificationAchievementService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", achievementArray);
 			objResponse.put("total", totalNum);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Achievements fetched" + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			String response = "Internal Error. Database connection failed. ";
-			
+			objResponse.put("message", "Cannot get achievements. Database error. " + e.getMessage());
 			// return HTTP Response on error
-			return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
+			objResponse.put("message", "Cannot get achievements. JSON processing error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -754,10 +746,10 @@ public class GamificationAchievementService extends Service {
 	    	return achievementString;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("Get Achievement with ID RMI failed. " + e.getMessage());
+			//logger.warning("Get Achievement with ID RMI failed. " + e.getMessage());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			logger.warning("Get Achievement with ID RMI failed. " + e.getMessage());
+			//logger.warning("Get Achievement with ID RMI failed. " + e.getMessage());
 		}
 		return null;
 		

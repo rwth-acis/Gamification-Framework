@@ -152,8 +152,8 @@ public class GamificationQuestService extends Service {
 	 */
 	private HttpResponse unauthorizedMessage(){
 		JSONObject objResponse = new JSONObject();
-		logger.info("You are not authorized >> " );
 		objResponse.put("message", "You are not authorized");
+		L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
 	}
@@ -281,7 +281,7 @@ public class GamificationQuestService extends Service {
 	 */
 	@POST
 	@Path("/{appId}")
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "{\"status\": 3, \"message\": \"Quests upload success ( (questid) )\"}"),
@@ -295,12 +295,12 @@ public class GamificationQuestService extends Service {
 			@ApiParam(value = "Application ID to store a new quest", required = true) @PathParam("appId") String appId,
 			@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB)  {
 		// parse given multipart form data
-		String textResponse = null;
+		JSONObject objResponse = new JSONObject();
 		String content = new String(contentB);
 		if(content.equals(null)){
-			logger.info("Cannot parse json data into string >> ");
-			textResponse = "Cannot parse json data into string";
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot create quest. Cannot parse json data into string");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
 		String questid = null;
@@ -324,29 +324,29 @@ public class GamificationQuestService extends Service {
 //		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
-				textResponse = "Cannot connect to database";
-				return new HttpResponse(textResponse, HttpURLConnection.HTTP_INTERNAL_ERROR);
+				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			
 			JSONObject obj = (JSONObject) JSONValue.parseWithException(content);
 			try {
 				if(!questAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					obj.put("message", "App not found");
-					return new HttpResponse(obj.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					objResponse.put("message", "Cannot create quest. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				obj.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
-				return new HttpResponse(obj.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				objResponse.put("message", "Cannot create quest. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			questid = stringfromJSON(obj,"questid");
 			if(questAccess.isQuestIdExist(appId, questid)){
-				logger.info("Failed to add the quest. Quest ID already exist!");
-				textResponse = "Failed to add the quest. Quest ID already exist!";
-				return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+				objResponse.put("message", "Cannot create quest. Failed to add the quest. Quest ID already exist! ");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			questname = stringfromJSON(obj,"questname");
 			queststatus = stringfromJSON(obj,"queststatus");
@@ -363,8 +363,9 @@ public class GamificationQuestService extends Service {
 			questquestidcompleted = (String) obj.get("questidcompleted");
 			if(questquestflag){
 				if(questquestidcompleted.equals(null)){
-					textResponse = "Completed quest ID cannot be null if it is selected";
-					return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+					objResponse.put("message", "Cannot create quest. Completed quest ID cannot be null if it is selected");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 			}else{
 				questquestidcompleted = null;
@@ -378,44 +379,40 @@ public class GamificationQuestService extends Service {
 			
 			model.setActionIds(questactionids);
 			questAccess.addNewQuest(appId, model);
-			logger.info("New quest created ");
-			textResponse = "New quest created " + questid;
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_CREATED);
+			objResponse.put("message", "New quest created " + questid);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Quest created : " + questid + " : " + appId + " : " + userAgent);
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 		} catch (MalformedStreamException e) {
 			// the stream failed to follow required syntax
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			System.out.println(e.getMessage());
-			logger.info("MalformedStreamException >> " + e.getMessage());
-			textResponse = "Failed to upload " + questid;
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_BAD_REQUEST);
+			objResponse.put("message", "Cannot create quest. MalformedStreamException. Failed to upload " + questid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 
 		} catch (IOException e) {
 			// a read or write error occurred
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			System.out.println(e.getMessage());
-			logger.info("IOException >> " + e.getMessage());
-			textResponse = "Failed to upload " + questid;
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot create quest. IO Exception. Failed to upload " + questid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.info("SQLException >> " + e.getMessage());
-			textResponse = "Failed to upload " + questid;
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot create quest. Database error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
 		catch (NullPointerException e){
 			e.printStackTrace();
-			logger.info("NullPointerException >> " + e.getMessage());
-			textResponse = "Failed to upload " + questid;
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot create quest. NullPointerException. Failed to upload " + questid + ". " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (ParseException e) {
 			e.printStackTrace();
-			logger.info("ParseException >> " + e.getMessage());
-			textResponse = "Failed to parse JSON";
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot create quest. ParseException. Failed to parse JSON. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
 	
@@ -449,34 +446,34 @@ public class GamificationQuestService extends Service {
 			return unauthorizedMessage();
 		}
 		if(!initializeDBConnection()){
-			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 		
 		try {
 			try {
 				if(!questAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot get quest. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot get quest. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!questAccess.isQuestIdExist(appId, questId)){
-				logger.info("Quest not found >> ");
-				objResponse.put("message", "Quest not found");
+				objResponse.put("message", "Cannot get quest. Quest not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			quest = questAccess.getQuestWithId(appId, questId);
 
 			if(quest == null){
-				logger.info("Quest Null, Cannot find quest with " + questId);
-				objResponse.put("message", "Quest Null, Cannot find quest with " + questId);
+				objResponse.put("message", "Cannot get quest. Quest Null, Cannot find quest with " + questId);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -484,18 +481,19 @@ public class GamificationQuestService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String questString = objectMapper.writeValueAsString(quest);
-	    	return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Quest fetched : " + quest.getId() + " : " + appId + " : " + userAgent);
+			return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.info("DB Error >> " + e.getMessage());
-			objResponse.put("message", "DB Error. " + e.getMessage());
+			objResponse.put("message", "Cannot get quest. DB Error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			logger.info("Problem in the model >> " + e.getMessage());
-			objResponse.put("message", "Problem in the quest model. " + e.getMessage());
+			objResponse.put("message", "Cannot get quest. Problem in the quest model. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -527,14 +525,14 @@ public class GamificationQuestService extends Service {
 			@ApiParam(value = "Quest ID")@PathParam("questId") String questId,
 			@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB) {
 		// parse given multipart form data
-		String textResponse = null;
 		JSONObject objResponse = new JSONObject();
 		
 		String content = new String(contentB);
 		if(content.equals(null)){
-			logger.info("Cannot parse json data into string >> ");
-			textResponse = "Cannot parse json data into string";
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot update quest. Cannot parse json data into string");
+			
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
 		
@@ -556,33 +554,37 @@ public class GamificationQuestService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
-				textResponse = "Cannot connect to database";
-				return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!questAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot update quest. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if (questId == null) {
 				logger.info("quest ID cannot be null >> " );
-				textResponse = "quest ID cannot be null";
-				return new HttpResponse(textResponse,HttpURLConnection.HTTP_BAD_REQUEST);
+				objResponse.put("message", "Cannot update quest. quest ID cannot be null");
+				
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 				
 				QuestModel quest = questAccess.getQuestWithId(appId, questId);
 				if(!questAccess.isQuestIdExist(appId, questId)){
-					logger.info("Failed to update the quest. Quest ID is not exist!");
-					textResponse = "Failed to update the quest. Quest ID is not exist!";
-					return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+					objResponse.put("message", "Cannot update quest. Failed to update the quest. Quest ID is not exist!");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 				JSONObject obj = (JSONObject) JSONValue.parseWithException(content);
 				
@@ -612,8 +614,9 @@ public class GamificationQuestService extends Service {
 				questquestidcompleted = (String) obj.get("questidcompleted");
 				if(questquestflag){
 					if(questquestidcompleted.equals(null) || questquestidcompleted.equals("")){
-						textResponse = "Completed quest ID cannot be null if it is selected";
-						return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+						objResponse.put("message", "Cannot update quest. Completed quest ID cannot be null if it is selected");
+						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}	
 				}
 				questquestflag = boolfromJSON(obj,"questquestflag");
@@ -633,25 +636,26 @@ public class GamificationQuestService extends Service {
 				}
 				questAccess.updateQuest(appId, quest);
 				logger.info("Quest Updated ");
-				textResponse = "Quest updated " + questId;
-				return new HttpResponse(textResponse,HttpURLConnection.HTTP_OK);
+				objResponse.put("message", "Cannot update quest. Quest updated " + questId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Quest updated : " + quest.getId() + " : " + appId + " : " + userAgent);
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.info("DB Error >> " + e.getMessage());
-			textResponse = "DB Error. " + e.getMessage();
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot update quest. DB Error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (ParseException e) {
 			e.printStackTrace();			
-			logger.info("ParseException >> " + e.getMessage());
-			textResponse = "ParseExceptionr. " + e.getMessage();
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot update quest. ParseExceptionr. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (IOException e) {
 			e.printStackTrace();
-			logger.info("IOException Problem with the model >> " + e.getMessage());
-			textResponse = "Problem with the model. " + e.getMessage();
-			return new HttpResponse(textResponse,HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot update quest. Problem with the model. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} 
 
@@ -685,39 +689,38 @@ public class GamificationQuestService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!questAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot delete quest. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot delete quest. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!questAccess.isQuestIdExist(appId, questId)){
-				logger.info("Failed to delete the quest. Quest ID is not exist!");
-				objResponse.put("status", 1);
-				objResponse.put("message", "Failed to delete the quest. Quest ID is not exist!");
+				objResponse.put("message", "Cannot delete quest. Failed to delete the quest. Quest ID is not exist!");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			questAccess.deleteQuest(appId, questId);
 			
-			logger.info(" Deleted >> ");
 			objResponse.put("message", "quest Deleted");
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Quest deleted : " + questId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.info("Cannot delete quest. >> " +e.getMessage());
-			objResponse.put("message", "Cannot delete quest.");
+			objResponse.put("message", "Cannot delete quest. Database error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
@@ -757,20 +760,20 @@ public class GamificationQuestService extends Service {
 		}
 		try {
 			if(!initializeDBConnection()){
-				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
 				if(!questAccess.isAppIdExist(appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "App not found");
+					objResponse.put("message", "Cannot get quests. App not found");
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot check whether application ID exist or not. Database error.>> " + e1.getMessage());
+				objResponse.put("message", "Cannot get quests. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			int offset = (currentPage - 1) * windowSize;
@@ -807,22 +810,26 @@ public class GamificationQuestService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", questArray);
 			objResponse.put("total", totalNum);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Quests fetched" + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			String response = "Internal Error. Database connection failed. ";
 			
 			// return HTTP Response on error
-			return new HttpResponse(response+e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			objResponse.put("message", "Cannot get quests. Database error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
+			objResponse.put("message", "Cannot get quests. JSON process error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			logger.info("Failed to parse action objects >> ");
-			objResponse.put("message", "Failed to parse JSON");
+			objResponse.put("message", "Cannot get quests. IO Exception. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
