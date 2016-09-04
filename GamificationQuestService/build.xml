@@ -75,15 +75,7 @@
     	<ivy:retrieve type="jar, bundle" conf="platform" pattern="${lib}/[artifact]-[revision].[ext]"/>
     	<ivy:retrieve type="jar, bundle" conf="bundle" pattern="${service}/[artifact]-[revision].[ext]"/>
     
-    	<!-- GamificationApplicationService Dependency -->
-    	<!-- For unit testing -->
-    	<!-- <copy file="../GamificationApplicationService/etc/i5.las2peer.services.gamificationApplicationService.GamificationApplicationService.properties" tofile="etc/i5.las2peer.services.gamificationApplicationService.GamificationApplicationService.properties"/>
-    	<copy file="../GamificationApplicationService/service/i5.las2peer.services.gamificationApplicationService-0.1.jar" tofile="${service}/i5.las2peer.services.gamificationApplicationService-0.1.jar"/>
-    	<copy file="../GamificationApplicationService/service/i5.las2peer.services.gamificationApplicationService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationApplicationService-0.1.jar"/>
-    		
-    	
-    	<copy file="../GamificationActionService/service/i5.las2peer.services.gamificationActionService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationActionService-0.1.jar"/>
-	--> 
+
     </target>
     
     

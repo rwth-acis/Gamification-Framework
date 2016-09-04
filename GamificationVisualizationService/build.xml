@@ -320,6 +320,14 @@ agent-${service.class}.xml;${service.password}
         <delete dir="${export}" />
         <delete dir="${lib}" />
         <delete dir="${service}" />
+    	
+    	<delete file="etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties"/>
+
     </target>
     
     <target name="clean_all" depends="clean" description="--> clean all data">

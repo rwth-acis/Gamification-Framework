@@ -271,7 +271,7 @@ public class GamificationLevelService extends Service {
 				try{
 					levelAccess.addNewLevel(appId, model);
 					objResponse.put("message", "Level upload success (" + levelnum +")");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Level created : " + levelnum + " : " + appId + " : " + userAgent);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, "Level created : " + levelnum + " : " + appId + " : " + userAgent);
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 				} catch (SQLException e) {
@@ -376,7 +376,7 @@ public class GamificationLevelService extends Service {
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			    	
 			    	String levelString = objectMapper.writeValueAsString(level);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Level fetched : " + level.getNumber() + " : " + appId + " : " + userAgent);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, "Level fetched : " + level.getNumber() + " : " + appId + " : " + userAgent);
 					return new HttpResponse(levelString, HttpURLConnection.HTTP_OK);
 				}
 				else{
@@ -511,7 +511,7 @@ public class GamificationLevelService extends Service {
 					try{
 						levelAccess.updateLevel(appId, model);
 						objResponse.put("message", "Level updated");
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Level updated : " + model.getNumber() + " : " + appId + " : " + userAgent);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, "Level updated : " + model.getNumber() + " : " + appId + " : " + userAgent);
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -603,7 +603,7 @@ public class GamificationLevelService extends Service {
 			
 			levelAccess.deleteLevel(appId, levelNum);
 			objResponse.put("message", "Level Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Level deleted : " + levelNum + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, "Level deleted : " + levelNum + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -689,7 +689,7 @@ public class GamificationLevelService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", modelArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Levels fetched : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, "Levels fetched : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {

@@ -1,0 +1,16 @@
+language: java
+addons:
+  postgresql: "9.5"
+jdk:
+#- openjdk7
+- oraclejdk8
+before_script:
+  - psql --version
+  - psql -c 'CREATE USER gameadmin WITH PASSWORD 'gameadmin';' -U postgres
+  - psql -U postgres -d postgres -a -f ./psql/dbcreation.sql
+  - export PGPASSWORD=""
+  - psql -U gameadmin -d gamificationdb -a -f ./psql/db.sql
+  - export PGPASSWORD="gameadmin"
+script:
+  - sh make.sh all
+sudo: false

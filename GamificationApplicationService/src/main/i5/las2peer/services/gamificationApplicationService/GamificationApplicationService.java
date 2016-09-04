@@ -306,7 +306,7 @@ public class GamificationApplicationService extends Service {
 					applicationAccess.addNewApplication(newApp);
 					applicationAccess.addMemberToApp(newApp.getId(), name);
 					objResponse.put("message", "New application created");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "App created : " + newApp.getId());
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_11, "App created : " + newApp.getId());
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_CREATED);
 
 				} catch (SQLException e) {
@@ -381,7 +381,7 @@ public class GamificationApplicationService extends Service {
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	String appString = objectMapper.writeValueAsString(app);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_8, "App detail fetched : " + appId);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_12, "App detail fetched : " + appId);
 			return new HttpResponse(appString, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -534,7 +534,7 @@ public class GamificationApplicationService extends Service {
 					//if(applicationAccess.removeApplicationInfo(appId)){
 						if(applicationAccess.deleteApplicationDB(appId)){
 							objResponse.put("message", "Application deleted");
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "App deleted : " + appId);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_13, "App deleted : " + appId);
 							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 						}
 					//}
@@ -603,6 +603,7 @@ public class GamificationApplicationService extends Service {
 			try {
 				String response = objectMapper.writeValueAsString(allApps);
 				allApps.clear();
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, "All apps separated");
 				
 				return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 
@@ -680,7 +681,7 @@ public class GamificationApplicationService extends Service {
 			}
 			applicationAccess.removeMemberFromApp(memberId, appId);
 			objResponse.put("message", memberId + "is removed from " + appId);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Remove : " + memberId + " : " + appId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, "Remove : " + memberId + " : " + appId);
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -740,7 +741,7 @@ public class GamificationApplicationService extends Service {
 		try {
 			applicationAccess.addMemberToApp(appId, memberId);
 			objResponse.put("success", memberId + " is added to " + appId);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Add : " + memberId + " : " + appId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, "Add : " + memberId + " : " + appId);
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 		}
@@ -823,7 +824,7 @@ public class GamificationApplicationService extends Service {
 						if(!applicationAccess.isMemberRegistered(member.getId())){
 							applicationAccess.registerMember(member);
 							objResponse.put("message", "Welcome " + member.getId() + "!");
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Login New : " + member.getId());
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, "Login New : " + member.getId());
 							
 							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 						}
@@ -840,7 +841,7 @@ public class GamificationApplicationService extends Service {
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 				objResponse.put("message", "Member already registered");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_6, "Login already registered : " + member.getId());
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, "Login already registered : " + member.getId());
 				
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			}
@@ -1017,7 +1018,7 @@ public class GamificationApplicationService extends Service {
 		    }
 		  
 			objResponse.put("message", "Updated");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_7, "Update Repo : " + userAgent + " : " + appId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, "Repo Updated : " + userAgent + " : " + appId);
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 

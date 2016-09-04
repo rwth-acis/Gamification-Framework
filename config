@@ -1,0 +1,16 @@
+jdbcDriverClassName="org.postgresql.Driver"
+jdbcHost="jdbc:postgresql://127.0.0.1"
+jdbcPort="5432"
+jdbcSchema="gamificationdb"
+jdbcLogin="gameadmin"
+jdbcPass="gameadmin"
+NODE_IP="192.168.1.129"
+NODE_PORT_HTTP="8081"
+gitHubUser="CAEUser"
+gitHubUserMail="CAEAddress@gmail.com"
+gitHubOrganizationOrigin="CAE-Community-Application-Editor"
+
+gitHubUserNewRepo="CAEGamifiedUser"
+gitHubUserMailNewRepo="CAEGamified@gmail.com"
+gitHubOrganizationNewRepo="CAE-Gamified"
+gitHubPasswordNewRepo=

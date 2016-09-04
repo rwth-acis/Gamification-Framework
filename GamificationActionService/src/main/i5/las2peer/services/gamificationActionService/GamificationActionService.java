@@ -269,7 +269,7 @@ public class GamificationActionService extends Service {
 				try{
 					actionAccess.addNewAction(appId, action);
 					objResponse.put("message", "Action upload success (" + actionid +")");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Action created : " + actionid + " : " + appId + " : " + userAgent);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_6, "Action created : " + actionid + " : " + appId + " : " + userAgent);
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 				} catch (SQLException e) {
@@ -376,7 +376,7 @@ public class GamificationActionService extends Service {
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			    	
 			    	String actionString = objectMapper.writeValueAsString(action);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Action fetched : " + actionId + " : " + appId + " : " + userAgent);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_7, "Action fetched : " + actionId + " : " + appId + " : " + userAgent);
 					return new HttpResponse(actionString, HttpURLConnection.HTTP_OK);
 				}
 				else{
@@ -516,7 +516,7 @@ public class GamificationActionService extends Service {
 				actionAccess.updateAction(appId, action);
 				logger.info("action updated >> ");
 				objResponse.put("message", "action updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Action updated : " + action.getId() + " : " + appId + " : " + userAgent);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_8, "Action updated : " + action.getId() + " : " + appId + " : " + userAgent);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -599,7 +599,7 @@ public class GamificationActionService extends Service {
 			actionAccess.deleteAction(appId, actionId);
 			
 			objResponse.put("message", "Action deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Action deleted : " + actionId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_9, "Action deleted : " + actionId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -684,7 +684,7 @@ public class GamificationActionService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", achievementArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Actions fetched" + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10, "Actions fetched" + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {

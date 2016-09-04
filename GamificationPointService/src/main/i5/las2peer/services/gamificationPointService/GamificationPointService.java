@@ -318,7 +318,7 @@ public class GamificationPointService extends Service {
 				storeConfigurationToSystem(appId, objRetrieve);
 				logger.info(objRetrieve.toJSONString());
 				objResponse.put("message", "Unit name "+unitName+" is updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Point unit name updated : " + unitName + " : " + appId + " : " + userAgent);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, "Point unit name updated : " + unitName + " : " + appId + " : " + userAgent);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -387,7 +387,7 @@ public class GamificationPointService extends Service {
 			if(pointUnitName==null){
 				objRetrieve.put("pointUnitName", "");
 			}
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Point unit name fetched : " + pointUnitName + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32, "Point unit name fetched : " + pointUnitName + " : " + appId + " : " + userAgent);
 			
 			return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
 	

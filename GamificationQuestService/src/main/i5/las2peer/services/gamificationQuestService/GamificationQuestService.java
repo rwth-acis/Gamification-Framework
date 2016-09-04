@@ -380,7 +380,7 @@ public class GamificationQuestService extends Service {
 			model.setActionIds(questactionids);
 			questAccess.addNewQuest(appId, model);
 			objResponse.put("message", "New quest created " + questid);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Quest created : " + questid + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_33, "Quest created : " + questid + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 		} catch (MalformedStreamException e) {
@@ -481,7 +481,7 @@ public class GamificationQuestService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String questString = objectMapper.writeValueAsString(quest);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Quest fetched : " + quest.getId() + " : " + appId + " : " + userAgent);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_34, "Quest fetched : " + quest.getId() + " : " + appId + " : " + userAgent);
 			return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
@@ -637,7 +637,7 @@ public class GamificationQuestService extends Service {
 				questAccess.updateQuest(appId, quest);
 				logger.info("Quest Updated ");
 				objResponse.put("message", "Cannot update quest. Quest updated " + questId);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Quest updated : " + quest.getId() + " : " + appId + " : " + userAgent);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_35, "Quest updated : " + quest.getId() + " : " + appId + " : " + userAgent);
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
@@ -713,7 +713,7 @@ public class GamificationQuestService extends Service {
 			questAccess.deleteQuest(appId, questId);
 			
 			objResponse.put("message", "quest Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Quest deleted : " + questId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_36, "Quest deleted : " + questId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -810,7 +810,7 @@ public class GamificationQuestService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", questArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Quests fetched" + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37, "Quests fetched" + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {

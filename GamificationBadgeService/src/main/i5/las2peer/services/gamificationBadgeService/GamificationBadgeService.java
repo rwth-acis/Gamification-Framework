@@ -431,7 +431,7 @@ public class GamificationBadgeService extends Service {
 					try{
 						badgeAccess.addNewBadge(appId, badge);
 						objResponse.put("message", "Badge upload success (" + badgeid +")");
-				    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Badge created : " + badgeid + " : " + appId + " : " + userAgent);
+				    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, "Badge created : " + badgeid + " : " + appId + " : " + userAgent);
 						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 					} catch (SQLException e) {
@@ -640,7 +640,7 @@ public class GamificationBadgeService extends Service {
 			try{
 				badgeAccess.updateBadge(appId, currentBadge);
 				objResponse.put("message", "Badge updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Badge updated : " + currentBadge.getId() + " : " + appId + " : " + userAgent);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, "Badge updated : " + currentBadge.getId() + " : " + appId + " : " + userAgent);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -728,7 +728,7 @@ public class GamificationBadgeService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String badgeString = objectMapper.writeValueAsString(badge);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Badge fetched : " + badge.getId() + " : " + appId + " : " + userAgent);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_22, "Badge fetched : " + badge.getId() + " : " + appId + " : " + userAgent);
 			return new HttpResponse(badgeString, HttpURLConnection.HTTP_OK);
 
 		} catch (JsonProcessingException e) {
@@ -805,7 +805,7 @@ public class GamificationBadgeService extends Service {
 
 			}
 			objResponse.put("message", "File Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Badge deleted : " + badgeId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_23, "Badge deleted : " + badgeId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -902,7 +902,7 @@ public class GamificationBadgeService extends Service {
 			objResponse.put("rows", badgeArray);
 			objResponse.put("total", totalNum);
 			logger.info(objResponse.toJSONString());
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Badges fetched" + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, "Badges fetched" + " : " + appId + " : " + userAgent);
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -973,7 +973,7 @@ public class GamificationBadgeService extends Service {
 			}
 			byte[] filecontent = getBadgeImageMethod(appId, badgeId);
 
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Badge image fetched : " + badgeId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, "Badge image fetched : " + badgeId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(filecontent, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			e.printStackTrace();
