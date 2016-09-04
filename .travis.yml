@@ -5,12 +5,11 @@ jdk:
 #- openjdk7
 - oraclejdk8
 before_script:
-  - sudo su - postgres
   - psql --version
-  - psql -U postgres -d postgres -a -f ./psql/dbcreation.sql
-  - export PGPASSWORD=""
-  - psql -U gameadmin -d gamificationdb -a -f ./psql/db.sql
-  - export PGPASSWORD="gameadmin"
+  - sudo su postgres -c "psql -c \"CREATE USER gameadmin WITH PASSWORD 'gameadmin';\""
+  - sudo su postgres -c "psql -U postgres -d postgres -a -f ./psql/dbcreation.sql;"
+  - sudo su postgres -c "psql -U postgres -d gamificationdb -a -f ./psql/db.sql;"
+
 script:
   - sh _make.sh all
 sudo: required
