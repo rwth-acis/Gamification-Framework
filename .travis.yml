@@ -10,5 +10,5 @@ before_script:
 - psql -U postgres -d postgres -a -f ./psql/dbcreation.sql
 - psql -U postgres -d gamificationdb -a -f ./psql/db.sql
 script:
-- sh _make.sh all
+- bash _make.sh all
 sudo: required
