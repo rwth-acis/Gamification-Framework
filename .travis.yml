@@ -12,5 +12,5 @@ before_script:
   - psql -U gameadmin -d gamificationdb -a -f ./psql/db.sql
   - export PGPASSWORD="gameadmin"
 script:
-  - sh make.sh all
+  - sh _make.sh all
 sudo: false
