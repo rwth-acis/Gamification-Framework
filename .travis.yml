@@ -1,6 +1,6 @@
 language: java
-addons:
-  postgresql: "9.5"
+services:
+- postgresql
 jdk:
 #- openjdk7
 - oraclejdk8
