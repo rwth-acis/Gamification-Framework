@@ -4,8 +4,24 @@ services:
 jdk:
 #- openjdk7
 - oraclejdk8
+env:
+  global:
+  - NODE_ENV=test
+  - PGPORT=5433
+  - PGHOST=localhost
+
+addons:
+  apt:
+    sources:
+    - precise-pgdg-9.5
+    packages:
+    - postgresql-9.5
+    - postgresql-contrib-9.5
+  postgresql: 9.5
+
 before_script:
-- psql --version
+- sudo cp /etc/postgresql/9.4/main/pg_hba.conf /etc/postgresql/9.5/main/pg_hba.conf
+- sudo /etc/init.d/postgresql restart
 - psql -c "CREATE USER gameadmin WITH PASSWORD 'gameadmin';" -U postgres
 - psql -U postgres -d postgres -a -f ./psql/dbcreation.sql
 - psql -U postgres -d gamificationdb -a -f ./psql/db.sql
