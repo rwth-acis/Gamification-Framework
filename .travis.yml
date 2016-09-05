@@ -1,6 +1,4 @@
 language: java
-services:
-- postgresql
 jdk:
 #- openjdk7
 - oraclejdk8
