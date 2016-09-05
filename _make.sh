@@ -8,7 +8,6 @@ elif [ "$1" == "clean" ]; then
   ant clean_all_projects
 elif [ "$1" == "all" ]; then
   echo "[Build all]"
-	ant get_deps_all_projects
   ant build_all_projects
 else
   echo "Argument is not recognized!, try \"build\",\"clean\", or \"all\" "

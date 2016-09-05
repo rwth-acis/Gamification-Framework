@@ -374,34 +374,20 @@ agent-${service.class}.xml;${service.password}
             <target name="junit"/>
         </subant>
 	</target>
-	<target name="get_deps_all_projects">
-	    <subant>
-	            <filelist dir="../">
-	                <file name="GamificationBadgeService/build.xml"/>
-	                <file name="GamificationPointService/build.xml"/>
-	        		<file name="GamificationApplicationService/build.xml"/>
-	                <file name="GamificationAchievementService/build.xml"/>
-	                <file name="GamificationActionService/build.xml"/>
-	                <file name="GamificationLevelService/build.xml"/>
-	                <file name="GamificationQuestService/build.xml"/>
-	              <file name="GamificationVisualizationService/build.xml"/>
-	            </filelist>
-	            <target name="get_deps"/>
-	        </subant>
-	  </target>
-  <target name="build_all_projects">
+	
+  <target name="build_all_projects" depends="build_all_projects_only">
     <subant>
             <filelist dir="../">
-                <file name="GamificationBadgeService/build.xml"/>
-                <file name="GamificationPointService/build.xml"/>
-        		<file name="GamificationApplicationService/build.xml"/>
+            	<file name="GamificationApplicationService/build.xml"/>
+            	<file name="GamificationBadgeService/build.xml"/>
                 <file name="GamificationAchievementService/build.xml"/>
                 <file name="GamificationActionService/build.xml"/>
                 <file name="GamificationLevelService/build.xml"/>
+                <file name="GamificationPointService/build.xml"/>
                 <file name="GamificationQuestService/build.xml"/>
-              <file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationVisualizationService/build.xml"/>
             </filelist>
-            <target name="all"/>
+            <target name="junit"/>
         </subant>
   </target>
 </project>
