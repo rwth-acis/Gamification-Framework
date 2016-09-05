@@ -25,4 +25,5 @@ before_script:
 - psql -U postgres -d gamificationdb -a -f ./psql/db.sql
 script:
 - bash _make.sh all
+- cat GamificationApplicationService/export/test_reports/TEST-i5.las2peer.services.gamificationApplicationService.GamificationApplicationServiceTest.txt
 sudo: required

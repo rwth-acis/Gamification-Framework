@@ -4,4 +4,4 @@ CREATE DATABASE gamificationdb;
 
 GRANT CONNECT, TEMPORARY ON DATABASE gamificationdb TO public;
 GRANT ALL ON DATABASE gamificationdb TO gameadmin;
-GRANT ALL ON DATABASE gamificationdb TO gameuser;
+--GRANT ALL ON DATABASE gamificationdb TO gameuser;
