@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import i5.las2peer.services.gamificationActionService.database.ActionDAO.NotificationType;
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel.QuestStatus;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -296,14 +297,14 @@ public class MemberDAO {
 	}
 	
 	/**
-	 * Get level of a member
+	 * Get status of a member
 	 * 
 	 * @param appId application id
 	 * @param memberId member id
 	 * @return member point
 	 * @throws SQLException sql exception
 	 */
-	public JSONObject getMemberPointLevel(String appId, String memberId) throws SQLException{
+	public JSONObject getMemberStatus(String appId, String memberId) throws SQLException{
 		Integer currentLevel = 0;
 		Integer memberPoint = 0;
 		JSONObject resObj = new JSONObject();
@@ -326,13 +327,13 @@ public class MemberDAO {
 			if(rs.next()){
 				Integer nextLevelPointThreshold = rs.getInt("point_value");
 				Integer nextLevelNum = rs.getInt("level_num");
-				Integer progress = Math.round((memberPoint - currentLevelPointThreshold)/(nextLevelPointThreshold - currentLevelPointThreshold));
+				float progress = (float) (((float)(memberPoint - currentLevelPointThreshold)/(float)(nextLevelPointThreshold - currentLevelPointThreshold)) * 100.0);
 				
 				resObj.put("memberLevel", currentLevel);
 				resObj.put("memberPoint", memberPoint);
 				resObj.put("nextLevel", nextLevelNum);
 				resObj.put("nextLevelPoint", nextLevelPointThreshold);
-				resObj.put("progress", progress);
+				resObj.put("progress", Math.round(progress));
 				
 				
 			}
@@ -343,6 +344,15 @@ public class MemberDAO {
 				resObj.put("nextLevel", null);
 				resObj.put("nextLevelPoint", null);
 				resObj.put("progress", 100);
+			}
+			
+			stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+appId+".member_point) SELECT * FROM sorted WHERE member_id = '"+memberId+"' LIMIT 1");
+			ResultSet rs2 = stmt.executeQuery();
+			if (rs2.next()) {
+				resObj.put("rank", rs2.getInt("row_number"));
+			}
+			else{
+				resObj.put("rank", "-");
 			}
 		}
 		else{
@@ -434,5 +444,34 @@ public class MemberDAO {
 			else{
 				return 0;
 			}
+	}
+	
+	public static enum NotificationType {
+		BADGE,
+		ACHIEVEMENT,
+		QUEST,
+		LEVEL,
+	}
+	
+	public JSONArray getMemberNotification(String appId, String memberId) throws SQLException{
+		JSONArray resArray = new JSONArray();
+
+		// Fetch notifications caused by action
+		stmt = conn.prepareStatement("SELECT * FROM "+appId+".notification WHERE member_id = ?");
+		stmt.setString(1, memberId);
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()){
+			if(rs.getBoolean("use_notification")){
+				JSONObject resObj = new JSONObject();
+				resObj.put("memberId", rs.getString("member_id"));
+				resObj.put("type", NotificationType.valueOf(rs.getString("type")));
+				resObj.put("typeId", rs.getString("type_id"));
+				resObj.put("message", rs.getString("message"));
+				resObj.put("otherMessage", rs.getString("other_message"));
+				resArray.add(resObj);
+			}
+		}
+		
+		return resArray;
 	}
 }

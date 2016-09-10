@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.sql.SQLException;
+import java.util.Random;
 import java.util.logging.Level;
 
 import javax.ws.rs.GET;
@@ -287,6 +288,12 @@ public class GamificationPointService extends Service {
 			@ApiParam(value = "Application ID to return")@PathParam("appId") String appId,
 			@ApiParam(value = "Point unit name")@PathParam("unitName") String unitName)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/points/"+appId+"/name/"+unitName);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
+		
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -299,6 +306,8 @@ public class GamificationPointService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			
 			if(!pointAccess.isAppIdExist(appId)){
 				objResponse.put("message", "Cannot update point unit name. App not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -318,7 +327,9 @@ public class GamificationPointService extends Service {
 				storeConfigurationToSystem(appId, objRetrieve);
 				logger.info(objRetrieve.toJSONString());
 				objResponse.put("message", "Unit name "+unitName+" is updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, "Point unit name updated : " + unitName + " : " + appId + " : " + userAgent);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+appId);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -357,6 +368,12 @@ public class GamificationPointService extends Service {
 	public HttpResponse getUnitName(
 			@ApiParam(value = "Application ID to return")@PathParam("appId") String appId)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/points/"+appId+"/name");
+		long randomLong = new Random().nextLong(); //To be able to match
+			
+		
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -369,6 +386,8 @@ public class GamificationPointService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			
 			if(!pointAccess.isAppIdExist(appId)){
 				objResponse.put("message", "Cannot get point unit name. App not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -387,7 +406,9 @@ public class GamificationPointService extends Service {
 			if(pointUnitName==null){
 				objRetrieve.put("pointUnitName", "");
 			}
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32, "Point unit name fetched : " + pointUnitName + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+appId);
 			
 			return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
 	
@@ -402,6 +423,23 @@ public class GamificationPointService extends Service {
 
 		}
 		
+	}
+	
+	public String getUnitNameRMI(String appId, String memberId){
+		JSONObject objRetrieve;
+		try {
+			objRetrieve = fetchConfigurationFromSystem(appId);
+			String pointUnitName = (String) objRetrieve.get("pointUnitName");
+			if(pointUnitName==null){
+				pointUnitName = "";
+			}
+				
+			return pointUnitName;	
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "";
+		}
 	}
 
 	/**

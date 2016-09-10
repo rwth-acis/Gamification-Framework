@@ -8,7 +8,8 @@ jdbcHost=$jdbcHost\n\
 jdbcPort=$jdbcPort\n\
 jdbcSchema=$jdbcSchema\n\
 jdbcLogin=$jdbcLogin\n\
-jdbcPass=$jdbcPass"
+jdbcPass=$jdbcPass\n\
+monitor=TRUE"
 
 CONF_APP_PROPERTIES="jdbcDriverClassName=$jdbcDriverClassName\n\
 jdbcHost=$jdbcHost\n\
@@ -23,7 +24,8 @@ gitHubOrganizationOrigin=$gitHubOrganizationOrigin\n\
 gitHubUserNewRepo=$gitHubUserNewRepo\n\
 gitHubUserMailNewRepo=$gitHubUserMailNewRepo\n\
 gitHubOrganizationNewRepo=$gitHubOrganizationNewRepo\n\
-gitHubPasswordNewRepo=$gitHubPasswordNewRepo"
+gitHubPasswordNewRepo=$gitHubPasswordNewRepo\n\
+monitor=TRUE"
 
 echo "Writing properties onfiguration "
 printf $CONF_PROPERTIES > GamificationAchievementService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties

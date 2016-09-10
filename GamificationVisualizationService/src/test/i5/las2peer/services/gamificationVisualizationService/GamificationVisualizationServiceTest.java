@@ -293,12 +293,12 @@ public class GamificationVisualizationServiceTest {
 	}
 	
 	@Test
-	public void testA2_getPointAndLevelOfMember()
+	public void testA2_getStatusOfMember()
 	{
 		System.out.println("Test --- Get Point And Level Of Member");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET", mainPath + "levels/"+appId+"/"+memberId, ""); // testInput is
+			ClientResponse result = c1.sendRequest("GET", mainPath + "status/"+appId+"/"+memberId, ""); // testInput is
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {

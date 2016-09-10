@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 
 import javax.ws.rs.GET;
@@ -40,7 +41,6 @@ import i5.las2peer.services.gamificationVisualizationService.database.MemberDAO;
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel;
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel.QuestStatus;
 import i5.las2peer.services.gamificationVisualizationService.database.SQLDatabase;
-import i5.las2peer.services.gamificationVisualizationService.helper.ErrorResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -556,6 +556,7 @@ public class GamificationVisualizationService extends Service {
 			return unauthorizedMessage();
 		}
 		if(!initializeDBConnection()){
+			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
 			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
@@ -563,6 +564,7 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			if(!managerAccess.isAppIdExist(appId)){
+				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
@@ -570,11 +572,13 @@ public class GamificationVisualizationService extends Service {
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			// Add Member to App
@@ -588,6 +592,7 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
@@ -599,7 +604,7 @@ public class GamificationVisualizationService extends Service {
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
-	@Path("/levels/{appId}/{memberId}")
+	@Path("/status/{appId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Selected"),
@@ -608,10 +613,12 @@ public class GamificationVisualizationService extends Service {
 	})
 	@ApiOperation(value = "",
 				  notes = "Select an App")
-	public HttpResponse getPointAndLevelOfMember(
+	public HttpResponse getStatusOfMember(
 			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
+		long randomLong = new Random().nextLong(); //To be able to match 
+		
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -621,27 +628,50 @@ public class GamificationVisualizationService extends Service {
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 
 		try {
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32, ""+randomLong);
+			
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
+			
+			// Get point name
+			// RMI call with parameters
+			String pointUnitName = "";
+			try {
+				pointUnitName = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "getUnitNameRMI",
+						new Serializable[] { appId, memberId });
+
+				
+			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
+					| TimeoutException e) {
+				e.printStackTrace();
+				pointUnitName = "";
+			}
+			
 			// Add Member to App
-			JSONObject obj = memberAccess.getMemberPointLevel(appId, memberId);
+			JSONObject obj = memberAccess.getMemberStatus(appId, memberId);
+			obj.put("pointUnitName", pointUnitName);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_33, ""+randomLong);
 			
 			return new HttpResponse(obj.toJSONString(), HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
@@ -650,9 +680,12 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
+	
+
 	
 	/**
 	 * Get gamification badges for a specific member
@@ -674,6 +707,8 @@ public class GamificationVisualizationService extends Service {
 			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
+		long randomLong = new Random().nextLong(); //To be able to match 
+		
 		JSONObject objResponse = new JSONObject();
 		List<BadgeModel> badges = new ArrayList<BadgeModel>();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -684,13 +719,17 @@ public class GamificationVisualizationService extends Service {
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 
 		try {
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38, ""+randomLong);
+			
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
@@ -701,6 +740,7 @@ public class GamificationVisualizationService extends Service {
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			// Add Member to App
@@ -709,6 +749,7 @@ public class GamificationVisualizationService extends Service {
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			String response =  objectMapper.writeValueAsString(badges);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39, ""+randomLong);
 			return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			
@@ -716,6 +757,7 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -723,6 +765,7 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
@@ -749,6 +792,8 @@ public class GamificationVisualizationService extends Service {
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
 			@ApiParam(value = "Quest status", required = true)@PathParam("statusId") String statusId)
 	{
+		long randomLong = new Random().nextLong(); //To be able to match 
+		
 		JSONObject objResponse = new JSONObject();
 		List<QuestModel> quests = new ArrayList<QuestModel>();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -759,23 +804,29 @@ public class GamificationVisualizationService extends Service {
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 
 		try {
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_42, ""+randomLong);
+			
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			// Add Member to App
@@ -788,12 +839,14 @@ public class GamificationVisualizationService extends Service {
 			else{
 				logger.info("Status is not recognized >> ");
 				objResponse.put("message", "Quest satus is not recognized");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			ObjectMapper objectMapper = new ObjectMapper();
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			String response =  objectMapper.writeValueAsString(quests);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_43, ""+randomLong);
 			return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			
@@ -801,6 +854,7 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -808,11 +862,13 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.info("IOException >> " + e.getMessage());
 			objResponse.put("message", "Error when getting quests ");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
@@ -839,6 +895,7 @@ public class GamificationVisualizationService extends Service {
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
 			@ApiParam(value = "Quest ID", required = true)@PathParam("questId") String questId)
 	{
+		
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -848,6 +905,7 @@ public class GamificationVisualizationService extends Service {
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 
@@ -855,16 +913,19 @@ public class GamificationVisualizationService extends Service {
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			JSONObject outObj = memberAccess.getMemberQuestProgress(appId, memberId, questId);
@@ -875,6 +936,7 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -882,11 +944,13 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.info("IOException >> " + e.getMessage());
 			objResponse.put("message", "Error when getting quests ");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
@@ -911,6 +975,8 @@ public class GamificationVisualizationService extends Service {
 			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
+		long randomLong = new Random().nextLong(); //To be able to match 
+		
 		JSONObject objResponse = new JSONObject();
 		List<AchievementModel> ach = new ArrayList<AchievementModel>();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -921,23 +987,29 @@ public class GamificationVisualizationService extends Service {
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 
 		try {
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_40, ""+randomLong);
+			
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 				ach = memberAccess.getMemberAchievements(appId, memberId);
@@ -945,6 +1017,7 @@ public class GamificationVisualizationService extends Service {
 		    	//Set pretty printing of json
 		    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 				String response =  objectMapper.writeValueAsString(ach);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_41, ""+randomLong);
 				return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -953,6 +1026,7 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -960,6 +1034,7 @@ public class GamificationVisualizationService extends Service {
 
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
@@ -997,26 +1072,31 @@ public class GamificationVisualizationService extends Service {
 			if(!initializeDBConnection()){
 				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!memberAccess.isMemberHasBadge(appId, memberId, badgeId)){
 				logger.info("Error. member "+ memberId +" does not have a badge " + badgeId +".");
 				objResponse.put("message", "Error. member "+ memberId +" does not have a badge " + badgeId +".");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			// RMI call with parameters
@@ -1031,17 +1111,20 @@ public class GamificationVisualizationService extends Service {
 				e.printStackTrace();
 				logger.info("Error cannot retrieve file " + e.getMessage());
 				objResponse.put("message", "Error cannot retrieve file " + e.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
 			logger.info("Error cannot retrieve file ");
 			objResponse.put("message", "Error cannot retrieve file ");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.info("Database error >>  " + e.getMessage());
 			objResponse.put("message", "Database error " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 		}
@@ -1083,21 +1166,25 @@ public class GamificationVisualizationService extends Service {
 			if(!initializeDBConnection()){
 				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!memberAccess.isMemberHasBadge(appId, memberId, badgeId)){
@@ -1117,6 +1204,7 @@ public class GamificationVisualizationService extends Service {
 				}
 				logger.info("Cannot find badge with " + badgeId);
 				objResponse.put("message", "Cannot find badge with " + badgeId);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
@@ -1124,6 +1212,7 @@ public class GamificationVisualizationService extends Service {
 				e.printStackTrace();
 				logger.info("Cannot find badge with " + badgeId + ". " + e.getMessage());
 				objResponse.put("message", "Cannot find badge with " + badgeId + ". " + e.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
@@ -1131,6 +1220,7 @@ public class GamificationVisualizationService extends Service {
 			e.printStackTrace();
 			logger.info("Database Error ");
 			objResponse.put("message", "Database Error ");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -1170,6 +1260,7 @@ public class GamificationVisualizationService extends Service {
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 		
@@ -1177,16 +1268,19 @@ public class GamificationVisualizationService extends Service {
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			// RMI call with parameters
@@ -1199,6 +1293,7 @@ public class GamificationVisualizationService extends Service {
 				}
 				logger.info("Cannot find badge with " + questId);
 				objResponse.put("message", "Cannot find badge with " + questId);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
@@ -1206,6 +1301,7 @@ public class GamificationVisualizationService extends Service {
 				e.printStackTrace();
 				logger.info("Cannot find badge with " + questId + ". " + e.getMessage());
 				objResponse.put("message", "Cannot find badge with " + questId + ". " + e.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
@@ -1213,6 +1309,7 @@ public class GamificationVisualizationService extends Service {
 			e.printStackTrace();
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -1256,26 +1353,31 @@ public class GamificationVisualizationService extends Service {
 				if(!initializeDBConnection()){
 				logger.info("Cannot connect to database >> ");
 				objResponse.put("message", "Cannot connect to database");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!memberAccess.isMemberHasAchievement(appId, memberId, achievementId)){
 				logger.info("Error. member "+ memberId +" does not have an achievement " + achievementId +".");
 				objResponse.put("message", "Member "+ memberId +" does not have an achievement " + achievementId +".");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			// RMI call with parameters
@@ -1289,6 +1391,7 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(Event.RMI_FAILED, "Get Achievement with ID RMI failed");
 				logger.info("Cannot find achievement with " + achievementId);
 				objResponse.put("message", "Cannot find achievement with " + achievementId);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
@@ -1297,6 +1400,7 @@ public class GamificationVisualizationService extends Service {
 				logger.info("Cannot find achievement with " + achievementId + ". " + e.getMessage());
 				L2pLogger.logEvent(Event.RMI_FAILED, "Get Achievement with ID RMI failed. " + e.getMessage());
 				objResponse.put("message", "Cannot find achievement with " + achievementId + ". " + e.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
@@ -1305,6 +1409,7 @@ public class GamificationVisualizationService extends Service {
 			e.printStackTrace();
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 		}
@@ -1335,34 +1440,40 @@ public class GamificationVisualizationService extends Service {
 			@ApiParam(value = "Application ID", required = true) @PathParam("appId") String appId,
 			@ApiParam(value = "Action ID", required = true) @PathParam("actionId") String actionId,
 			@ApiParam(value = "Member ID", required = true) @PathParam("memberId") String memberId)  {
+		long randomLong = new Random().nextLong(); //To be able to match 
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
-			return ErrorResponse.Unauthorized(this, logger, objResponse);
+			return unauthorizedMessage();
 		}
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
-			return ErrorResponse.InternalError(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
 		
 		try {
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38, ""+randomLong);
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
-				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
-				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
-				return ErrorResponse.BadRequest(this, logger, new Exception((String) objResponse.get("message")), objResponse);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			
 			// RMI call with parameters
@@ -1371,18 +1482,24 @@ public class GamificationVisualizationService extends Service {
 				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationActionService.GamificationActionService@0.1", "triggerActionRMI",
 						new Serializable[] { appId, memberId, actionId });
 				if (result != null) {
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39, ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_44, ""+appId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_45, ""+memberId);
+					
 					return new HttpResponse(result, HttpURLConnection.HTTP_OK);
 				}
 				logger.info("Cannot trigger action " + actionId);
 				objResponse.put("message", "Cannot trigger action " + actionId);
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
 					| TimeoutException e) {
 				e.printStackTrace();
 				logger.info("Cannot trigger action " + actionId + ". " + e.getMessage());
 				objResponse.put("message", "Cannot trigger action " + actionId + ". " + e.getMessage());
-				return ErrorResponse.InternalError(this, logger, e, objResponse);
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 			}
 
@@ -1390,7 +1507,9 @@ public class GamificationVisualizationService extends Service {
 			e.printStackTrace();
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
-			return ErrorResponse.InternalError(this, logger, e, objResponse);
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+
 		}
 	}
 	
@@ -1422,6 +1541,7 @@ public class GamificationVisualizationService extends Service {
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
 	{
+		long randomLong = new Random().nextLong(); //To be able to match 
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -1431,40 +1551,67 @@ public class GamificationVisualizationService extends Service {
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 		
 		try {
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_34, ""+randomLong);
+			
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			
+			// Get point name
+			// RMI call with parameters
+			String pointUnitName = "";
+			try {
+				pointUnitName = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "getUnitNameRMI",
+						new Serializable[] { appId, memberId });
+
+				
+			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
+					| TimeoutException e) {
+				e.printStackTrace();
+				pointUnitName = "";
 			}
 			
 			int offset = (currentPage - 1) * windowSize;
 			int totalNum = memberAccess.getNumberOfMembers(appId);
 			JSONArray arrResult = memberAccess.getMemberLocalLeaderboard(appId, offset, windowSize, searchPhrase);
 			
+			for(int i = 0; i < arrResult.size(); i++){
+				JSONObject object = (JSONObject) arrResult.get(i);
+				object.replace("pointValue", object.get("pointValue")+" "+pointUnitName);
+			}
+			
 			objResponse.put("current", currentPage);
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", arrResult);
 			objResponse.put("total", totalNum);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_35, ""+randomLong);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 		}
@@ -1497,6 +1644,7 @@ public class GamificationVisualizationService extends Service {
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
 	{
+		long randomLong = new Random().nextLong(); //To be able to match 
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -1506,23 +1654,29 @@ public class GamificationVisualizationService extends Service {
 		if(!initializeDBConnection()){
 			logger.info("Cannot connect to database >> ");
 			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 		
 		try {
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_36, ""+randomLong);
+			
 			if(!managerAccess.isAppIdExist(appId)){
 				logger.info("App not found >> ");
 				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegistered(memberId)){
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
 				logger.info("Member is not registered in App >> ");
 				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			
@@ -1534,12 +1688,80 @@ public class GamificationVisualizationService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", arrResult);
 			objResponse.put("total", totalNum);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37, ""+randomLong);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+
+		}
+	}
+	
+	@GET
+	@Path("/notifications/{appId}/{memberId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return global leaderboard"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
+	@ApiOperation(value = "Get the local leaderboard", 
+				  notes = "Returns a leaderboard array",
+				  authorizations = @Authorization(value = "api_key")
+				  )
+	public HttpResponse getNotification(
+			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
+			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
+			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
+			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
+	{
+		JSONObject objResponse = new JSONObject();
+		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+		String name = userAgent.getLoginName();
+		if(name.equals("anonymous")){
+			return unauthorizedMessage();
+		}
+		if(!initializeDBConnection()){
+			logger.info("Cannot connect to database >> ");
+			objResponse.put("message", "Cannot connect to database");
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+		}
+		
+		try {
+			if(!managerAccess.isAppIdExist(appId)){
+				logger.info("App not found >> ");
+				objResponse.put("message", "App not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			if(!managerAccess.isMemberRegistered(memberId)){
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			if(!managerAccess.isMemberRegisteredInApp(memberId,appId)){
+				logger.info("Member is not registered in App >> ");
+				objResponse.put("message", "Member is not registered in App");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			
+			JSONArray arrResult = memberAccess.getMemberNotification(appId,memberId);
+			
+			
+			return new HttpResponse(arrResult.toJSONString(), HttpURLConnection.HTTP_OK);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.info("DB Error >> " + e.getMessage());
+			objResponse.put("message", "DB Error. " + e.getMessage());
+			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 		}
