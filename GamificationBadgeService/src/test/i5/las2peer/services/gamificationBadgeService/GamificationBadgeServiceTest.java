@@ -74,7 +74,7 @@ public class GamificationBadgeServiceTest {
 	 */
 	@BeforeClass
 	public static void startServer() throws Exception {
-
+	     
 		// start node
 		node = LocalNode.newNode();
 		

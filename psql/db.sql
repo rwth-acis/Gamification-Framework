@@ -58,7 +58,7 @@ CREATE INDEX fki_member_id
 
 CREATE OR REPLACE FUNCTION create_new_application(new_schema text) RETURNS void AS
 $BODY$
-DECLARE 
+DECLARE
   completed text;
   revealed text;
   hidden text;
@@ -73,7 +73,7 @@ BEGIN
 	, email character varying(50)
 	, CONSTRAINT member_id PRIMARY KEY (member_id)
 	);';
-	
+
 	EXECUTE 'CREATE TABLE ' || new_schema || '.badge (
 	  badge_id character varying(20) NOT NULL
 	, name character varying(20) NOT NULL
@@ -83,7 +83,7 @@ BEGIN
 	, notif_message character varying
 	, CONSTRAINT badge_id PRIMARY KEY (badge_id)
 	);';
-	
+
 	EXECUTE 'CREATE TABLE ' || new_schema || '.achievement (
 	  achievement_id character varying(20) NOT NULL
 	, name character varying(20) NOT NULL
@@ -96,14 +96,14 @@ BEGIN
 	, CONSTRAINT badge_id FOREIGN KEY (badge_id)
 	      REFERENCES '|| new_schema ||'.badge (badge_id) ON UPDATE CASCADE ON DELETE CASCADE
 	);';
-	
+
 	  completed := 'COMPLETED';
 	  revealed := 'REVEALED';
 	  hidden := 'HIDDEN';
-	  
+
 	EXECUTE 'CREATE TYPE ' || new_schema || '.quest_status AS ENUM ('|| quote_literal(completed) ||','|| quote_literal(revealed) ||','|| quote_literal(hidden) ||');';
 
-	
+
 	EXECUTE 'CREATE TABLE ' || new_schema || '.quest (
 	  quest_id character varying(20) NOT NULL
 	, name character varying(20) NOT NULL
@@ -123,7 +123,7 @@ BEGIN
 	      REFERENCES ' || new_schema || '.quest (quest_id) ON UPDATE CASCADE ON DELETE CASCADE
 	, CHECK (point_value >= 0)
 	);';
-	
+
 	EXECUTE 'CREATE TABLE ' || new_schema || '.level (
 	  level_num integer NOT NULL
 	, name character varying(20) NOT NULL
@@ -133,10 +133,10 @@ BEGIN
 	, CONSTRAINT level_num PRIMARY KEY (level_num)
 	, CHECK (point_value >= 0)
 	);
-	
+
  	INSERT INTO ' || new_schema || '.level VALUES (0,''START'',0);
 	';
-	
+
 	EXECUTE 'CREATE TABLE ' || new_schema || '.action (
 	  action_id character varying(20) NOT NULL
 	, name character varying(20) NOT NULL
@@ -158,7 +158,7 @@ BEGIN
 	      REFERENCES ' || new_schema || '.level (level_num) ON UPDATE CASCADE ON DELETE CASCADE  -- explicit pk
 	);';
 
-	
+
 	-- one to one
 	EXECUTE 'CREATE TABLE ' || new_schema || '.member_point (
 	  member_id character varying(20) NOT NULL
@@ -169,7 +169,7 @@ BEGIN
 	, CHECK (point_value >= 0)
 	);';
 
-	
+
 	-- m to m
 	-- unique relation (member, badge)
 	EXECUTE 'CREATE TABLE ' || new_schema || '.member_badge (
@@ -181,7 +181,7 @@ BEGIN
 	, CONSTRAINT badge_id FOREIGN KEY (badge_id)
 	      REFERENCES '|| new_schema ||'.badge (badge_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
 	);';
-	
+
 	-- m to m
 	-- unique relation (member, achievement)
 	EXECUTE 'CREATE TABLE ' || new_schema || '.member_achievement (
@@ -194,7 +194,7 @@ BEGIN
 	      REFERENCES ' || new_schema || '.achievement (achievement_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
 	);';
 
-	
+
 	-- m to m
 	-- unique relation (member, quest)
 	EXECUTE 'CREATE TABLE ' || new_schema || '.member_quest (
@@ -208,7 +208,7 @@ BEGIN
 	      REFERENCES ' || new_schema || '.quest (quest_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
 	);';
 
-	
+
 	-- m to m
 	-- not unique relation (member,action)
 	EXECUTE 'CREATE TABLE ' || new_schema || '.member_action (
@@ -279,7 +279,7 @@ BEGIN
 
 
 	-- trigger
-	
+
 	EXECUTE 'SELECT create_trigger_pointquest_observer(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_action_observer(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_rewards_completed_quest(' || quote_literal(new_schema) || ');';
@@ -294,7 +294,7 @@ LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION delete_application(app_id text) RETURNS void AS
 $BODY$
-DECLARE 
+DECLARE
 comm_type text;
 _found int;
 BEGIN
@@ -332,16 +332,18 @@ BEGIN
 	DELETE FROM manager.member_application WHERE member_id = 'user2';
 	DELETE FROM manager.member_application WHERE member_id = 'user3';
 	DELETE FROM manager.member_application WHERE member_id = 'user4';
- 	
+
 	DELETE FROM manager.application_info WHERE app_id = 'test';
-	
+
 	INSERT INTO manager.member_info VALUES ('user1','User','One','user1@example.com');
 	INSERT INTO manager.member_info VALUES ('user2','User','One','user1@example.com');
 	INSERT INTO manager.member_info VALUES ('user3','User','One','user1@example.com');
 	INSERT INTO manager.member_info VALUES ('user4','User','One','user1@example.com');
 
-	INSERT INTO manager.application_info VALUES ('test','desc','commtype');	
- 	
+	INSERT INTO manager.application_info VALUES ('test','desc','commtype');
+
+	EXECUTE 'SELECT create_new_application('|| quote_literal(schema) ||');';
+
  	EXECUTE '
 	INSERT INTO '|| schema ||'.badge VALUES (''badge1'',''Badge 1'',''The badge number 1'',''http://badge1.example.com'',true,''badge1messagethisis'');
 	INSERT INTO '|| schema ||'.badge VALUES (''badge2'',''Badge 2'',''The badge number 2'',''http://badge2.example.com'',true,''badge2messagethisis'');
@@ -407,6 +409,7 @@ BEGIN
 	INSERT INTO ' || schema || '.member_badge VALUES (''user4'',''badge4'');
 
 	';
+
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -416,10 +419,10 @@ $BODY$
 BEGIN
 	EXECUTE 'DELETE FROM manager.member_application WHERE member_id = '|| quote_literal(member_id) ||' AND app_id = '|| quote_literal(app_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.member WHERE member_id = '|| quote_literal(member_id) ||';';
-	
+
 	-- add and copy member info
 	EXECUTE 'INSERT INTO manager.member_application (member_id, app_id) VALUES ( '|| quote_literal(member_id) ||', '|| quote_literal(app_id) ||');';
-	EXECUTE 'INSERT INTO '|| app_id ||'.member (member_id, first_name, last_name, email) 
+	EXECUTE 'INSERT INTO '|| app_id ||'.member (member_id, first_name, last_name, email)
 		(SELECT member_id, first_name, last_name, email FROM manager.member_info WHERE member_id='||quote_literal(member_id)||');';
 	-- initialize relation table
 	-- Point
@@ -428,17 +431,17 @@ BEGIN
  	EXECUTE 'INSERT INTO '|| app_id ||'.member_level VALUES('|| quote_literal(member_id) ||',0);';
 -- 	-- Quest
 -- 	-- Cross join member_id with (quest_ids and statuses)
- 	EXECUTE 'INSERT INTO '|| app_id ||'.member_quest (member_id, quest_id, status) 
+ 	EXECUTE 'INSERT INTO '|| app_id ||'.member_quest (member_id, quest_id, status)
 	WITH tab1 as (SELECT * FROM '|| app_id ||'.member CROSS JOIN '|| app_id ||'.quest WHERE member_id='|| quote_literal(member_id) ||')
 	SELECT  member_id, quest_id, status FROM tab1;
  	';
 	-- Badge
 	-- Added in the runtime
-	
+
 	-- Action
 	-- initialize table member_quest_action
-	EXECUTE 'INSERT INTO '|| app_id ||'.member_quest_action 
-		WITH newtab as (SELECT * FROM '|| app_id ||'.quest_action CROSS JOIN '|| app_id ||'.member) 
+	EXECUTE 'INSERT INTO '|| app_id ||'.member_quest_action
+		WITH newtab as (SELECT * FROM '|| app_id ||'.quest_action CROSS JOIN '|| app_id ||'.member)
 		SELECT member_id, quest_id, action_id FROM newtab WHERE member_id='|| quote_literal(member_id) ||' ORDER BY member_id ;';
 
 	-- Clean up notification initialization
@@ -477,8 +480,8 @@ current_level integer;
 BEGIN
 	app_id = TG_TABLE_SCHEMA;
 	-- Only point constraint
-	
-	FOR p_quest IN 
+
+	FOR p_quest IN
 		EXECUTE 'SELECT quest_id FROM '|| app_id ||'.quest WHERE point_flag=true AND quest_flag=false AND '|| NEW.point_value ||' >= point_value'
 	LOOP
 		RAISE NOTICE 'myplpgsqlval is currently %', p_quest;       -- either this
@@ -487,7 +490,7 @@ BEGIN
 	END LOOP;
 
 	-- -- Point and quest constraint
-	FOR p_quest IN 
+	FOR p_quest IN
 		EXECUTE 'WITH temp AS (SELECT quest_id FROM '|| app_id ||'.member_quest WHERE status = ''COMPLETED'' AND member_id = '|| quote_literal(NEW.member_id) ||')
 		SELECT '|| app_id ||'.quest.quest_id FROM '|| app_id ||'.quest INNER JOIN temp ON ('|| app_id ||'.quest.quest_id_completed = temp.quest_id) WHERE '|| NEW.point_value ||' >= '|| app_id ||'.quest.point_value AND
 		'|| app_id || '.quest.point_flag=true AND '|| app_id || '.quest.quest_flag=true'
@@ -495,10 +498,10 @@ BEGIN
 		raise notice 'Value: %', p_quest;       -- either this
 		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''REVEALED'' WHERE '|| app_id ||'.member_quest.quest_id='|| quote_literal(p_quest.quest_id) ||' AND '|| app_id ||'.member_quest.member_id = '|| quote_literal(NEW.member_id) ||';' ;
 	END LOOP;
-	
+
 	-- check level, change if point reach the treshold
 	EXECUTE 'SELECT level_num FROM '|| app_id || '.level WHERE point_value <= '|| NEW.point_value ||' ORDER BY level_num DESC LIMIT 1;' INTO current_level;
-	raise notice 'Value level: %', current_level; 
+	raise notice 'Value level: %', current_level;
 	EXECUTE 'UPDATE '|| app_id || '.member_level SET level_num = '|| current_level ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND level_num != '|| current_level ||';';
 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
@@ -515,8 +518,8 @@ app_id character varying(20);
 BEGIN
 	app_id = TG_TABLE_SCHEMA;
 	-- Only point constraint
-	
-	FOR p_quest IN 
+
+	FOR p_quest IN
 		EXECUTE 'SELECT quest_id FROM '|| app_id ||'.quest WHERE point_flag=false AND quest_flag=true AND quest_id_completed = '|| quote_literal(NEW.quest_id) ||' AND '|| quote_literal(NEW.status) ||' = ''COMPLETED'' '
 	LOOP
 		RAISE NOTICE 'myplpgsqlval is currently %', NEW;       -- either this
@@ -525,9 +528,9 @@ BEGIN
 	END LOOP;
 
 	-- -- Point and quest constraint
-	FOR p_quest IN 
+	FOR p_quest IN
 		EXECUTE 'WITH temp as (SELECT * FROM '|| app_id ||'.quest WHERE '|| app_id ||'.quest.quest_id_completed = '|| quote_literal(NEW.quest_id) ||' AND
-										'|| app_id ||'.quest.point_flag = true AND 
+										'|| app_id ||'.quest.point_flag = true AND
 										'|| app_id ||'.quest.quest_flag = true AND
 										'|| quote_literal(NEW.status) ||' = ''COMPLETED'')
 		SELECT quest_id FROM temp WHERE (SELECT point_value FROM '|| app_id ||'.member_point WHERE member_id='|| quote_literal(NEW.member_id) ||' LIMIT 1) >= point_value;'
@@ -544,13 +547,13 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION create_trigger_pointquest_observer(app_id text) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'CREATE TRIGGER point_threshold 
-		AFTER UPDATE ON '|| app_id ||'.member_point 
+	EXECUTE 'CREATE TRIGGER point_threshold
+		AFTER UPDATE ON '|| app_id ||'.member_point
 		FOR EACH ROW
 		EXECUTE PROCEDURE update_quest_status_with_point();';
 
-	EXECUTE 'CREATE TRIGGER quest_threshold 
-		AFTER UPDATE ON '|| app_id ||'.member_quest 
+	EXECUTE 'CREATE TRIGGER quest_threshold
+		AFTER UPDATE ON '|| app_id ||'.member_quest
 		FOR EACH ROW
 		EXECUTE PROCEDURE update_quest_status_with_quest();';
 END;
@@ -563,25 +566,30 @@ $BODY$
 DECLARE
 p_quest record;
 action_count integer;
+point_action integer;
 quests_use_action character varying(15);
 app_id character varying(20);
 BEGIN
 	app_id = TG_TABLE_SCHEMA;
 	-- count how many action_id user has performed
 	-- get quests affected by the performed action
-	FOR p_quest IN 
+	FOR p_quest IN
 		EXECUTE '
-		SELECT quest_id FROM '|| app_id ||'.quest_action WHERE action_id = '|| quote_literal(NEW.action_id) ||' 
+		SELECT quest_id FROM '|| app_id ||'.quest_action WHERE action_id = '|| quote_literal(NEW.action_id) ||'
 		AND (SELECT count(action_id) FROM '|| app_id ||'.member_action WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND action_id='|| quote_literal(NEW.action_id) ||') >= times'
 
 	LOOP
-		EXECUTE 'UPDATE '|| app_id ||'.member_quest_action SET completed=true WHERE quest_id='|| quote_literal(p_quest.quest_id) ||' 
+		EXECUTE 'UPDATE '|| app_id ||'.member_quest_action SET completed=true WHERE quest_id='|| quote_literal(p_quest.quest_id) ||'
 			AND member_id = '|| quote_literal(NEW.member_id)||' AND action_id='|| quote_literal(NEW.action_id) || ';';
 		--check completed quest
-		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''COMPLETED'' WHERE  member_id='|| quote_literal(NEW.member_id) ||' 
-			AND quest_id='||quote_literal(p_quest.quest_id)||' 
+		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''COMPLETED'' WHERE  member_id='|| quote_literal(NEW.member_id) ||'
+			AND quest_id='||quote_literal(p_quest.quest_id)||'
 			AND (SELECT bool_and(completed) FROM '|| app_id ||'.member_quest_action WHERE quest_id='|| quote_literal(p_quest.quest_id) ||' AND member_id='|| quote_literal(NEW.member_id) ||');';
 	END LOOP;
+  -- Update member point
+  EXECUTE 'SELECT point_value FROM '|| app_id ||'.action WHERE action_id = '|| quote_literal(NEW.action_id) ||'' INTO point_action;
+  EXECUTE 'UPDATE '|| app_id ||'.member_point SET point_value = point_value + '|| point_action ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
+
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
 $BODY$
@@ -590,8 +598,8 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION create_trigger_action_observer(app_id text) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'CREATE TRIGGER action_observer 
-		AFTER INSERT ON '|| app_id ||'.member_action 
+	EXECUTE 'CREATE TRIGGER action_observer
+		AFTER INSERT ON '|| app_id ||'.member_action
 		FOR EACH ROW
 		EXECUTE PROCEDURE update_quest_status_with_action();';
 END;
@@ -609,28 +617,28 @@ achievement_id character varying(20);
 app_id character varying(20);
 BEGIN
 	app_id = TG_TABLE_SCHEMA;
-	
+
 	IF (NEW.status = 'COMPLETED') THEN
 		-- insert quest into notification table
 		EXECUTE 'DROP TABLE IF EXISTS '|| app_id ||'.temp;';
 		EXECUTE 'CREATE TABLE '|| app_id ||'.temp (type '|| app_id ||'.notification_type);';
 		EXECUTE 'INSERT INTO '|| app_id ||'.temp VALUES(''QUEST'');';
-		EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type) 
-			WITH res as (SELECT member_id, '|| app_id ||'.quest.quest_id,use_notification,notif_message FROM '|| app_id ||'.member_quest INNER JOIN '|| app_id ||'.quest 
+		EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type)
+			WITH res as (SELECT member_id, '|| app_id ||'.quest.quest_id,use_notification,notif_message FROM '|| app_id ||'.member_quest INNER JOIN '|| app_id ||'.quest
 			ON ('|| app_id ||'.member_quest.quest_id = '|| app_id ||'.quest.quest_id) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_quest.status = ''COMPLETED'' AND '|| app_id ||'.member_quest.quest_id = '|| quote_literal(NEW.quest_id) ||') SELECT * FROM res CROSS JOIN '|| app_id ||'.temp ;';
 		--
 		-- Get the achievement of a quest
-		FOR ach IN 
+		FOR ach IN
 			EXECUTE 'SELECT achievement_id FROM '|| app_id ||'.quest WHERE quest_id = '|| quote_literal(NEW.quest_id)
 
 		LOOP
 			-- insert to member_achievement
 			EXECUTE 'INSERT INTO '|| app_id ||'.member_achievement (member_id, achievement_id) VALUES ('|| quote_literal(NEW.member_id) ||','|| quote_literal(ach.achievement_id) ||');';
 			-- insert to member_badge
-			EXECUTE 'INSERT INTO '|| app_id ||'.member_badge (member_id, badge_id) SELECT member_id,badge_id FROM '|| app_id ||'.member_achievement,'|| app_id ||'.achievement WHERE '|| app_id ||'.achievement.achievement_id = '|| quote_literal(ach.achievement_id) ||' AND '|| app_id ||'.achievement.badge_id IS NOT NULL 
+			EXECUTE 'INSERT INTO '|| app_id ||'.member_badge (member_id, badge_id) SELECT member_id,badge_id FROM '|| app_id ||'.member_achievement,'|| app_id ||'.achievement WHERE '|| app_id ||'.achievement.achievement_id = '|| quote_literal(ach.achievement_id) ||' AND '|| app_id ||'.achievement.badge_id IS NOT NULL
 			AND '|| app_id ||'.member_achievement.member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_achievement.achievement_id = '|| quote_literal(ach.achievement_id) ||';';
 			-- get point obtained
-			EXECUTE 'SELECT point_value FROM '|| app_id ||'.achievement WHERE achievement_id = '|| quote_literal(ach.achievement_id) ||';' INTO point_obtained;		
+			EXECUTE 'SELECT point_value FROM '|| app_id ||'.achievement WHERE achievement_id = '|| quote_literal(ach.achievement_id) ||';' INTO point_obtained;
 			-- add point
 			EXECUTE 'UPDATE '|| app_id ||'.member_point SET point_value = point_value + '|| point_obtained ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
 		END LOOP;
@@ -643,8 +651,8 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION create_trigger_rewards_completed_quest(app_id text) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'CREATE TRIGGER rewards_completed_quest 
-		AFTER UPDATE ON '|| app_id ||'.member_quest 
+	EXECUTE 'CREATE TRIGGER rewards_completed_quest
+		AFTER UPDATE ON '|| app_id ||'.member_quest
 		FOR EACH ROW
 		EXECUTE PROCEDURE give_rewards_when_quest_completed();';
 END;
@@ -664,11 +672,11 @@ BEGIN
 	EXECUTE 'DROP TABLE IF EXISTS '|| app_id ||'.temp;';
 	EXECUTE 'CREATE TABLE '|| app_id ||'.temp (type '|| app_id ||'.notification_type);';
 	EXECUTE 'INSERT INTO '|| app_id ||'.temp VALUES(''BADGE'');';
-	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, other_message, type) 
-	WITH res as (SELECT member_id, '|| app_id ||'.member_badge.badge_id, use_notification,notif_message, image_path FROM '|| app_id ||'.member_badge INNER JOIN '|| app_id ||'.badge 
+	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, other_message, type)
+	WITH res as (SELECT member_id, '|| app_id ||'.member_badge.badge_id, use_notification,notif_message, image_path FROM '|| app_id ||'.member_badge INNER JOIN '|| app_id ||'.badge
 	ON ('|| app_id ||'.member_badge.badge_id = '|| app_id ||'.badge.badge_id) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_badge.badge_id = '|| quote_literal(NEW.badge_id) ||') SELECT * FROM res CROSS JOIN '|| app_id ||'.temp ;';
-	
-	
+
+
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
 $BODY$
@@ -677,8 +685,8 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION create_trigger_member_badge_observer(app_id text) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'CREATE TRIGGER member_badge_observer 
-		AFTER INSERT ON '|| app_id ||'.member_badge 
+	EXECUTE 'CREATE TRIGGER member_badge_observer
+		AFTER INSERT ON '|| app_id ||'.member_badge
 		FOR EACH ROW
 		EXECUTE PROCEDURE member_badge_observer_function();';
 END;
@@ -698,11 +706,11 @@ BEGIN
 	EXECUTE 'DROP TABLE IF EXISTS '|| app_id ||'.temp;';
 	EXECUTE 'CREATE TABLE '|| app_id ||'.temp (type '|| app_id ||'.notification_type);';
 	EXECUTE 'INSERT INTO '|| app_id ||'.temp VALUES(''ACHIEVEMENT'');';
-	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type) 
-	WITH res as (SELECT member_id, '|| app_id ||'.member_achievement.achievement_id, use_notification,notif_message FROM '|| app_id ||'.member_achievement INNER JOIN '|| app_id ||'.achievement 
+	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type)
+	WITH res as (SELECT member_id, '|| app_id ||'.member_achievement.achievement_id, use_notification,notif_message FROM '|| app_id ||'.member_achievement INNER JOIN '|| app_id ||'.achievement
 	ON ('|| app_id ||'.member_achievement.achievement_id = '|| app_id ||'.achievement.achievement_id) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_achievement.achievement_id = '|| quote_literal(NEW.achievement_id) ||') SELECT * FROM res CROSS JOIN '|| app_id ||'.temp ;';
-	
-	
+
+
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
 $BODY$
@@ -711,8 +719,8 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION create_trigger_member_achievement_observer(app_id text) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'CREATE TRIGGER member_achievement_observer 
-		AFTER INSERT ON '|| app_id ||'.member_achievement 
+	EXECUTE 'CREATE TRIGGER member_achievement_observer
+		AFTER INSERT ON '|| app_id ||'.member_achievement
 		FOR EACH ROW
 		EXECUTE PROCEDURE member_achievement_observer_function();';
 END;
@@ -727,15 +735,15 @@ app_id character varying(20);
 BEGIN
 	app_id = TG_TABLE_SCHEMA;
 
-	-- Insert badge to notification table
+	-- Insert level to notification table
 	EXECUTE 'DROP TABLE IF EXISTS '|| app_id ||'.temp;';
 	EXECUTE 'CREATE TABLE '|| app_id ||'.temp (type '|| app_id ||'.notification_type);';
 	EXECUTE 'INSERT INTO '|| app_id ||'.temp VALUES(''LEVEL'');';
-	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type) 
-	WITH res as (SELECT member_id, '|| app_id ||'.member_level.level_num, use_notification,notif_message FROM '|| app_id ||'.member_level INNER JOIN '|| app_id ||'.level 
+	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type)
+	WITH res as (SELECT member_id, '|| app_id ||'.member_level.level_num, use_notification,notif_message FROM '|| app_id ||'.member_level INNER JOIN '|| app_id ||'.level
 	ON ('|| app_id ||'.member_level.level_num = '|| app_id ||'.level.level_num) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_level.level_num = '|| NEW.level_num ||') SELECT * FROM res CROSS JOIN '|| app_id ||'.temp ;';
-	
-	
+
+
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
 $BODY$
@@ -744,8 +752,8 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION create_trigger_member_level_observer(app_id text) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'CREATE TRIGGER member_level_observer 
-		AFTER INSERT ON '|| app_id ||'.member_level 
+	EXECUTE 'CREATE TRIGGER member_level_observer
+		AFTER INSERT ON '|| app_id ||'.member_level
 		FOR EACH ROW
 		EXECUTE PROCEDURE member_level_observer_function();';
 END;
@@ -766,7 +774,7 @@ BEGIN
 	EXECUTE 'SELECT community_type FROM manager.application_info WHERE app_id = '||quote_literal(app_id)||'' INTO comm_type;
 
 	-- assume the table of community type is exist
-	
+
 	-- Check if the member already registered in global leaderboard
 	EXECUTE format($f$SELECT 1 FROM global_leaderboard.%s WHERE  member_id = '%s'$f$, comm_type, NEW.member_id);
 	GET DIAGNOSTICS _found = ROW_COUNT;
@@ -779,8 +787,8 @@ BEGIN
 		EXECUTE 'INSERT INTO global_leaderboard.'|| comm_type ||' VALUES ('|| quote_literal(NEW.member_id) ||','|| NEW.point_value ||');';
 	END IF;
 
-	-- sort the table	
-	
+	-- sort the table
+
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
 $BODY$
@@ -789,8 +797,8 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION create_trigger_global_leaderboard_table_update(app_id text) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'CREATE TRIGGER global_leaderboard_table_update 
-		AFTER UPDATE ON '|| app_id ||'.member_point 
+	EXECUTE 'CREATE TRIGGER global_leaderboard_table_update
+		AFTER UPDATE ON '|| app_id ||'.member_point
 		FOR EACH ROW
 		EXECUTE PROCEDURE global_leaderboard_table_update_function();';
 END;
@@ -798,7 +806,6 @@ $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 DROP SCHEMA IF EXISTS test CASCADE;
-SELECT create_new_application('test');
 SELECT add_mock_data('test');
 --SELECT init_member_to_app('user1','test');
 --SELECT init_member_to_app('user2','test');

@@ -50,7 +50,7 @@ public class GamificationApplicationServiceTest {
 	private static ByteArrayOutputStream logStream;
 
 	private static MiniClient c1, c2, c3, ac;
-
+	
 	private static UserAgent user1, user2, user3, anon;
 
 	// during testing, the specified service version does not matter

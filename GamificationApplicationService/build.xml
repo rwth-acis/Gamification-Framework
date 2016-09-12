@@ -1,28 +1,28 @@
 <project name="GamificationApplicationService" default="all" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
-    
+
     <property file="etc/ant_configuration/user.properties"/>
     <property file="etc/ant_configuration/service.properties"/>
-	
+
     <property name="startup" location="etc/startup" />
-    
+
     <property name="user_agent1.path" value="${startup}/agent-user-${las2peer_user1.name}.xml" />
     <property name="user_agent2.path" value="${startup}/agent-user-${las2peer_user2.name}.xml" />
     <property name="user_agent3.path" value="${startup}/agent-user-${las2peer_user3.name}.xml" />
 
 	<property name="service_agent.path" value="${startup}/agent-${service.class}.xml" />
  	<property name="passphrases.path" value="${startup}/passphrases.txt" />
-    
+
 
     <property name="src.main" location="src/main" />
     <property name="src.junit" location="src/test" />
-    
+
     <property name="tmp" location="tmp" />
     <property name="log" location="log" />
     <property name="service" location="service" />
-    
+
     <property name="tmp.classes" location="${tmp}/classes" />
     <property name="tmp.junit" location="${tmp}/test" />
-    
+
     <property name="export" location="export" />
     <property name="export.doc" location="${export}/doc" />
     <property name="export.jars" location="${export}/jars" />
@@ -30,7 +30,7 @@
 
     <property name="lib" location="lib" />
 
-	
+
     <path id="libraries">
         <fileset dir="${lib}">
             <include name="**/*.jar"/>
@@ -41,10 +41,10 @@
     	    <exclude name="i5.las2peer.services.*.jar"/>
     	</fileset>
     </path>
-    
+
     <property name="lib.junit" location="${lib}/junit-4.12.jar" />
-    
-    
+
+
     <!-- Ivy Installation (Tool to fetch Libraries) -->
     <property name="ivy.install.version" value="2.4.0" />
     <property name="ivy.jar.dir" value="${basedir}/etc/ivy" />
@@ -65,8 +65,8 @@
         </path>
         <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
     </target>
-    
-    
+
+
     <!-- Get Dependencies from our Maven Repository via Ivy -->
     <target name="get_deps" depends="install-ivy, init_deps" description="--> resolve dependencies">
         <ivy:settings>
@@ -74,12 +74,11 @@
         </ivy:settings>
     	<ivy:retrieve type="jar, bundle" conf="platform" pattern="${lib}/[artifact]-[revision].[ext]"/>
     	<ivy:retrieve type="jar, bundle" conf="bundle" pattern="${service}/[artifact]-[revision].[ext]"/>
-    
+
     	<!-- GamificationService Dependency for unit test-->
     	<copy file="../GamificationBadgeService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties" tofile="etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties"/>
     	<copy file="../GamificationPointService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties" tofile="etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties"/>
-    	
-    	
+
     	<copy file="../GamificationAchievementService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties" tofile="etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties"/>
     	<copy file="../GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties" tofile="etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties"/>
     	<copy file="../GamificationLevelService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties" tofile="etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties"/>
@@ -88,16 +87,16 @@
 
     	<copy file="../GamificationBadgeService/service/i5.las2peer.services.gamificationBadgeService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationBadgeService-0.1.jar"/>
     	<copy file="../GamificationPointService/service/i5.las2peer.services.gamificationPointService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationPointService-0.1.jar"/>
-    	
+
     </target>
-    
-    
+
+
     <!-- Initialization (Folder Creation)-->
 	<target name="init_deps">
         <mkdir dir="${lib}" />
         <mkdir dir="${service}" />
     </target>
-	
+
     <target name="init_general">
         <tstamp/>
         <mkdir dir="${tmp}" />
@@ -105,21 +104,21 @@
         <mkdir dir="${startup}" />
         <mkdir dir="${log}" />
     </target>
-    
+
     <target name="init_compile" depends="init_general, get_deps">
         <mkdir dir="${tmp.classes}" />
         <mkdir dir="${tmp.junit}" />
     </target>
-    
+
     <target name="init_jars" depends="init_general">
         <mkdir dir="${export.jars}" />
     </target>
-    
+
     <target name="init_doc" depends="init_general">
         <mkdir dir="${export.doc}" />
     </target>
-    
-    
+
+
     <!-- Compilation -->
     <target name="compile_main" depends="init_compile">
         <javac fork="yes" srcdir="${src.main}"
@@ -136,7 +135,7 @@
         </copy>
 
     </target>
-    
+
     <target name="compile_junit" depends="init_compile">
         <javac fork="yes" srcdir="${src.junit}"
             destdir="${tmp.junit}"
@@ -152,9 +151,9 @@
             </fileset>
         </copy>
     </target>
-    
+
     <target name="compile_all" depends="compile_main, compile_junit" />
-    
+
     <!-- Generate start scripts -->
     <target name="startscripts" description="generate start scripts for Windows and Unix">
         <mkdir dir="${basedir}" />
@@ -175,7 +174,7 @@ startService\(\'${service.name}.${service.class}@${service.version}\'\) startWeb
 cd %~p0
 cd ..
 set BASE=%CD%
-        	
+
 set CLASSPATH="%CD%/lib/*;%CD%/service/*;"
 
 java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupDirectory('etc/startup')^
@@ -184,7 +183,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
 
 </echo>
     </target>
-    
+
     <!-- Generate Jars -->
     <target name="jar" depends="compile_main" description="--> jar">
         <jar jarfile="${export.jars}/${service.name}-${service.version}.jar">
@@ -206,8 +205,8 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
         </jar>
 
     </target>
-    
-    
+
+
     <!-- Generate Documentation -->
     <target name="javadoc" depends="init_doc">
         <javadoc destdir="${export.doc}"
@@ -226,19 +225,19 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
             </packageset>
         </javadoc>
     </target>
-    
-    
+
+
     <!-- JUnit Testing -->
     <target name="junit" depends="junit_tests, junit_clean" description="--> execute all junit tests" />
-    
+
     <target name="init_junit" depends="init_general">
         <mkdir dir="${junit.report}" />
     </target>
-    
+
     <target name="junit_clean">
         <delete dir="${tmp.junit}" />
     </target>
-    
+
     <target name="junit_tests" depends="init_junit, compile_all">
         <junit fork="yes" haltonerror="yes" haltonfailure="yes" printsummary="yes">
             <classpath>
@@ -255,15 +254,15 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
             </batchtest>
         </junit>
     </target>
-    
-    
+
+
     <!-- XML Agent Generation (Builds Jar first so that Generator is available)-->
     <available file="${user_agent1.path}" property="user_agent_exists1"/>
     <available file="${user_agent2.path}" property="user_agent_exists2"/>
     <available file="${user_agent3.path}" property="user_agent_exists3"/>
-    
+
 	   <available file="${service_agent.path}" property="service_agent_exists"/>
-	
+
 	  <target name="generate_service_agent" depends="jar" unless="service_agent_exists">
 	        <echo message="Writing Service Agent xml to ${service_agent.path}"/>
 	        <java classname="i5.las2peer.tools.ServiceAgentGenerator" classpathref="libraries"
@@ -271,7 +270,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
 	            <arg line="'${service.name}.${service.class}@${service.version}' '${service.password}'"/>
 	        </java>
 	    </target>
-	
+
     <target name="generate_user_agent1" depends="jar" unless="user_agent_exists1">
         <echo message="Writing User Agent xml to ${user_agent1.path}"/>
         <java classname="i5.las2peer.tools.UserAgentGenerator" classpathref="libraries"
@@ -293,7 +292,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
             <arg line="'${las2peer_user3.password}' '${las2peer_user3.name}' '${las2peer_user3.email}'"/>
         </java>
     </target>
-    
+
     <target name="generate_agents" depends="generate_user_agent1, generate_user_agent2, generate_user_agent3,generate_service_agent" description="--> generate example user agents">
         <echo file="${passphrases.path}" append="false">agent-user-${las2peer_user1.name}.xml;${las2peer_user1.password}
 agent-user-${las2peer_user2.name}.xml;${las2peer_user2.password}
@@ -301,23 +300,32 @@ agent-user-${las2peer_user3.name}.xml;${las2peer_user3.password}
 agent-${service.class}.xml;${service.password}
 </echo>
     </target>
-	
-    
+
+
     <!-- General Cleanup -->
     <target name="clean" description="--> clean">
         <delete dir="${tmp}" />
         <delete dir="${export}" />
         <delete dir="${lib}" />
         <delete dir="${service}" />
+
+    	<delete file="etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties"/>
+    	<delete file="etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties"/>
+
     </target>
-    
+
     <target name="clean_all" depends="clean" description="--> clean all data">
         <delete dir="${log}"/>
         <delete dir="node-storage"/>
     </target>
-    
+
     <target name="all" depends="clean, jar, startscripts, generate_agents, junit, javadoc" />
-    
+
 	<target name="build_only" depends="clean, jar, startscripts, generate_agents, javadoc" />
 
     <target name="clean_all_projects">
@@ -331,12 +339,13 @@ agent-${service.class}.xml;${service.password}
                 <file name="GamificationPointService/build.xml"/>
                 <file name="GamificationQuestService/build.xml"/>
                 <file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationGamifierService/build.xml"/>
             </filelist>
             <target name="clean_all"/>
         </subant>
     </target>
 
-	<target name="build_all_projects">
+	<target name="build_all_projects_only">
 		<subant>
             <filelist dir="../">
                 <file name="GamificationBadgeService/build.xml"/>
@@ -347,11 +356,12 @@ agent-${service.class}.xml;${service.password}
                 <file name="GamificationLevelService/build.xml"/>
                 <file name="GamificationQuestService/build.xml"/>
             	<file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationGamifierService/build.xml"/>
             </filelist>
             <target name="build_only"/>
         </subant>
 	</target>
-	<target name="test_all_projects">
+	<target name="test_all_projects_only">
 		<subant>
             <filelist dir="../">
             	<file name="GamificationApplicationService/build.xml"/>
@@ -362,9 +372,26 @@ agent-${service.class}.xml;${service.password}
                 <file name="GamificationPointService/build.xml"/>
                 <file name="GamificationQuestService/build.xml"/>
             	<file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationGamifierService/build.xml"/>
             </filelist>
             <target name="junit"/>
         </subant>
 	</target>
 	
+  <target name="build_all_projects" depends="build_all_projects_only">
+    <subant>
+            <filelist dir="../">
+            	<file name="GamificationApplicationService/build.xml"/>
+            	<file name="GamificationBadgeService/build.xml"/>
+                <file name="GamificationAchievementService/build.xml"/>
+                <file name="GamificationActionService/build.xml"/>
+                <file name="GamificationLevelService/build.xml"/>
+                <file name="GamificationPointService/build.xml"/>
+                <file name="GamificationQuestService/build.xml"/>
+            	<file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationGamifierService/build.xml"/>
+            </filelist>
+            <target name="junit"/>
+        </subant>
+  </target>
 </project>

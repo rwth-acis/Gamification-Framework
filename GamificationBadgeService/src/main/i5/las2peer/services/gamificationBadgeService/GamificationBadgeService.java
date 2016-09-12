@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
@@ -267,7 +268,6 @@ public class GamificationBadgeService extends Service {
 		}
 		LocalFileManager.writeByteArrayToFile(LocalFileManager.getBasedir()+"/"+appId+"/"+badgeid, filecontent);
 
-//		Object result = this.invokeServiceMethod("i5.las2peer.services.fileService.FileService@1.0", "storeFile", new Serializable[] {(String) badgeid, (String) filename, (byte[]) filecontent, (String) mimeType, (String) description});
 	}
 	
 	/**
@@ -314,6 +314,11 @@ public class GamificationBadgeService extends Service {
 			@ApiParam(value = "Application ID to store a new badge", required = true) @PathParam("appId") String appId,
 			@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 			@ApiParam(value = "Badge detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/badges/"+appId);
+		long randomLong = new Random().nextLong(); //To be able to match 
+		
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
 		String filename = null;
@@ -339,6 +344,8 @@ public class GamificationBadgeService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
@@ -431,7 +438,9 @@ public class GamificationBadgeService extends Service {
 					try{
 						badgeAccess.addNewBadge(appId, badge);
 						objResponse.put("message", "Badge upload success (" + badgeid +")");
-				    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Badge created : " + badgeid + " : " + appId + " : " + userAgent);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+appId);
 						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 					} catch (SQLException e) {
@@ -455,7 +464,6 @@ public class GamificationBadgeService extends Service {
 				objResponse.put("message", "Cannot create badge. Badge ID cannot be null!");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
-
 			}
 			
 			
@@ -474,7 +482,8 @@ public class GamificationBadgeService extends Service {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			//L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+			L2pLogger.logEvent(this, Event.AGENT_UPLOAD_FAILED, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 		}
@@ -483,7 +492,6 @@ public class GamificationBadgeService extends Service {
 			objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
 			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
-
 		}
 	}
 	
@@ -512,6 +520,11 @@ public class GamificationBadgeService extends Service {
 				@PathParam("badgeId") String badgeId,
 			@ApiParam(value = "Badge detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 									 @ContentParam byte[] formData)  {
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/badges/"+appId+"/"+badgeId);
+		long randomLong = new Random().nextLong(); //To be able to match 
+		
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
 		String filename = null;
@@ -536,6 +549,8 @@ public class GamificationBadgeService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+			
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot update badge. App not found");
@@ -604,6 +619,7 @@ public class GamificationBadgeService extends Service {
 							currentBadge.setImagePath(badgeImageURI);
 							logger.info("upload request (" + filename + ") of mime type '" + mimeType + "' with content length "
 									+ filecontent.length);
+							
 						} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
 								| TimeoutException e) {
 							e.printStackTrace();
@@ -640,7 +656,9 @@ public class GamificationBadgeService extends Service {
 			try{
 				badgeAccess.updateBadge(appId, currentBadge);
 				objResponse.put("message", "Badge updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Badge updated : " + currentBadge.getId() + " : " + appId + " : " + userAgent);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+appId);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -692,6 +710,11 @@ public class GamificationBadgeService extends Service {
 			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
 			@ApiParam(value = "Badge ID")@PathParam("badgeId") String badgeId)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+appId+"/"+badgeId);
+		long randomLong = new Random().nextLong(); //To be able to match 
+		
 		BadgeModel badge = null;
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -705,6 +728,8 @@ public class GamificationBadgeService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot get badge. App not found");
@@ -728,7 +753,9 @@ public class GamificationBadgeService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String badgeString = objectMapper.writeValueAsString(badge);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Badge fetched : " + badge.getId() + " : " + appId + " : " + userAgent);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+appId);
 			return new HttpResponse(badgeString, HttpURLConnection.HTTP_OK);
 
 		} catch (JsonProcessingException e) {
@@ -765,6 +792,11 @@ public class GamificationBadgeService extends Service {
 	public HttpResponse deleteBadge(@PathParam("appId") String appId,
 								 @PathParam("badgeId") String badgeId)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/badges/"+appId+"/"+badgeId);
+		long randomLong = new Random().nextLong(); //To be able to match 
+		
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -777,6 +809,8 @@ public class GamificationBadgeService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot delete badge. App not found");
@@ -805,7 +839,9 @@ public class GamificationBadgeService extends Service {
 
 			}
 			objResponse.put("message", "File Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Badge deleted : " + badgeId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+appId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -850,6 +886,10 @@ public class GamificationBadgeService extends Service {
 			@ApiParam(value = "Number of data size per fetch")@QueryParam("rowCount") int windowSize,
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+appId);
+		
 		List<BadgeModel> badges = null;
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -863,6 +903,8 @@ public class GamificationBadgeService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Badges");
+			
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot get badges. App not found");
@@ -902,7 +944,8 @@ public class GamificationBadgeService extends Service {
 			objResponse.put("rows", badgeArray);
 			objResponse.put("total", totalNum);
 			logger.info(objResponse.toJSONString());
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Badges fetched" + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, "Badges fetched" + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Badges fetched" + " : " + appId + " : " + userAgent);
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -942,6 +985,10 @@ public class GamificationBadgeService extends Service {
 	public HttpResponse getBadgeImage(@PathParam("appId") String appId,
 								 @PathParam("badgeId") String badgeId)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+appId+"/"+badgeId+"/img");
+		
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -954,6 +1001,9 @@ public class GamificationBadgeService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Badge Image");
+			L2pLogger.logEvent(this, Event.ARTIFACT_FETCH_STARTED,"Get Badge Image");
+			
 			try {
 				if(!badgeAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot get badge image. App not found");
@@ -973,7 +1023,8 @@ public class GamificationBadgeService extends Service {
 			}
 			byte[] filecontent = getBadgeImageMethod(appId, badgeId);
 
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Badge image fetched : " + badgeId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, "Badge image fetched : " + badgeId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(this, Event.ARTIFACT_RECEIVED, "Badge image fetched : " + badgeId + " : " + appId + " : " + userAgent);
 			return new HttpResponse(filecontent, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			e.printStackTrace();

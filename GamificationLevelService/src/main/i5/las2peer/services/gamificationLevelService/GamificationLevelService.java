@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 
 import javax.ws.rs.DELETE;
@@ -199,6 +200,11 @@ public class GamificationLevelService extends Service {
 			@ApiParam(value = "Application ID to store a new level", required = true) @PathParam("appId") String appId,
 			@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/levels/"+appId);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
 		int levelnum = 0;
@@ -219,6 +225,8 @@ public class GamificationLevelService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			
 			try {
 				if(!levelAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot create level. App not found");
@@ -271,7 +279,9 @@ public class GamificationLevelService extends Service {
 				try{
 					levelAccess.addNewLevel(appId, model);
 					objResponse.put("message", "Level upload success (" + levelnum +")");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Level created : " + levelnum + " : " + appId + " : " + userAgent);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+appId);
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 				} catch (SQLException e) {
@@ -313,7 +323,6 @@ public class GamificationLevelService extends Service {
 			objResponse.put("message", "Cannot create level. Failed to upload " + levelnum + ". " + e.getMessage());
 			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
-
 		}
 	}
 	
@@ -338,6 +347,11 @@ public class GamificationLevelService extends Service {
 			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
 			@ApiParam(value = "Level number")@PathParam("levelNum") int levelNum)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+appId+"/"+levelNum);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
 		LevelModel level = null;
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -352,6 +366,8 @@ public class GamificationLevelService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+				
 				try {
 					if(!levelAccess.isAppIdExist(appId)){
 						objResponse.put("message", "Cannot fetched level. App not found");
@@ -376,7 +392,9 @@ public class GamificationLevelService extends Service {
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			    	
 			    	String levelString = objectMapper.writeValueAsString(level);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Level fetched : " + level.getNumber() + " : " + appId + " : " + userAgent);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+appId);
 					return new HttpResponse(levelString, HttpURLConnection.HTTP_OK);
 				}
 				else{
@@ -426,6 +444,12 @@ public class GamificationLevelService extends Service {
 				@PathParam("levelNum") int levelNum,
 			@ApiParam(value = "Content type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/levels/"+appId+"/"+levelNum);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
+		
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
 
@@ -446,6 +470,8 @@ public class GamificationLevelService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			try {
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+				
 				try {
 					if(!levelAccess.isAppIdExist(appId)){
 						objResponse.put("message", "Cannot update level. App not found");
@@ -511,7 +537,9 @@ public class GamificationLevelService extends Service {
 					try{
 						levelAccess.updateLevel(appId, model);
 						objResponse.put("message", "Level updated");
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Level updated : " + model.getNumber() + " : " + appId + " : " + userAgent);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+appId);
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -570,6 +598,12 @@ public class GamificationLevelService extends Service {
 			@ApiParam(value = "Application ID to delete a level", required = true)@PathParam("appId") String appId,
 			@ApiParam(value = "Level number that will be deleted", required = true)@PathParam("levelNum") int levelNum)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/levels/"+appId+"/"+levelNum);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
+		
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -582,6 +616,8 @@ public class GamificationLevelService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			
 			try {
 				if(!levelAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot delete level. App not found");
@@ -603,7 +639,9 @@ public class GamificationLevelService extends Service {
 			
 			levelAccess.deleteLevel(appId, levelNum);
 			objResponse.put("message", "Level Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Level deleted : " + levelNum + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+appId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -643,6 +681,11 @@ public class GamificationLevelService extends Service {
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+appId);
+
+		
 		List<LevelModel> model = null;
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -656,6 +699,8 @@ public class GamificationLevelService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Levels");
+			
 			try {
 				if(!levelAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot get levels. App not found");
@@ -689,7 +734,8 @@ public class GamificationLevelService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", modelArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Levels fetched : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, "Levels fetched : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Levels fetched : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {

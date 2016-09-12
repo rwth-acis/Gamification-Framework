@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 
 import javax.ws.rs.Consumes;
@@ -294,15 +295,22 @@ public class GamificationQuestService extends Service {
 	public HttpResponse createNewQuest(
 			@ApiParam(value = "Application ID to store a new quest", required = true) @PathParam("appId") String appId,
 			@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB)  {
+
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/quests/"+appId);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
+		
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
-		String content = new String(contentB);
-		if(content.equals(null)){
-			objResponse.put("message", "Cannot create quest. Cannot parse json data into string");
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
-
+		
+		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+		String name = userAgent.getLoginName();
+		if(name.equals("anonymous")){
+			return unauthorizedMessage();
 		}
+		
+
 		String questid = null;
 		String questname;
 		String questdescription;
@@ -317,16 +325,23 @@ public class GamificationQuestService extends Service {
 		boolean questnotifcheck = false;
 		String questnotifmessage = "";
 		
-		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-		String name = userAgent.getLoginName();
-//		if(name.equals("anonymous")){
-//			return unauthorizedMessage();
-//		}
+
 		try {
 			if(!initializeDBConnection()){
 				objResponse.put("message", "Cannot connect to database");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+			}
+			
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			
+			
+			String content = new String(contentB);
+			if(content.equals(null)){
+				objResponse.put("message", "Cannot create quest. Cannot parse json data into string");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+
 			}
 			
 			JSONObject obj = (JSONObject) JSONValue.parseWithException(content);
@@ -380,7 +395,9 @@ public class GamificationQuestService extends Service {
 			model.setActionIds(questactionids);
 			questAccess.addNewQuest(appId, model);
 			objResponse.put("message", "New quest created " + questid);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_1, "Quest created : " + questid + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+appId);
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 		} catch (MalformedStreamException e) {
@@ -438,6 +455,11 @@ public class GamificationQuestService extends Service {
 			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
 			@ApiParam(value = "Quest ID")@PathParam("questId") String questId)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/quests/"+appId+"/"+questId);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
 		QuestModel quest = null;
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -452,6 +474,8 @@ public class GamificationQuestService extends Service {
 		}
 		
 		try {
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			
 			try {
 				if(!questAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot get quest. App not found");
@@ -481,7 +505,9 @@ public class GamificationQuestService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String questString = objectMapper.writeValueAsString(quest);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2, "Quest fetched : " + quest.getId() + " : " + appId + " : " + userAgent);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+appId);
 			return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
@@ -524,6 +550,11 @@ public class GamificationQuestService extends Service {
 			@ApiParam(value = "Application ID to store a new quest", required = true) @PathParam("appId") String appId,
 			@ApiParam(value = "Quest ID")@PathParam("questId") String questId,
 			@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB) {
+
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/quests/"+appId+"/"+questId);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
 		
@@ -558,6 +589,8 @@ public class GamificationQuestService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+			
 			try {
 				if(!questAccess.isAppIdExist(appId)){
 					logger.info("App not found >> ");
@@ -637,7 +670,9 @@ public class GamificationQuestService extends Service {
 				questAccess.updateQuest(appId, quest);
 				logger.info("Quest Updated ");
 				objResponse.put("message", "Cannot update quest. Quest updated " + questId);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3, "Quest updated : " + quest.getId() + " : " + appId + " : " + userAgent);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+appId);
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
@@ -656,9 +691,7 @@ public class GamificationQuestService extends Service {
 			objResponse.put("message", "Cannot update quest. Problem with the model. " + e.getMessage());
 			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
-
 		} 
-
 	}
 	
 
@@ -681,6 +714,11 @@ public class GamificationQuestService extends Service {
 	public HttpResponse deleteQuest(@PathParam("appId") String appId,
 								 @PathParam("questId") String questId)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE" + "gamification/quests/"+appId+"/"+questId);
+		long randomLong = new Random().nextLong(); //To be able to match
+		
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
@@ -693,6 +731,8 @@ public class GamificationQuestService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			
 			try {
 				if(!questAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot delete quest. App not found");
@@ -713,7 +753,9 @@ public class GamificationQuestService extends Service {
 			questAccess.deleteQuest(appId, questId);
 			
 			objResponse.put("message", "quest Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4, "Quest deleted : " + questId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+appId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -751,6 +793,10 @@ public class GamificationQuestService extends Service {
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
 	{
+		
+		// Request log
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/quests/"+appId);
+		
 		List<QuestModel> qs = null;
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -764,6 +810,8 @@ public class GamificationQuestService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
+			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Levels");
+			
 			try {
 				if(!questAccess.isAppIdExist(appId)){
 					objResponse.put("message", "Cannot get quests. App not found");
@@ -810,7 +858,8 @@ public class GamificationQuestService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", questArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5, "Quests fetched" + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37, "Quests fetched" + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Quests fetched" + " : " + appId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {

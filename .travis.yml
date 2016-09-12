@@ -1,0 +1,15 @@
+language: java
+addons:
+  postgresql: "9.5"
+jdk:
+#- openjdk7
+- oraclejdk8
+before_script:
+- psql --version
+- psql -c "CREATE USER gameadmin WITH PASSWORD 'gameadmin';" -U postgres
+- psql -U postgres -d postgres -a -f ./psql/dbcreation.sql
+- psql -U postgres -d gamificationdb -a -f ./psql/db.sql
+script:
+- bash _make.sh all
+- cat GamificationApplicationService/export/test_reports/TEST-i5.las2peer.services.gamificationApplicationService.GamificationApplicationServiceTest.txt
+sudo: required
