@@ -11,14 +11,7 @@ jdbcLogin=$jdbcLogin\n\
 jdbcPass=$jdbcPass\n\
 monitor=TRUE"
 
-CONF_APP_PROPERTIES="jdbcDriverClassName=$jdbcDriverClassName\n\
-jdbcHost=$jdbcHost\n\
-jdbcPort=$jdbcPort\n\
-jdbcSchema=$jdbcSchema\n\
-jdbcLogin=$jdbcLogin\n\
-jdbcPass=$jdbcPass\n\
-epURL=http://$NODE_IP:$NODE_PORT_HTTP/\n\
-gitHubUser=$gitHubUser\n\
+CONF_APP_PROPERTIES="gitHubUser=$gitHubUser\n\
 gitHubUserMail=$gitHubUserMail\n\
 gitHubOrganizationOrigin=$gitHubOrganizationOrigin\n\
 gitHubUserNewRepo=$gitHubUserNewRepo\n\
@@ -28,6 +21,7 @@ gitHubPasswordNewRepo=$gitHubPasswordNewRepo\n\
 monitor=TRUE"
 
 echo "Writing properties onfiguration "
+printf $CONF_PROPERTIES > GamificationApplicationService/etc/i5.las2peer.services.gamificationApplicationService.GamificationApplicationService.properties
 printf $CONF_PROPERTIES > GamificationAchievementService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties
 printf $CONF_PROPERTIES > GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties
 printf $CONF_PROPERTIES > GamificationBadgeService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties
@@ -35,7 +29,7 @@ printf $CONF_PROPERTIES > GamificationLevelService/etc/i5.las2peer.services.gami
 printf $CONF_PROPERTIES > GamificationPointService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties
 printf $CONF_PROPERTIES > GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties
 printf $CONF_PROPERTIES > GamificationVisualizationService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties
-printf $CONF_APP_PROPERTIES > GamificationApplicationService/etc/i5.las2peer.services.gamificationApplicationService.GamificationApplicationService.properties
+printf $CONF_APP_PROPERTIES > GamificationGamifierService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties
 
 echo "Copying executable shell"
 cp -f GamificationAchievementService/bin/join_network.sh GamificationAchievementService/join_network.sh
@@ -45,16 +39,18 @@ cp -f GamificationLevelService/bin/join_network.sh GamificationLevelService/join
 cp -f GamificationPointService/bin/join_network.sh GamificationPointService/join_network.sh
 cp -f GamificationQuestService/bin/join_network.sh GamificationQuestService/join_network.sh
 cp -f GamificationVisualizationService/bin/join_network.sh GamificationVisualizationService/join_network.sh
+cp -f GamificationGamifierService/bin/join_network.sh GamificationGamifierService/join_network.sh
 cp -f GamificationApplicationService/bin/start_network.sh GamificationApplicationService/start_network.sh
 
 echo "Adjusting shell configuration"
-sed -i '' 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationAchievementService/join_network.sh
-sed -i '' 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationActionService/join_network.sh
-sed -i '' 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationBadgeService/join_network.sh
-sed -i '' 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationLevelService/join_network.sh
-sed -i '' 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationPointService/join_network.sh
-sed -i '' 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationQuestService/join_network.sh
-sed -i '' 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationVisualizationService/join_network.sh
+sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationAchievementService/join_network.sh
+sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationActionService/join_network.sh
+sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationBadgeService/join_network.sh
+sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationLevelService/join_network.sh
+sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationPointService/join_network.sh
+sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationQuestService/join_network.sh
+sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationVisualizationService/join_network.sh
+sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationGamifierService/join_network.sh
 
 echo "Make it executable"
 chmod +x GamificationAchievementService/join_network.sh
@@ -64,5 +60,6 @@ chmod +x GamificationLevelService/join_network.sh
 chmod +x GamificationPointService/join_network.sh
 chmod +x GamificationQuestService/join_network.sh
 chmod +x GamificationVisualizationService/join_network.sh
+chmod +x GamificationGamifierService/join_network.sh
 
 echo "Done !!"

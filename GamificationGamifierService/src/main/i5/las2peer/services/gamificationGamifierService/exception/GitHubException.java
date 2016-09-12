@@ -1,4 +1,4 @@
-package i5.las2peer.services.gamificationApplicationService.exception;
+package i5.las2peer.services.gamificationGamifierService.exception;
 
 /**
  * 

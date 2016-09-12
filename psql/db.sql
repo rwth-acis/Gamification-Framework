@@ -735,7 +735,7 @@ app_id character varying(20);
 BEGIN
 	app_id = TG_TABLE_SCHEMA;
 
-	-- Insert badge to notification table
+	-- Insert level to notification table
 	EXECUTE 'DROP TABLE IF EXISTS '|| app_id ||'.temp;';
 	EXECUTE 'CREATE TABLE '|| app_id ||'.temp (type '|| app_id ||'.notification_type);';
 	EXECUTE 'INSERT INTO '|| app_id ||'.temp VALUES(''LEVEL'');';

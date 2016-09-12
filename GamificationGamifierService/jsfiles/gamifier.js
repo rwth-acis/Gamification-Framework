@@ -16,8 +16,10 @@
     $.post(
       useAuthentication(epURL + 'visualization/actions/' + appId + '/' + actionId + '/' + memberId), 
       ''
-      ).done(function() {
+      ).done(function(data) {
         console.log('Trigger success : ' + actionId);
+        console.log(data);
+        sendOpenNotificationIntent(data);
       })
       .fail(function() {
         alert( "Trigger failed " + actionId );
@@ -33,7 +35,7 @@
       function(intent) {
         // define your reactions on incoming iwc events here
 
-        if (intent.action == "FETCH_APPID") {
+        if(intent.action == "FETCH_APPID") {
           sendRefreshAppIdIntent();
         }
 
@@ -55,6 +57,18 @@
     iwcGamification.publish(intent);
   }
 
+  function sendOpenNotificationIntent(data){
+	    var intent = {
+	      "component": "",
+	      "data": data,
+	      "dataType": "text/xml",
+	      "action": "OPEN_NOTIFICATION",
+	      "categories": ["", ""],
+	      "flags": [void 0],
+	      "extras": {}
+	    };
+	    iwcGamification.publish(intent);
+  }
   function signInCallback(result) {
     if (result === 'success') {
       memberId = oidc_userinfo.preferred_username;

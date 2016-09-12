@@ -339,6 +339,7 @@ agent-${service.class}.xml;${service.password}
                 <file name="GamificationPointService/build.xml"/>
                 <file name="GamificationQuestService/build.xml"/>
                 <file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationGamifierService/build.xml"/>
             </filelist>
             <target name="clean_all"/>
         </subant>
@@ -355,6 +356,7 @@ agent-${service.class}.xml;${service.password}
                 <file name="GamificationLevelService/build.xml"/>
                 <file name="GamificationQuestService/build.xml"/>
             	<file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationGamifierService/build.xml"/>
             </filelist>
             <target name="build_only"/>
         </subant>
@@ -370,6 +372,7 @@ agent-${service.class}.xml;${service.password}
                 <file name="GamificationPointService/build.xml"/>
                 <file name="GamificationQuestService/build.xml"/>
             	<file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationGamifierService/build.xml"/>
             </filelist>
             <target name="junit"/>
         </subant>
@@ -386,6 +389,7 @@ agent-${service.class}.xml;${service.password}
                 <file name="GamificationPointService/build.xml"/>
                 <file name="GamificationQuestService/build.xml"/>
             	<file name="GamificationVisualizationService/build.xml"/>
+            	<file name="GamificationGamifierService/build.xml"/>
             </filelist>
             <target name="junit"/>
         </subant>

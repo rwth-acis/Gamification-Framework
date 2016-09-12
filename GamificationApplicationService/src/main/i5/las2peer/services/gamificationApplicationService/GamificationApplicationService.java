@@ -27,13 +27,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectLoader;
-import org.eclipse.jgit.lib.ObjectReader;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.treewalk.TreeWalk;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,9 +52,7 @@ import i5.las2peer.services.gamificationApplicationService.database.ApplicationD
 import i5.las2peer.services.gamificationApplicationService.database.ApplicationModel;
 import i5.las2peer.services.gamificationApplicationService.database.MemberModel;
 import i5.las2peer.services.gamificationApplicationService.database.SQLDatabase;
-import i5.las2peer.services.gamificationApplicationService.exception.GitHubException;
 import i5.las2peer.services.gamificationApplicationService.helper.FormDataPart;
-import i5.las2peer.services.gamificationApplicationService.helper.RepositoryHelper;
 import i5.las2peer.services.gamificationApplicationService.helper.MultipartHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -131,12 +123,7 @@ public class GamificationApplicationService extends Service {
 	private String jdbcSchema;
 	private String epURL;
 
-	private String gitHubOrganizationOrigin;
-	  
-	private String gitHubUserNewRepo;
-	private String gitHubUserMailNewRepo;
-	private String gitHubOrganizationNewRepo;
-	private String gitHubPasswordNewRepo;
+
 	
 	private SQLDatabase DBManager;
 	private ApplicationDAO applicationAccess;
@@ -890,182 +877,179 @@ public class GamificationApplicationService extends Service {
 		
 	}
 	
-	/**
-	 * Validate member and add to the database as the new member if he/she is not registered yet
-	 * @return HttpResponse status if validation success
-	 */
-	@POST
-	@Path("/repo")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "memberLoginValidation",
-			notes = "Simple function to validate a member login.")
-	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is registered"),
-			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "User data error to be retrieved"),
-			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
-			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "User data error to be retrieved. Not JSON object")
-	})
-	public HttpResponse updateRepository(
-			@ApiParam(value = "Data in JSON", required = true)@ContentParam byte[] contentB) {
-		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/applications/repo");
-		long randomLong = new Random().nextLong(); //To be able to match
-		MemberModel member;
-		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-		// take username as default name
-		String name = userAgent.getLoginName();
-		System.out.println("User name : " + name);
-		if(name.equals("anonymous")){
-			return unauthorizedMessage();
-		}
-		
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_9, "" + randomLong);
 
-		JSONObject objResponse = new JSONObject();
-		String content = new String(contentB);
-		if(content.equals(null)){
-			objResponse.put("message", "Cannot update repository. Cannot parse json data into string");
-			//L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			L2pLogger.logEvent(this, Event.AGENT_UPLOAD_FAILED, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
-			
-		if(!initializeDBConnection()){
-			objResponse.put("message", "Cannot connect to database");
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
-		
-		JSONObject obj;
-		String originRepositoryName;
-		String fileContent;
-		String appId;
-		String epURL;
-		String aopScript;
-		
-		try {
-			obj = (JSONObject) JSONValue.parseWithException(content);
-			originRepositoryName = stringfromJSON(obj,"originRepositoryName");
-			//fileContent = stringfromJSON(obj,"fileContent");
-			appId = stringfromJSON(obj,"appId");
-			epURL = stringfromJSON(obj,"epURL");
-			aopScript = stringfromJSON(obj,"aopScript");
-		} catch (ParseException e) {
-			e.printStackTrace();
-			objResponse.put("message", "Cannot update repository. Cannot parse json data into string. " + e.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (IOException e) {
-			e.printStackTrace();		
-			objResponse.put("message", "Cannot update repository. Cannot parse json data into string. " + e.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
-		// check if repo exist
-		TreeWalk treeWalk = null;
-		Repository newRepository = null;	
-		Repository originRepository = null;			
-		      
-		// helper variables
-	    // variables holding content to be modified and added to repository later
-	    String widget = null;
-		String newRepositoryName = originRepositoryName;
-		try {
-			RepositoryHelper.deleteRemoteRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
-		} catch (GitHubException e) {
-			//e.printStackTrace();		
-		}
-		
-	    try {
-
-			PersonIdent caeUser = new PersonIdent(gitHubUserNewRepo, gitHubUserMailNewRepo);
-			
-			originRepository = RepositoryHelper.getRemoteRepository(originRepositoryName, gitHubOrganizationOrigin);
-			newRepository = RepositoryHelper.generateNewRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
-			File originDir = originRepository.getDirectory();
-	        // now load the TreeWalk containing the origin repository content
-			treeWalk = RepositoryHelper.getRepositoryContent(originRepositoryName, gitHubOrganizationOrigin);
-		
-			 //System.out.println("PATH " + treeWalk.getPathString());
-			 System.out.println("PATH2 " + originDir.getParent());
-			 System.out.println("PATH3 " + newRepository.getDirectory().getParent());
-	        // treeWalk.setFilter(PathFilter.create("frontend/"));
-		    ObjectReader reader = treeWalk.getObjectReader();
-		    // walk through the tree and retrieve the needed templates
-	    	while (treeWalk.next()) {
-				ObjectId objectId = treeWalk.getObjectId(0);
-				ObjectLoader loader = reader.open(objectId);
-					switch (treeWalk.getNameString()) {
-			            case "widget.xml":
-			              widget = new String(loader.getBytes(), "UTF-8");
-			              break;
-					}
-	        }
-		    	
-	    	// replace widget.xml 
-			//widget = createWidgetCode(widget, htmlElementTemplate, yjsImports, gitHubOrganization, repositoryName, frontendComponent);
-			widget = RepositoryHelper.appendWidget(widget, gitHubOrganizationNewRepo, newRepositoryName);
-	    	
-			RepositoryHelper.copyFolder(originRepository.getDirectory().getParentFile(), newRepository.getDirectory().getParentFile());
-	    	
-			String aopfilestring = RepositoryHelper.readFile("jsfiles/aop.pack.js", Charset.forName("UTF-8"));
-			String oidcwidgetfilestring = RepositoryHelper.readFile("jsfiles/oidc-widget.js", Charset.forName("UTF-8"));
-			String gamifierstring = RepositoryHelper.readFile("jsfiles/gamifier.js", Charset.forName("UTF-8"));
-			
-			gamifierstring = gamifierstring.replace("$Application_Id$", appId);
-			gamifierstring = gamifierstring.replace("$Endpoint_URL$", epURL);
-			gamifierstring = gamifierstring.replace("$AOP_Script$", aopScript);
-			
-			// add files to new repository
-			newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "", "widget.xml", widget);
-			newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "aop.pack.js", aopfilestring);
-			newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "oidc-widget.js", oidcwidgetfilestring);
-			newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "gamifier.js", gamifierstring);
-
-			 // stage file
-		    Git.wrap(newRepository).add().addFilepattern(".").call();
-			   
-			// commit files
-			Git.wrap(newRepository).commit()
-			.setMessage("Generated new repo  ")
-			.setCommitter(caeUser).call();
-			
-			// push (local) repository content to GitHub repository "gh-pages" branch
-			RepositoryHelper.pushToRemoteRepository(newRepository, gitHubUserNewRepo, gitHubPasswordNewRepo, "master", "gh-pages");
-
-
-	      // close all open resources
-	    } catch (GitHubException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();		
-			objResponse.put("message", "Cannot update repository. Github exception. " + e1.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			objResponse.put("message", "Cannot update repository. Github exception. " + e1.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (Exception e) {
-	        objResponse.put("message", "Cannot update repository. Github exception. " + e.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
-	    finally {
-		  newRepository.close();
-		  originRepository.close();
-	      treeWalk.close();
-	    }
-	  
-		objResponse.put("message", "Updated");
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10, "" + randomLong);
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_22, "" + appId);
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_23, "" + name);
-		
-		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-
-	}
+//	@POST
+//	@Path("/repo")
+//	@Produces(MediaType.APPLICATION_JSON)
+//	@ApiOperation(value = "memberLoginValidation",
+//			notes = "Simple function to validate a member login.")
+//	@ApiResponses(value = {
+//			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is registered"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "User data error to be retrieved"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
+//			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "User data error to be retrieved. Not JSON object")
+//	})
+//	public HttpResponse updateRepository(
+//			@ApiParam(value = "Data in JSON", required = true)@ContentParam byte[] contentB) {
+//		// Request log
+//		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/applications/repo");
+//		long randomLong = new Random().nextLong(); //To be able to match
+//		MemberModel member;
+//		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+//		// take username as default name
+//		String name = userAgent.getLoginName();
+//		System.out.println("User name : " + name);
+//		if(name.equals("anonymous")){
+//			return unauthorizedMessage();
+//		}
+//		
+//		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_9, "" + randomLong);
+//
+//		JSONObject objResponse = new JSONObject();
+//		String content = new String(contentB);
+//		if(content.equals(null)){
+//			objResponse.put("message", "Cannot update repository. Cannot parse json data into string");
+//			//L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+//			L2pLogger.logEvent(this, Event.AGENT_UPLOAD_FAILED, (String) objResponse.get("message"));
+//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+//		}
+//			
+//		if(!initializeDBConnection()){
+//			objResponse.put("message", "Cannot connect to database");
+//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+//		}
+//		
+//		JSONObject obj;
+//		String originRepositoryName;
+//		String fileContent;
+//		String appId;
+//		String epURL;
+//		String aopScript;
+//		
+//		try {
+//			obj = (JSONObject) JSONValue.parseWithException(content);
+//			originRepositoryName = stringfromJSON(obj,"originRepositoryName");
+//			//fileContent = stringfromJSON(obj,"fileContent");
+//			appId = stringfromJSON(obj,"appId");
+//			epURL = stringfromJSON(obj,"epURL");
+//			aopScript = stringfromJSON(obj,"aopScript");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//			objResponse.put("message", "Cannot update repository. Cannot parse json data into string. " + e.getMessage());
+//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+//		} catch (IOException e) {
+//			e.printStackTrace();		
+//			objResponse.put("message", "Cannot update repository. Cannot parse json data into string. " + e.getMessage());
+//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+//		}
+//		// check if repo exist
+//		TreeWalk treeWalk = null;
+//		Repository newRepository = null;	
+//		Repository originRepository = null;			
+//		      
+//		// helper variables
+//	    // variables holding content to be modified and added to repository later
+//	    String widget = null;
+//		String newRepositoryName = originRepositoryName;
+//		try {
+//			RepositoryHelper.deleteRemoteRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
+//		} catch (GitHubException e) {
+//			//e.printStackTrace();		
+//		}
+//		
+//	    try {
+//
+//			PersonIdent caeUser = new PersonIdent(gitHubUserNewRepo, gitHubUserMailNewRepo);
+//			
+//			originRepository = RepositoryHelper.getRemoteRepository(originRepositoryName, gitHubOrganizationOrigin);
+//			newRepository = RepositoryHelper.generateNewRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
+//			File originDir = originRepository.getDirectory();
+//	        // now load the TreeWalk containing the origin repository content
+//			treeWalk = RepositoryHelper.getRepositoryContent(originRepositoryName, gitHubOrganizationOrigin);
+//		
+//			 //System.out.println("PATH " + treeWalk.getPathString());
+//			 System.out.println("PATH2 " + originDir.getParent());
+//			 System.out.println("PATH3 " + newRepository.getDirectory().getParent());
+//	        // treeWalk.setFilter(PathFilter.create("frontend/"));
+//		    ObjectReader reader = treeWalk.getObjectReader();
+//		    // walk through the tree and retrieve the needed templates
+//	    	while (treeWalk.next()) {
+//				ObjectId objectId = treeWalk.getObjectId(0);
+//				ObjectLoader loader = reader.open(objectId);
+//					switch (treeWalk.getNameString()) {
+//			            case "widget.xml":
+//			              widget = new String(loader.getBytes(), "UTF-8");
+//			              break;
+//					}
+//	        }
+//		    	
+//	    	// replace widget.xml 
+//			//widget = createWidgetCode(widget, htmlElementTemplate, yjsImports, gitHubOrganization, repositoryName, frontendComponent);
+//			widget = RepositoryHelper.appendWidget(widget, gitHubOrganizationNewRepo, newRepositoryName);
+//	    	
+//			RepositoryHelper.copyFolder(originRepository.getDirectory().getParentFile(), newRepository.getDirectory().getParentFile());
+//	    	
+//			String aopfilestring = RepositoryHelper.readFile("jsfiles/aop.pack.js", Charset.forName("UTF-8"));
+//			String oidcwidgetfilestring = RepositoryHelper.readFile("jsfiles/oidc-widget.js", Charset.forName("UTF-8"));
+//			String gamifierstring = RepositoryHelper.readFile("jsfiles/gamifier.js", Charset.forName("UTF-8"));
+//			
+//			gamifierstring = gamifierstring.replace("$Application_Id$", appId);
+//			gamifierstring = gamifierstring.replace("$Endpoint_URL$", epURL);
+//			gamifierstring = gamifierstring.replace("$AOP_Script$", aopScript);
+//			
+//			// add files to new repository
+//			newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "", "widget.xml", widget);
+//			newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "aop.pack.js", aopfilestring);
+//			newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "oidc-widget.js", oidcwidgetfilestring);
+//			newRepository = RepositoryHelper.createTextFileInRepository(newRepository, "gamification/", "gamifier.js", gamifierstring);
+//
+//			 // stage file
+//		    Git.wrap(newRepository).add().addFilepattern(".").call();
+//			   
+//			// commit files
+//			Git.wrap(newRepository).commit()
+//			.setMessage("Generated new repo  ")
+//			.setCommitter(caeUser).call();
+//			
+//			// push (local) repository content to GitHub repository "gh-pages" branch
+//			RepositoryHelper.pushToRemoteRepository(newRepository, gitHubUserNewRepo, gitHubPasswordNewRepo, "master", "gh-pages");
+//
+//
+//	      // close all open resources
+//	    } catch (GitHubException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();		
+//			objResponse.put("message", "Cannot update repository. Github exception. " + e1.getMessage());
+//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//			objResponse.put("message", "Cannot update repository. Github exception. " + e1.getMessage());
+//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+//		} catch (Exception e) {
+//	        objResponse.put("message", "Cannot update repository. Github exception. " + e.getMessage());
+//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+//		}
+//	    finally {
+//		  newRepository.close();
+//		  originRepository.close();
+//	      treeWalk.close();
+//	    }
+//	  
+//		objResponse.put("message", "Updated");
+//		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10, "" + randomLong);
+//		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_22, "" + appId);
+//		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_23, "" + name);
+//		
+//		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+//
+//	}
 	
 	
 	/**

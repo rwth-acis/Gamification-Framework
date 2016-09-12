@@ -1,4 +1,4 @@
-package i5.las2peer.services.gamificationApplicationService.helper;
+package i5.las2peer.services.gamificationGamifierService.helper;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
@@ -39,7 +39,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import net.minidev.json.JSONObject;
 
 import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.services.gamificationApplicationService.exception.GitHubException;
+import i5.las2peer.services.gamificationGamifierService.exception.GitHubException;
 
 /**
  * 

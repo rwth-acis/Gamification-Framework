@@ -719,12 +719,12 @@ public class GamificationActionService extends Service {
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
-	    	String achievementString = objectMapper.writeValueAsString(achs);
-			JSONArray achievementArray = (JSONArray) JSONValue.parse(achievementString);
-			logger.info(achievementArray.toJSONString());
+	    	String actionString = objectMapper.writeValueAsString(achs);
+			JSONArray actionArray = (JSONArray) JSONValue.parse(actionString);
+			logger.info(actionArray.toJSONString());
 			objResponse.put("current", currentPage);
 			objResponse.put("rowCount", windowSize);
-			objResponse.put("rows", achievementArray);
+			objResponse.put("rows", actionArray);
 			objResponse.put("total", totalNum);
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10, "Actions fetched" + " : " + appId + " : " + userAgent);
 			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Actions fetched" + " : " + appId + " : " + userAgent);
@@ -770,6 +770,46 @@ public class GamificationActionService extends Service {
 		
 		arr = actionAccess.triggerAction(appId, memberId, actionId);
 		
+		return arr.toJSONString();
+
+	}
+	
+	/**
+	 * Function to be accessed via RMI to get list of action
+	 * @param appId applicationId
+	 * @return serialized JSON notification data caused by triggered action
+	 * @throws SQLException sql exception
+	 */
+	public String getActionsRMI(String appId) throws SQLException  {
+		List<ActionModel> achs = null;
+		
+		if(!initializeDBConnection()){
+			logger.info("Cannot connect to database >> ");
+			throw new SQLException("Cannot connect to database >> ");
+		}
+		
+		JSONArray arr = new JSONArray();
+		
+		int offset = 0;
+		int totalNum = actionAccess.getNumberOfActions(appId);
+		int windowSize = totalNum;
+
+		
+		achs = actionAccess.getActionsWithOffsetAndSearchPhrase(appId, offset, windowSize, "");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+    	//Set pretty printing of json
+    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    	
+    	String actionString;
+		try {
+			actionString = objectMapper.writeValueAsString(achs);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			return "";
+		}
+		JSONArray actionArray = (JSONArray) JSONValue.parse(actionString);
+
 		return arr.toJSONString();
 
 	}
