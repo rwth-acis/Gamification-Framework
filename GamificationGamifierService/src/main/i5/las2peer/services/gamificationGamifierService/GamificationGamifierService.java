@@ -283,6 +283,7 @@ public class GamificationGamifierService extends Service {
 		
 		JSONObject obj;
 		String originRepositoryName;
+		String newRepositoryName;
 		String fileContent;
 		String appId;
 		String epURL;
@@ -291,6 +292,7 @@ public class GamificationGamifierService extends Service {
 		try {
 			obj = (JSONObject) JSONValue.parseWithException(content);
 			originRepositoryName = stringfromJSON(obj,"originRepositoryName");
+			newRepositoryName = stringfromJSON(obj,"newRepositoryName");
 			//fileContent = stringfromJSON(obj,"fileContent");
 			appId = stringfromJSON(obj,"appId");
 			epURL = stringfromJSON(obj,"epURL");
@@ -314,7 +316,6 @@ public class GamificationGamifierService extends Service {
 		// helper variables
 	    // variables holding content to be modified and added to repository later
 	    String widget = null;
-		String newRepositoryName = originRepositoryName;
 		try {
 			RepositoryHelper.deleteRemoteRepository(newRepositoryName, gitHubOrganizationNewRepo, gitHubUserNewRepo, gitHubPasswordNewRepo);
 		} catch (GitHubException e) {

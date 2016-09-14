@@ -13,13 +13,17 @@
   }
 
   var advice = function(actionId) {
+	console.log("Action triggered : " + actionId);
     $.post(
       useAuthentication(epURL + 'visualization/actions/' + appId + '/' + actionId + '/' + memberId), 
       ''
       ).done(function(data) {
         console.log('Trigger success : ' + actionId);
         console.log(data);
-        sendOpenNotificationIntent(data);
+        if (data.length > 0){
+            sendOpenNotificationIntent(JSON.stringify(data));
+        }
+        sendRefreshTabIntent();
       })
       .fail(function() {
         alert( "Trigger failed " + actionId );
@@ -43,6 +47,19 @@
     sendRefreshAppIdIntent();
   };
 
+  function sendRefreshTabIntent(){
+    var intent = {
+      "component": "",
+      "data": "",
+      "dataType": "text/xml",
+      "action": "REFRESH_TAB",
+      "categories": ["", ""],
+      "flags": [void 0],
+      "extras": {}
+    };
+    iwcGamification.publish(intent);
+  }
+  
   function sendRefreshAppIdIntent(){
     var data = appId;
     var intent = {

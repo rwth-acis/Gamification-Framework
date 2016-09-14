@@ -17,6 +17,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
  startService('i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1','gamificationachievementpass')^
  startService('i5.las2peer.services.gamificationLevelService.GamificationLevelService@0.1','gamificationlevelpass')^
  startService('i5.las2peer.services.gamificationActionService.GamificationActionService@0.1','gamificationactionpass')^
+ startService('i5.las2peer.services.gamificationGamifierService.GamificationGamifierService@0.1','gamificationgamifierpass')^
  startService('i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService@0.1','gamificationvisualizationpass') startWebConnector interactive
  pause
 

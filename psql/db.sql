@@ -486,7 +486,7 @@ BEGIN
 	LOOP
 		RAISE NOTICE 'myplpgsqlval is currently %', p_quest;       -- either this
 
-		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''REVEALED'' WHERE '|| app_id ||'.member_quest.quest_id='|| quote_literal(p_quest.quest_id) ||' AND '|| app_id ||'.member_quest.member_id = '|| quote_literal(NEW.member_id)||';';
+		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''REVEALED'' WHERE '|| app_id ||'.member_quest.quest_id='|| quote_literal(p_quest.quest_id) ||' AND '|| app_id ||'.member_quest.status=''HIDDEN'' AND '|| app_id ||'.member_quest.member_id = '|| quote_literal(NEW.member_id)||';';
 	END LOOP;
 
 	-- -- Point and quest constraint
@@ -496,7 +496,7 @@ BEGIN
 		'|| app_id || '.quest.point_flag=true AND '|| app_id || '.quest.quest_flag=true'
 	LOOP
 		raise notice 'Value: %', p_quest;       -- either this
-		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''REVEALED'' WHERE '|| app_id ||'.member_quest.quest_id='|| quote_literal(p_quest.quest_id) ||' AND '|| app_id ||'.member_quest.member_id = '|| quote_literal(NEW.member_id) ||';' ;
+		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''REVEALED'' WHERE '|| app_id ||'.member_quest.quest_id='|| quote_literal(p_quest.quest_id) ||' AND '|| app_id ||'.member_quest.status=''HIDDEN'' AND '|| app_id ||'.member_quest.member_id = '|| quote_literal(NEW.member_id) ||';' ;
 	END LOOP;
 
 	-- check level, change if point reach the treshold
@@ -536,7 +536,7 @@ BEGIN
 		SELECT quest_id FROM temp WHERE (SELECT point_value FROM '|| app_id ||'.member_point WHERE member_id='|| quote_literal(NEW.member_id) ||' LIMIT 1) >= point_value;'
 	LOOP
 		raise notice 'Value: %', p_quest;       -- either this
-		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''REVEALED'' WHERE '|| app_id ||'.member_quest.quest_id='|| quote_literal(p_quest.quest_id) ||' AND '|| app_id ||'.member_quest.member_id = '|| quote_literal(NEW.member_id) ||';' ;
+		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''REVEALED'' WHERE '|| app_id ||'.member_quest.quest_id='|| quote_literal(p_quest.quest_id) ||' AND '|| app_id ||'.member_quest.status=''HIDDEN'' AND '|| app_id ||'.member_quest.member_id = '|| quote_literal(NEW.member_id) ||';' ;
 	END LOOP;
 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
@@ -583,7 +583,7 @@ BEGIN
 			AND member_id = '|| quote_literal(NEW.member_id)||' AND action_id='|| quote_literal(NEW.action_id) || ';';
 		--check completed quest
 		EXECUTE 'UPDATE '|| app_id ||'.member_quest SET status=''COMPLETED'' WHERE  member_id='|| quote_literal(NEW.member_id) ||'
-			AND quest_id='||quote_literal(p_quest.quest_id)||'
+			AND quest_id='||quote_literal(p_quest.quest_id)||' AND '|| app_id ||'.member_quest.status = ''REVEALED''
 			AND (SELECT bool_and(completed) FROM '|| app_id ||'.member_quest_action WHERE quest_id='|| quote_literal(p_quest.quest_id) ||' AND member_id='|| quote_literal(NEW.member_id) ||');';
 	END LOOP;
   -- Update member point
@@ -801,6 +801,74 @@ BEGIN
 		AFTER UPDATE ON '|| app_id ||'.member_point
 		FOR EACH ROW
 		EXECUTE PROCEDURE global_leaderboard_table_update_function();';
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+
+
+CREATE OR REPLACE FUNCTION update_quest_constraint_function() RETURNS trigger AS
+$BODY$
+DECLARE
+app_id character varying(20);
+comm_type text;
+_found int;
+BEGIN
+	app_id = TG_TABLE_SCHEMA;
+
+
+-- 	-- Quest
+-- 	-- Cross join member_id with (quest_ids and statuses)
+ 	EXECUTE 'INSERT INTO '|| app_id ||'.member_quest (member_id, quest_id, status)
+	WITH tab1 as (SELECT * FROM '|| app_id ||'.member CROSS JOIN '|| app_id ||'.quest WHERE quest_id='|| quote_literal(NEW.quest_id) ||')
+	SELECT  member_id, quest_id, status FROM tab1;';
+
+
+
+	RETURN NULL;  -- result is ignored since this is an AFTER trigger
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION create_trigger_update_quest_constraint(app_id text) RETURNS void AS
+$BODY$
+BEGIN
+	EXECUTE 'CREATE TRIGGER update_quest_constraint
+		AFTER INSERT ON '|| app_id ||'.quest
+		FOR EACH ROW
+		EXECUTE PROCEDURE update_quest_constraint_function();';
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION update_quest_action_constraint_function() RETURNS trigger AS
+$BODY$
+DECLARE
+app_id character varying(20);
+comm_type text;
+_found int;
+BEGIN
+	app_id = TG_TABLE_SCHEMA;
+
+	-- Action
+	-- initialize table member_quest_action
+	EXECUTE 'INSERT INTO '|| app_id ||'.member_quest_action
+	WITH newtab as (SELECT * FROM '|| app_id ||'.quest_action CROSS JOIN '|| app_id ||'.member)
+	SELECT member_id, quest_id, action_id FROM newtab WHERE quest_id='|| quote_literal(NEW.quest_id) ||' AND action_id='|| quote_literal(NEW.action_id) ||' ORDER BY member_id ;';
+
+
+	RETURN NULL;  -- result is ignored since this is an AFTER trigger
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION create_trigger_update_quest_action_constraint(app_id text) RETURNS void AS
+$BODY$
+BEGIN
+	EXECUTE 'CREATE TRIGGER update_quest_action_constraint
+		AFTER INSERT ON '|| app_id ||'.quest_action
+		FOR EACH ROW
+		EXECUTE PROCEDURE update_quest_action_constraint_function();';
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
