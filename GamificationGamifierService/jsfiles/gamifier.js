@@ -1,10 +1,10 @@
-﻿  var memberId, 
+﻿  var memberId,
   appId = '$Application_Id$',
   epURL = '$Endpoint_URL$',
   iwcGamification;
 
   var useAuthentication = function(rurl){
-    if(rurl.indexOf("\?") > 0){ 
+    if(rurl.indexOf("\?") > 0){
       rurl += "&access_token=" + window.localStorage["access_token"];
     } else {
       rurl += "?access_token=" + window.localStorage["access_token"];
@@ -12,18 +12,28 @@
     return rurl;
   }
 
+  var Gamifier = {
+    triggerAction : function(actionId){
+      console.log("Action triggered : " + actionId);
+      $.post(
+       useAuthentication(epURL + 'visualization/actions/' + appId + '/' + actionId + '/' + memberId),
+       ''
+       ).done(function(data) {
+         console.log('Trigger success : ' + actionId);
+         console.log(data);
+         if (data.length > 0){
+             sendOpenNotificationIntent(JSON.stringify(data));
+         }
+         sendRefreshTabIntent();
+       })
+       .fail(function() {
+         alert( "Trigger failed " + actionId );
+       });
+    }
+  };
+
   var advice = function(actionId) {
-    $.post(
-      useAuthentication(epURL + 'visualization/actions/' + appId + '/' + actionId + '/' + memberId), 
-      ''
-      ).done(function(data) {
-        console.log('Trigger success : ' + actionId);
-        console.log(data);
-        sendOpenNotificationIntent(data);
-      })
-      .fail(function() {
-        alert( "Trigger failed " + actionId );
-      });
+    Gamifier.triggerAction(actionId);
   };
 
 
@@ -42,6 +52,19 @@
     });
     sendRefreshAppIdIntent();
   };
+
+  function sendRefreshTabIntent(){
+    var intent = {
+      "component": "",
+      "data": "",
+      "dataType": "text/xml",
+      "action": "REFRESH_TAB",
+      "categories": ["", ""],
+      "flags": [void 0],
+      "extras": {}
+    };
+    iwcGamification.publish(intent);
+  }
 
   function sendRefreshAppIdIntent(){
     var data = appId;

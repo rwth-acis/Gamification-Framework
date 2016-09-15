@@ -1,15 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<service consumes="*" name="i5.las2peer.services.gamificationGamifierService.GamificationGamifierService" path="gamification/gamifier" produces="text/plain" version="0.1">
+<service consumes="*" name="i5.las2peer.services.gamificationApplicationService.GamificationApplicationService" path="gamification/applications" produces="text/plain" version="0.1">
   <methods>
-    <method httpMethod="get" name="getActions" path="actions/{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="post" name="createApplication" path="data" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="header" index="0" name="Content-Type" type="java.lang.String"/>
+        <parameter annotation="content" index="1" name="" type="[B"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getApplicationDetails" path="data/{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
       </parameters>
     </method>
-    <method httpMethod="post" name="updateRepository" path="repo" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="delete" name="deleteApplication" path="data/{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
-        <parameter annotation="content" index="0" name="" type="[B"/>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
       </parameters>
+    </method>
+    <method httpMethod="delete" name="removeMemberFromApp" path="data/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="post" name="memberLoginValidation" path="validation" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters/>
+    </method>
+    <method httpMethod="post" name="addMemberToApp" path="data/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getSeparateApplicationInfo" path="list/separated" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters/>
     </method>
   </methods>
 </service>

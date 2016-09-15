@@ -1,7 +1,7 @@
-﻿DROP DATABASE IF EXISTS gamificationdb;
+﻿DROP DATABASE IF EXISTS gamification;
 
-CREATE DATABASE gamificationdb;
+CREATE DATABASE gamification;
 
-GRANT CONNECT, TEMPORARY ON DATABASE gamificationdb TO public;
-GRANT ALL ON DATABASE gamificationdb TO gameadmin;
+GRANT CONNECT, TEMPORARY ON DATABASE gamification TO gamification;
+GRANT ALL ON DATABASE gamification TO gamification;
 --GRANT ALL ON DATABASE gamificationdb TO gameuser;

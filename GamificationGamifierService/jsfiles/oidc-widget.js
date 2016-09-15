@@ -140,41 +140,6 @@ function googleLogin(){
 	});
 }
 
-/**
-* renders OpenID Connect Button, including correct click behaviour.
-* The button can exist in two different states: "Sign in" and "Sign out"
-* In the "Sign in" state, a click brings the user to the 
-*
-* @param signin boolean true for "Sign in" state, false else 
-**/
-// function renderButton(signin){
-// 	$(".oidc-signin").unbind( "click" );
-// 	$(".oidc-signin").addClass("btn").addClass("btn-" + oidc_size);
-// 	var size = 32;
-// 	if(oidc_size === "xs" || oidc_size === "sm"){
-// 		size = 16;
-// 	}
-	
-// 	if(signin){
-// 		if (!nofill) {
-// 			$(".oidc-signin").removeClass("btn-success").addClass("btn-default")
-// 		};
-// 		$(".oidc-signin").html("<img style='margin-right:5px' src='" + oidc_logo + "' height='" + size + "px'/> Sign in with <i>" + oidc_name + "</i>");
-// 		$(".oidc-signin").click(function (e){
-// 			var url = oidc_provider_config.authorization_endpoint + "?response_type=id_token%20token&client_id=" + oidc_clientid + "&scope=" + oidc_scope;
-// 			window.location.href = url;
-// 		});
-// 	} else {
-// 		if (!nofill) {
-// 			$(".oidc-signin").removeClass("btn-default").addClass("btn-success")
-// 		};
-// 		$(".oidc-signin").html("<img style='margin-right:5px;' height='" + size + "px' src='" + oidc_logo + "'/> " + oidc_userinfo.name);
-// 		$(".oidc-signin").click(function (e){
-// 			window.location.href = oidc_server;
-// 		});
-// 	}
-// }
-
 
 function registerLearningLayer(successCallback,errorCallback){
 
@@ -186,20 +151,6 @@ function registerLearningLayer(successCallback,errorCallback){
 			var returnURL = encodeURI("/spaces/"+spacename);
 			var oauth2Endpoint = "/o/oauth2/request?discovery=https://api.learning-layers.eu/o/oauth2/.well-known/openid-configuration&client_id=242c4084-353a-485d-9d3c-80f55ad73e20&client_secret=ALmWqWqzWzYSVvDlLIrIzVXdmxeCgwUjoayzT4kHA3PkQGkZqPisg_t5GZI8A1-_02eX3l1G_FQwhQDfh4OKPFk&return=" + returnURL;
 			
-			//window.location = oauth2Endpoint;
-			// $.ajax(
-			// 	oauth2Endpoint,
-			//   {
-			// 	type: 'GET',
-			// 	dataType: 'json',
-			// 	complete: function (resp,status) {
-			// 		successCallback(resp,status);
-			// 	},
-			// 	error: function (resp, status) {
-			// 		errorCallback(resp, status);
-			// 	}
-			//   }
-			// );
 		}));
 
 	}));
@@ -315,18 +266,3 @@ function checkAuth(successCallback){
 	}));
 }
 
-
-/**
-* parses the current browser window's fragment identifier and its key-value pairs into an object.
-* This parsing is especially used for extracting tokens sent by the OpenID Connect provider as a
-* redirect to the client after successful authentication and expression of consent in the 
-* OpenID Connect implicit flow.
-* (cf. http://openid.net/specs/openid-connect-core-1_0.html#ImplicitCallback)
-**/
-// function parseFragment(){
-// 	var params = {}, queryString = location.hash.substring(1), regex = /([^&=]+)=([^&]*)/g, m;
-// 	while (m = regex.exec(queryString)) {
-// 		params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-// 	}
-// 	return params;
-// }

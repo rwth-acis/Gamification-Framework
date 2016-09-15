@@ -182,7 +182,7 @@ public class GamificationBadgeServiceTest {
 		System.out.println("Test --- Create New Badge");
 		try
 		{
-			File badgeImage = new File("../GamificationBadgeService/frontend/badge/img/logo.png");
+			File badgeImage = new File("../GamificationBadgeService/files/logo.png");
 			String boundary =  "----WebKitFormBoundaryuK41JdjQK2kdEBDn"; 
 			
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -232,7 +232,7 @@ public class GamificationBadgeServiceTest {
 		System.out.println("Test --- Update Badge");
 		try
 		{
-			File badgeImage = new File("../GamificationBadgeService/frontend/badge/img/logo.png");
+			File badgeImage = new File("../GamificationBadgeService/files/logo.png");
 			String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);

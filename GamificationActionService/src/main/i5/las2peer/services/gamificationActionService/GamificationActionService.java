@@ -804,14 +804,11 @@ public class GamificationActionService extends Service {
     	String actionString;
 		try {
 			actionString = objectMapper.writeValueAsString(achs);
+			return actionString;
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
-			return "";
+			return null;
 		}
-		JSONArray actionArray = (JSONArray) JSONValue.parse(actionString);
-
-		return arr.toJSONString();
-
 	}
 	
 
