@@ -1,10 +1,9 @@
 ﻿-- user : gameadmin
 -- usergroup : gameuser
 
-CREATE SCHEMA manager AUTHORIZATION gameadmin;
-CREATE SCHEMA global_leaderboard AUTHORIZATION gameadmin;
---GRANT ALL ON SCHEMA manager TO gameadmin;
---GRANT ALL ON SCHEMA manager TO gameuser;
+CREATE SCHEMA manager AUTHORIZATION gamification;
+CREATE SCHEMA global_leaderboard AUTHORIZATION gamification;
+GRANT ALL ON SCHEMA manager TO gamification;
 
 CREATE TABLE manager.application_info
 (
@@ -16,7 +15,7 @@ CREATE TABLE manager.application_info
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE manager.application_info OWNER TO gameadmin;
+ALTER TABLE manager.application_info OWNER TO gamification;
 
 CREATE TABLE manager.member_info
 (
@@ -29,7 +28,7 @@ CREATE TABLE manager.member_info
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE manager.member_info OWNER TO gameadmin;
+ALTER TABLE manager.member_info OWNER TO gamification;
 
 CREATE TABLE manager.member_application
 (
@@ -45,7 +44,7 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE manager.member_application
-  OWNER TO gameadmin;
+  OWNER TO gamification;
 
 -- Index: manager.fki_member_id
 
@@ -287,6 +286,8 @@ BEGIN
 	EXECUTE 'SELECT create_trigger_member_badge_observer(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_member_level_observer(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_global_leaderboard_table_update(' || quote_literal(new_schema) || ');';
+	EXECUTE 'SELECT create_trigger_update_quest_constraint(' || quote_literal(new_schema) || ');';
+	EXECUTE 'SELECT create_trigger_update_quest_action_constraint(' || quote_literal(new_schema) || ');';
 
 END;
 $BODY$
@@ -811,19 +812,17 @@ CREATE OR REPLACE FUNCTION update_quest_constraint_function() RETURNS trigger AS
 $BODY$
 DECLARE
 app_id character varying(20);
-comm_type text;
-_found int;
 BEGIN
 	app_id = TG_TABLE_SCHEMA;
 
-
+	RAISE NOTICE 'AppId : %', app_id;
 -- 	-- Quest
 -- 	-- Cross join member_id with (quest_ids and statuses)
  	EXECUTE 'INSERT INTO '|| app_id ||'.member_quest (member_id, quest_id, status)
 	WITH tab1 as (SELECT * FROM '|| app_id ||'.member CROSS JOIN '|| app_id ||'.quest WHERE quest_id='|| quote_literal(NEW.quest_id) ||')
 	SELECT  member_id, quest_id, status FROM tab1;';
 
-
+	
 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
@@ -845,8 +844,6 @@ CREATE OR REPLACE FUNCTION update_quest_action_constraint_function() RETURNS tri
 $BODY$
 DECLARE
 app_id character varying(20);
-comm_type text;
-_found int;
 BEGIN
 	app_id = TG_TABLE_SCHEMA;
 
