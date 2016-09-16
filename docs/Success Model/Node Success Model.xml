@@ -1,0 +1,39 @@
+<NodeSuccessModel name="Node Success Model">
+	<dimension name="System Quality">
+		<factor name="Stability">
+			<measure name="Successful Agent Downloads Ratio"/>
+			<measure name="Successful Agent Uploads Ratio"/>
+			<measure name="Successful Remote Method Invocation Ratio"/>
+		</factor>
+	</dimension>
+	<dimension name="Information Quality">
+		<factor name="Activity">
+			<measure name="Number of Method Invocations"/>
+			<measure name="Number of Service Registrations"/>
+			<measure name="Number of User Registrations"/>
+			<measure name="Number of User Registrations over Time"/>
+		</factor>
+	</dimension>
+	<dimension name="Use">
+		<factor name="Uploaded Entities">
+			<measure name="Number of Agent Uploads"/>
+			<measure name="Number of added or changed Artifacts"/>
+		</factor>
+		<factor name="Messages">
+			<measure name="Number of send LAS2peer Messages over Time"/>
+		</factor>
+	</dimension>
+	<dimension name="User Satisfaction">
+		<factor name="Time spend Online">
+			<measure name="Average Time Users Logged-In in Seconds"/>
+		</factor>
+	</dimension>
+	<dimension name="Individual Impact">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Community Impact">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+</NodeSuccessModel>

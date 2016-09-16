@@ -9,34 +9,29 @@ The default framework database name is 'gamification'and user name is 'gamificat
 ## Building the Projects
 
 1. Configure Database
-
-* Go to psql folder in the main program.
-* Create database with the name *gamification* or run sql script in dbcreation.sql
-* Initialize the database by running sql script in db.sql
-
+..* Go to psql folder in the main program.
+..* Create database with the name *gamification* or run sql script in dbcreation.sql
+..* Initialize the database by running sql script in db.sql
 2. Configure las2peer project properties
-
 All of las2peer project properties (database driver name and credentials) can be configured by changing the content of *config* file. Then, run...
 ```
 bash configure.sh
 ```
-
 3. Build the code
-
-To build all projects in Gamification-Framework, run...
+...To build all projects in Gamification-Framework, run...
 ```
 bash make.sh
 ```
 with these options :
-1.  To clean up the projects
+..1.  To clean up the projects
 ```
 bash make.sh clean
 ```
-2. To only build the projects (without testing)
+..2. To only build the projects (without testing)
 ```
 bash make.sh build
 ```
-2. To build and test the projects
+..3. To build and test the projects
 ```
 bash make.sh all
 ```

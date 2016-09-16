@@ -19,10 +19,12 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 
 import javax.imageio.ImageIO;
-
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -208,12 +210,19 @@ public abstract class RepositoryHelper {
     RevWalk revWalk = null;
     TreeWalk treeWalk = null;
     try {
+//    	Ref head = repository.getRef("HEAD");
+//        System.out.println("Ref of HEAD: " + head );
+//        System.out.println("Ref of HEAD: " +  head.getName());
+//        System.out.println("Ref of HEAD: " +  head.getObjectId());
+//        System.out.println("Ref of HEAD: " +  head.getObjectId().getName());
       ObjectId lastCommitId = repository.resolve(Constants.HEAD);
       treeWalk = new TreeWalk(repository);
       revWalk = new RevWalk(repository);
-      RevTree tree = revWalk.parseCommit(lastCommitId).getTree();
-      treeWalk.addTree(tree);
-      treeWalk.setRecursive(true);
+//      if(lastCommitId != null){
+	      RevTree tree = revWalk.parseCommit(lastCommitId).getTree();
+	      treeWalk.addTree(tree);
+	      treeWalk.setRecursive(true);
+//      }
     } catch (Exception e) {
       logger.printStackTrace(e);
       throw new GitHubException(e.getMessage());
@@ -256,7 +265,12 @@ public abstract class RepositoryHelper {
 
     // then clone
     try {
-      repository = Git.cloneRepository().setURI(repositoryAddress).setDirectory(localPath).call()
+    	Collection<String> collection = new ArrayList<String>();
+    	collection.add("refs/heads/gh-pages");
+      repository = Git.cloneRepository()
+    		  .setURI(repositoryAddress)
+    		  .setDirectory(localPath)
+    		  .setBranchesToClone(collection).setBranch( "refs/heads/gh-pages").call()
           .getRepository();
     } catch (Exception e) {
       logger.printStackTrace(e);
