@@ -1,0 +1,44 @@
+<SuccessModel name="Gamification Action Service Success Model" service="i5.las2peer.services.gamificationActionService.GamificationActionService@0.1">
+	<dimension name="System Quality">
+		<factor name="Performance">
+			<measure name="Average Time To Create a Game Element"/>
+			<measure name="Average Time To Get a Game Element"/>
+			<measure name="Average Time To Update a Game Element"/>
+			<measure name="Average Time To Delete a Game Element"/>
+		</factor>
+	</dimension>
+	<dimension name="Information Quality">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Use">
+		<factor name="Quantity">
+			<measure name="Number of a Game Element Created Over Time"/>
+			<measure name="Number of a Game Element Fetched Over Time"/>
+			<measure name="Number of a Game Element Updated Over Time"/>
+			<measure name="Number of a Game Element Deleted Over Time"/>
+		</factor>
+		<factor name="Quality">
+			<measure name="Average Game Element Created per Application"/>
+			<measure name="Average Game Element Fetched per Application"/>
+			<measure name="Average Game Element Updated per Application"/>
+			<measure name="Average Game Element Deleted per Application"/>
+		</factor>
+	</dimension>
+	<dimension name="User Satisfaction">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Individual Impact">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Community Impact">
+		<factor name="Gamification Configuration">
+			<measure name="Average Game Element Created per Member"/>
+			<measure name="Average Game Element Fetched per Member"/>
+			<measure name="Average Game Element Updated per Member"/>
+			<measure name="Average Game Element Deleted per Member"/>
+		</factor>
+	</dimension>
+</SuccessModel>

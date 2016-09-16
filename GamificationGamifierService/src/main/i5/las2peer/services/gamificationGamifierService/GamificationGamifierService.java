@@ -354,9 +354,9 @@ public class GamificationGamifierService extends Service {
 	    	
 			RepositoryHelper.copyFolder(originRepository.getDirectory().getParentFile(), newRepository.getDirectory().getParentFile());
 	    	
-			String aopfilestring = RepositoryHelper.readFile("jsfiles/aop.pack.js", Charset.forName("UTF-8"));
-			String oidcwidgetfilestring = RepositoryHelper.readFile("jsfiles/oidc-widget.js", Charset.forName("UTF-8"));
-			String gamifierstring = RepositoryHelper.readFile("jsfiles/gamifier.js", Charset.forName("UTF-8"));
+			String aopfilestring = RepositoryHelper.readFile("../GamificationGamifierService/jsfiles/aop.pack.js", Charset.forName("UTF-8"));
+			String oidcwidgetfilestring = RepositoryHelper.readFile("../GamificationGamifierService/jsfiles/oidc-widget.js", Charset.forName("UTF-8"));
+			String gamifierstring = RepositoryHelper.readFile("../GamificationGamifierService/jsfiles/gamifier.js", Charset.forName("UTF-8"));
 			
 			gamifierstring = gamifierstring.replace("$Application_Id$", appId);
 			gamifierstring = gamifierstring.replace("$Endpoint_URL$", epURL);

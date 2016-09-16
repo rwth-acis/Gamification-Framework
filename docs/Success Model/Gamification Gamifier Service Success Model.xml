@@ -1,0 +1,32 @@
+<SuccessModel name="Gamification Gamifier Service Success Model" service="i5.las2peer.services.gamificationGamifierService.GamificationGamifierService@0.1">
+	<dimension name="System Quality">
+		<factor name="Performance">
+			<measure name="Average Time To Update Repository"/>
+		</factor>
+	</dimension>
+	<dimension name="Information Quality">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Use">
+		<factor name="Quantity">
+			<measure name="Number of Repository Updated Over Time"/>
+		</factor>
+		<factor name="Quality">
+			<measure name="Average Repository Updated per Application"/>
+		</factor>
+	</dimension>
+	<dimension name="User Satisfaction">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Individual Impact">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Community Impact">
+		<factor name="Quality">
+			<measure name="Average Repository Updated per Member"/>
+		</factor>
+	</dimension>
+</SuccessModel>

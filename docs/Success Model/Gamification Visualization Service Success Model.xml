@@ -1,0 +1,35 @@
+<SuccessModel name="Gamification Visualization Service Success Model" service="i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService@0.1">
+	<dimension name="System Quality">
+		<factor name="Performance">
+			<measure name="Average Time To Fetch Member Status"/>
+			<measure name="Average Time To Fetch Member Badges"/>
+			<measure name="Average Time To Fetch Member Achievements"/>
+			<measure name="Average Time To Fetch Member Quests"/>
+		</factor>
+	</dimension>
+	<dimension name="Information Quality">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Use">
+		<factor name="Quantity">
+			<measure name="Number of Action Triggered Over Time"/>
+		</factor>
+		<factor name="Quality">
+			<measure name="Average Action Triggered per Member"/>
+			<measure name="Average Action Triggered per Application"/>
+		</factor>
+	</dimension>
+	<dimension name="User Satisfaction">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Individual Impact">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Community Impact">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+</SuccessModel>
