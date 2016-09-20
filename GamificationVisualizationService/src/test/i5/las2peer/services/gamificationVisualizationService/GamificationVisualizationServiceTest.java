@@ -46,7 +46,6 @@ import i5.las2peer.services.gamificationLevelService.GamificationLevelService;
 import i5.las2peer.services.gamificationPointService.GamificationPointService;
 import i5.las2peer.services.gamificationQuestService.GamificationQuestService;
 import i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService;
-import i5.las2peer.services.gamificationVisualizationService.database.SQLDatabase;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
@@ -100,7 +99,6 @@ public class GamificationVisualizationServiceTest {
 	private static int jdbcPort;
 	private static String jdbcSchema;
 
-	private static SQLDatabase DBManager;
 	
 	// to fetch data per batch
 	int currentPage = 1;

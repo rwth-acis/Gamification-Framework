@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <service consumes="*" name="i5.las2peer.services.gamificationQuestService.GamificationQuestService" path="gamification/quests" produces="text/plain" version="0.1">
   <methods>
-    <method consumes="application/json" httpMethod="post" name="createNewQuest" path="{appId}" produces="text/plain" type="i5.las2peer.restMapper.HttpResponse">
+    <method consumes="application/json" httpMethod="post" name="createNewQuest" path="{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
         <parameter annotation="content" index="1" name="" type="[B"/>

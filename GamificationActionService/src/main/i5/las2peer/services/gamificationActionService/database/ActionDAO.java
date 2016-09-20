@@ -22,20 +22,20 @@ public class ActionDAO {
 	}
 	
 	PreparedStatement stmt;
-	Connection conn;
 	
-	public ActionDAO( Connection conn){
-		this.conn = conn;
+	
+	public ActionDAO(){
 	}
 	
 	/**
 	 * Check whether the application id is already exist
 	 * 
 	 * @param app_id application id
+	 * @param conn database connection
 	 * @return true app_id is already exist
 	 * @throws SQLException SQL Exception
 	 */
-	public boolean isAppIdExist(String app_id) throws SQLException  {
+	public boolean isAppIdExist(Connection conn,String app_id) throws SQLException  {
 			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
 			stmt.setString(1, app_id);
 			ResultSet rs = stmt.executeQuery();
@@ -51,10 +51,11 @@ public class ActionDAO {
 	 * Get all actions in the database
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @return list of actions
 	 * @throws SQLException sql exception
 	 */
-	public List<ActionModel> getAllActions(String appId) throws SQLException{
+	public List<ActionModel> getAllActions(Connection conn,String appId) throws SQLException{
 
 		List<ActionModel> acts = new ArrayList<ActionModel>();
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".action");
@@ -71,11 +72,12 @@ public class ActionDAO {
 	 * Check whether an action with action id is already exist
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param action_id action id
 	 * @return true if the action is already exist
 	 * @throws SQLException sql exception
 	 */
-	public boolean isActionIdExist(String appId, String action_id) throws SQLException {
+	public boolean isActionIdExist(Connection conn,String appId, String action_id) throws SQLException {
 		stmt = conn.prepareStatement("SELECT action_id FROM "+appId+".action WHERE action_id=?");
 		stmt.setString(1, action_id);
 		ResultSet rs = stmt.executeQuery();
@@ -89,11 +91,12 @@ public class ActionDAO {
 	 * Get an action with specific id
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param action_id action id
 	 * @return ActionModel
 	 * @throws SQLException sql exception
 	 */
-	public ActionModel getActionWithId(String appId, String action_id) throws SQLException {
+	public ActionModel getActionWithId(Connection conn,String appId, String action_id) throws SQLException {
 		
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".action WHERE action_id = ?");
 		stmt.setString(1, action_id);
@@ -108,10 +111,11 @@ public class ActionDAO {
 	 * Get total number of action
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @return total number of action
 	 * @throws SQLException sql exception
 	 */
-	public int getNumberOfActions(String appId) throws SQLException {
+	public int getNumberOfActions(Connection conn,String appId) throws SQLException {
 		// TODO Auto-generated method stub
 
 			stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".action");
@@ -128,13 +132,14 @@ public class ActionDAO {
 	 * Get actions with search parameter
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param offset offset
 	 * @param window_size number of fetched data
 	 * @param searchPhrase search phrase
 	 * @return list of actions
 	 * @throws SQLException sql exception
 	 */
-	public List<ActionModel> getActionsWithOffsetAndSearchPhrase(String appId, int offset, int window_size, String searchPhrase) throws SQLException {
+	public List<ActionModel> getActionsWithOffsetAndSearchPhrase(Connection conn,String appId, int offset, int window_size, String searchPhrase) throws SQLException {
 		List<ActionModel> achs= new ArrayList<ActionModel>();
 		String pattern = "%"+searchPhrase+"%";
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".action WHERE action_id LIKE '"+pattern+"' ORDER BY action_id LIMIT "+window_size+" OFFSET "+offset);
@@ -150,10 +155,11 @@ public class ActionDAO {
 	 * Update a action information
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param action model to be updated
 	 * @throws SQLException sql exception
 	 */
-	public void updateAction(String appId, ActionModel action) throws SQLException {
+	public void updateAction(Connection conn,String appId, ActionModel action) throws SQLException {
 		// TODO Auto-generated method stub
 
 			stmt = conn.prepareStatement("UPDATE "+appId+".action SET name = ?, description = ?, point_value = ?, use_notification = ?, notif_message = ? WHERE action_id = ?");
@@ -170,10 +176,11 @@ public class ActionDAO {
 	 * Delete a specific action
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param action_id action id
 	 * @throws SQLException sql exception
 	 */
-	public void deleteAction(String appId, String action_id) throws SQLException {
+	public void deleteAction(Connection conn,String appId, String action_id) throws SQLException {
 		stmt = conn.prepareStatement("DELETE FROM "+appId+".action WHERE action_id = ?");
 		stmt.setString(1, action_id);
 		stmt.executeUpdate();
@@ -183,10 +190,11 @@ public class ActionDAO {
 	 * Add a new action
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param action action model
 	 * @throws SQLException sql exception
 	 */
-	public void addNewAction(String appId, ActionModel action) throws SQLException {
+	public void addNewAction(Connection conn,String appId, ActionModel action) throws SQLException {
 			stmt = conn.prepareStatement("INSERT INTO "+appId+".action (action_id, name, description, point_value, use_notification, notif_message) VALUES (?, ?, ?, ?, ?, ?)");
 			stmt.setString(1, action.getId());
 			stmt.setString(2, action.getName());
@@ -201,12 +209,13 @@ public class ActionDAO {
 	 * trigger an action and fetch the notifications
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param memberId member id
 	 * @param actionId action id
 	 * @throws SQLException sql exception
 	 * @return JSONArray of notifications
 	 */
-	public JSONArray triggerAction(String appId, String memberId, String actionId) throws SQLException {
+	public JSONArray triggerAction(Connection conn,String appId, String memberId, String actionId) throws SQLException {
 		
 		JSONArray resArray = new JSONArray();
 		System.out.println("data : " + appId + " " + memberId);

@@ -18,20 +18,19 @@ public class QuestDAO {
 	
 	
 	PreparedStatement stmt;
-	Connection conn;
 	
-	public QuestDAO( Connection conn){
-		this.conn = conn;
+	public QuestDAO(){
 	}
 	
 	/**
 	 * Check whether the application id is already exist
 	 * 
+	 * @param conn database connection
 	 * @param app_id application id
 	 * @return true app_id is already exist
 	 * @throws SQLException SQL Exception
 	 */
-	public boolean isAppIdExist(String app_id) throws SQLException  {
+	public boolean isAppIdExist(Connection conn,String app_id) throws SQLException  {
 			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
 			stmt.setString(1, app_id);
 			ResultSet rs = stmt.executeQuery();
@@ -46,12 +45,13 @@ public class QuestDAO {
 	/**
 	 * Get all quests in the database
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @return list of quests
 	 * @throws SQLException sql exception
 	 * @throws IOException io exception
 	 */
-	public List<QuestModel> getAllQuests(String appId) throws SQLException, IOException{
+	public List<QuestModel> getAllQuests(Connection conn,String appId) throws SQLException, IOException{
 		
 		List<QuestModel> qs = new ArrayList<QuestModel>();
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".quest");
@@ -81,12 +81,13 @@ public class QuestDAO {
 	/**
 	 * Check whether a quest with quest id is already exist
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @param quest_id quest id
 	 * @return true if the quest is already exist
 	 * @throws SQLException sql exception
 	 */
-	public boolean isQuestIdExist(String appId, String quest_id) throws SQLException {
+	public boolean isQuestIdExist(Connection conn,String appId, String quest_id) throws SQLException {
 		stmt = conn.prepareStatement("SELECT quest_id FROM "+appId+".quest WHERE quest_id=? LIMIT 1");
 		stmt.setString(1, quest_id);
 		
@@ -100,13 +101,14 @@ public class QuestDAO {
 	/**
 	 * Get an quest with specific id
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @param quest_id quest id
 	 * @return QuestModel
 	 * @throws IOException io exception
 	 * @throws SQLException sql exception 
 	 */
-	public QuestModel getQuestWithId(String appId, String quest_id) throws IOException, SQLException {
+	public QuestModel getQuestWithId(Connection conn,String appId, String quest_id) throws IOException, SQLException {
 		
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".quest WHERE quest_id = ?");
 		stmt.setString(1, quest_id);
@@ -132,11 +134,12 @@ public class QuestDAO {
 	/**
 	 * Get total number of quest
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @return total number of quest
 	 * @throws SQLException sql exception
 	 */
-	public int getNumberOfQuests(String appId) throws SQLException {
+	public int getNumberOfQuests(Connection conn,String appId) throws SQLException {
 
 			stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".quest");
 			ResultSet rs = stmt.executeQuery();
@@ -151,6 +154,7 @@ public class QuestDAO {
 	/**
 	 * Get quests with search parameter
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @param offset offset
 	 * @param window_size windowSize
@@ -159,7 +163,7 @@ public class QuestDAO {
 	 * @throws SQLException sql exception
 	 * @throws IOException  io exception
 	 */
-	public List<QuestModel> getQuestsWithOffsetAndSearchPhrase(String appId, int offset, int window_size,String searchPhrase) throws SQLException, IOException {
+	public List<QuestModel> getQuestsWithOffsetAndSearchPhrase(Connection conn,String appId, int offset, int window_size,String searchPhrase) throws SQLException, IOException {
 		List<QuestModel> qs= new ArrayList<QuestModel>();
 		String pattern = "%"+searchPhrase+"%";
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".quest WHERE quest_id LIKE '"+pattern+"' ORDER BY quest_id LIMIT "+window_size+" OFFSET "+offset);
@@ -189,11 +193,12 @@ public class QuestDAO {
 	/**
 	 * Update a quest information
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @param quest model to be updated
 	 * @throws SQLException sql exception
 	 */
-	public void updateQuest(String appId, QuestModel quest) throws SQLException {
+	public void updateQuest(Connection conn,String appId, QuestModel quest) throws SQLException {
 		stmt = conn.prepareStatement("UPDATE "+appId+".quest SET name = ?, description = ?, status = ?::"+appId+".quest_status, achievement_id = ?, quest_flag = ?, quest_id_completed = ?, point_flag = ?, point_value = ?, use_notification = ?, notif_message = ? WHERE quest_id = ?");
 		stmt.setString(1, quest.getName());
 		stmt.setString(2, quest.getDescription());
@@ -234,11 +239,12 @@ public class QuestDAO {
 	/**
 	 * Delete a specific quest
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @param quest_id quest id
 	 * @throws SQLException sql exception
 	 */
-	public void deleteQuest(String appId, String quest_id) throws SQLException {
+	public void deleteQuest(Connection conn,String appId, String quest_id) throws SQLException {
 			stmt = conn.prepareStatement("DELETE FROM "+appId+".quest WHERE quest_id = ?");
 			stmt.setString(1, quest_id);
 			stmt.executeUpdate();
@@ -250,11 +256,12 @@ public class QuestDAO {
 	/**
 	 * Add a new quest
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @param quest quest model
 	 * @throws SQLException sql exception
 	 */
-	public void addNewQuest(String appId, QuestModel quest) throws SQLException {
+	public void addNewQuest(Connection conn,String appId, QuestModel quest) throws SQLException {
 		// TODO Auto-generated method stub
 
 			stmt = conn.prepareStatement("INSERT INTO "+appId+".quest (quest_id, name, description, status, achievement_id, quest_flag, quest_id_completed, point_flag, point_value, use_notification , notif_message)  VALUES (?, ?, ?, ?::"+appId+".quest_status, ?, ?, ?, ?, ?, ?, ?)");

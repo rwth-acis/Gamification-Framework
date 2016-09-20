@@ -21,23 +21,22 @@ public class ApplicationDAO {
 	
 	
 	PreparedStatement stmt;
-	Connection conn;
 	
-	public ApplicationDAO( Connection conn){
-		this.conn = conn;
+	public ApplicationDAO(){
 	}
 	
 	/**
 	 * Adding an application information to database
 	 * 
+	 * @param conn database connection
 	 * @param app_id application model
 	 * @return true if success
 	 */
-	public boolean createApplicationDB(String app_id){
+	public boolean createApplicationDB(Connection conn,String app_id){
 		// Copy template schema
 		Statement statement;
 		try {
-			statement = this.conn.createStatement();
+			statement = conn.createStatement();
 			ResultSet rs = statement.executeQuery("SELECT create_new_application('"+ app_id +"')");
 			if(rs.next()){
 				return true;				
@@ -48,10 +47,10 @@ public class ApplicationDAO {
 		return false;
 	}
 
-	public boolean deleteApplicationDB(String app_id) {
+	public boolean deleteApplicationDB(Connection conn,String app_id) {
 		Statement statement;
 		try {
-			statement = this.conn.createStatement();
+			statement = conn.createStatement();
 			ResultSet rs = statement.executeQuery("SELECT delete_application('"+ app_id +"')");
 			if(rs.next()){
 				return true;				
@@ -62,7 +61,7 @@ public class ApplicationDAO {
 	}
 	
 	
-	public boolean addNewApplicationInfo(ApplicationModel app){
+	public boolean addNewApplicationInfo(Connection conn,ApplicationModel app){
 
 		try {
 			stmt = conn.prepareStatement("INSERT INTO manager.application_info(app_id, description, community_type) VALUES(?, ?, ?)");
@@ -99,7 +98,7 @@ public class ApplicationDAO {
 //		return false;
 //	}
 	
-	public void addNewApplication(ApplicationModel app) throws SQLException{
+	public void addNewApplication(Connection conn,ApplicationModel app) throws SQLException{
 		PreparedStatement managerSt = null, dbcreationSt = null;
 		try {
 			conn.setAutoCommit(false);
@@ -122,10 +121,11 @@ public class ApplicationDAO {
 	/**
 	 * Update an application information
 	 * 
+	 * @param conn database connection
 	 * @param app application model to be updated
 	 * @throws SQLException sql exception
 	 */
-	public void updateApplication(ApplicationModel app) throws SQLException {
+	public void updateApplication(Connection conn,ApplicationModel app) throws SQLException {
 
 			stmt = conn.prepareStatement("UPDATE manager.application_info SET description = ?, community_type = ? WHERE app_id = ?");
 			stmt.setString(1, app.getDescription());
@@ -139,11 +139,12 @@ public class ApplicationDAO {
 	/**
 	 * Check whether the application id is already exist
 	 * 
+	 * @param conn database connection
 	 * @param app_id application id
 	 * @return true app_id is already exist
 	 * @throws SQLException SQL Exception
 	 */
-	public boolean isAppIdExist(String app_id) throws SQLException  {
+	public boolean isAppIdExist(Connection conn,String app_id) throws SQLException  {
 			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
 			stmt.setString(1, app_id);
 			ResultSet rs = stmt.executeQuery();
@@ -159,11 +160,12 @@ public class ApplicationDAO {
 	/**
 	 * Get an application with specific id
 	 * 
+	 * @param conn database connection
 	 * @param appId application id
 	 * @return Application
 	 * @throws SQLException exception
 	 */
-	public ApplicationModel getApplicationWithId(String appId) throws SQLException {
+	public ApplicationModel getApplicationWithId(Connection conn,String appId) throws SQLException {
 		try {
 			stmt = conn.prepareStatement("SELECT community_type,description FROM manager.application_info WHERE app_id = ?");
 			stmt.setString(1, appId);
@@ -181,10 +183,11 @@ public class ApplicationDAO {
 	/**
 	 * Get all of applications' information
 	 * 
+	 * @param conn database connection
 	 * @return list of all applications
 	 * @throws SQLException sql exception
 	 */
-	public List<ApplicationModel> getAllApplications() throws SQLException{
+	public List<ApplicationModel> getAllApplications(Connection conn) throws SQLException{
 		// TODO Auto-generated method stub
 		List<ApplicationModel> apps = new ArrayList<ApplicationModel>();
 
@@ -202,10 +205,11 @@ public class ApplicationDAO {
 	/**
 	 * Get total number of applications
 	 * 
+	 * @param conn database connection
 	 * @return total number of applications
 	 * @throws SQLException sql exception
 	 */
-	public int getNumberOfApplications() throws SQLException {
+	public int getNumberOfApplications(Connection conn) throws SQLException {
 		// TODO Auto-generated method stub
 
 			stmt = conn.prepareStatement("SELECT count(*) FROM manager.application_info");
@@ -295,11 +299,12 @@ public class ApplicationDAO {
 	 * Get applications per batch
 	 * 
 	 * @param offset offset
+	 * @param conn database connection
 	 * @param window_size number of fetched data
 	 * @return list of applications
 	 * @throws SQLException sql exception
 	 */
-	public List<ApplicationModel> getApplicationsWithOffset(int offset, int window_size) throws SQLException {
+	public List<ApplicationModel> getApplicationsWithOffset(Connection conn,int offset, int window_size) throws SQLException {
 		List<ApplicationModel> apps = new ArrayList<ApplicationModel>();
 		stmt = conn.prepareStatement("SELECT * FROM manager.application_info ORDER BY app_id LIMIT "+window_size+" OFFSET "+offset);
 		ResultSet rs = stmt.executeQuery();
@@ -315,10 +320,11 @@ public class ApplicationDAO {
 	 * Return the list of applications belongs to  the specific member and the list of applications that is not belongs to the member
 	 * 
 	 * @param member_id member id
+	 * @param conn database connection
 	 * @return List of applications belongs to a member and List of other applications
 	 * @throws SQLException sql exception
 	 */
-	public List<List<ApplicationModel>> getSeparateApplicationsWithMemberId(String member_id) throws SQLException{
+	public List<List<ApplicationModel>> getSeparateApplicationsWithMemberId(Connection conn,String member_id) throws SQLException{
 		// TODO Auto-generated method stub
 		List<ApplicationModel> otherApps = new ArrayList<ApplicationModel>();
 		List<ApplicationModel> apps = new ArrayList<ApplicationModel>();
@@ -369,10 +375,11 @@ public class ApplicationDAO {
 	 * Check whether the member is already registered
 	 * 
 	 * @param member_id member id
+	 * @param conn database connection
 	 * @return true member is already registered
 	 * @throws SQLException exception
 	 */
-	public boolean isMemberRegistered(String member_id) throws SQLException {
+	public boolean isMemberRegistered(Connection conn,String member_id) throws SQLException {
 		
 		try {
 			stmt = conn.prepareStatement("SELECT member_id,first_name,last_name,email FROM manager.member_info WHERE member_id=?");
@@ -392,11 +399,12 @@ public class ApplicationDAO {
 	 * Check whether a member is registered in an application
 	 * 
 	 * @param member_id member id
+	 * @param conn database connection
 	 * @param app_id application id
 	 * @return member registered in app
 	 * @throws SQLException sql exception
 	 */
-	public boolean isMemberRegisteredInApp(String member_id, String app_id) throws SQLException {
+	public boolean isMemberRegisteredInApp(Connection conn,String member_id, String app_id) throws SQLException {
 		stmt = conn.prepareStatement("SELECT * FROM manager.member_application WHERE member_id=? AND app_id=?");
 		stmt.setString(1, member_id);
 		stmt.setString(2, app_id);
@@ -419,9 +427,10 @@ public class ApplicationDAO {
 	 * Register a new member
 	 * 
 	 * @param member member model
+	 * @param conn database connection
 	 * @throws SQLException sql exception
 	 */
-	public void registerMember(MemberModel member) throws SQLException{
+	public void registerMember(Connection conn,MemberModel member) throws SQLException{
 
 			stmt = conn.prepareStatement("INSERT INTO manager.member_info (member_id, first_name, last_name, email) VALUES (?, ?, ?, ?)");
 			stmt.setString(1, member.getId());
@@ -435,10 +444,11 @@ public class ApplicationDAO {
 	 * Get all applications belong to a member
 	 * 
 	 * @param member_id member id
+	 * @param conn database connection
 	 * @return list of applications
 	 * @throws SQLException sql exception
 	 */
-	public List<ApplicationModel> getAllApplicationsOfMember(String member_id) throws SQLException{
+	public List<ApplicationModel> getAllApplicationsOfMember(Connection conn,String member_id) throws SQLException{
 		// TODO Auto-generated method stub
 		List<ApplicationModel> apps = new ArrayList<ApplicationModel>();
 		List<String> appIds = new ArrayList<String>();
@@ -465,10 +475,11 @@ public class ApplicationDAO {
 	 * Get total number of users applications
 	 * 
 	 * @param member_id member id
+	 * @param conn database connection
 	 * @return number of user applications
 	 * @throws SQLException sql exception
 	 */
-	public int getNumberOfUsersApplications(String member_id) throws SQLException {
+	public int getNumberOfUsersApplications(Connection conn,String member_id) throws SQLException {
 		stmt = conn.prepareStatement("SELECT count(*) FROM manager.member_application WHERE member_id = ?");
 		stmt.setString(1, member_id);
 		ResultSet rs = stmt.executeQuery();
@@ -484,12 +495,13 @@ public class ApplicationDAO {
 	 * Get applications per batch
 	 * 
 	 * @param offset offset
+	 * @param conn database connection
 	 * @param window_size number of fetched data
 	 * @param member_id member id
 	 * @return list of applications
 	 * @throws SQLException sql exception
 	 */
-	public List<ApplicationModel> getUsersApplicationsWithOffset(int offset, int window_size, String member_id) throws SQLException {
+	public List<ApplicationModel> getUsersApplicationsWithOffset(Connection conn,int offset, int window_size, String member_id) throws SQLException {
 		List<ApplicationModel> apps = new ArrayList<ApplicationModel>();
 		stmt = conn.prepareStatement("WITH TEMP AS (SELECT app_id FROM manager.member_application WHERE member_id = ?) SELECT * FROM TEMP, manager.application_info WHERE TEMP.app_id = manager.application_info.app_id ORDER BY app_id LIMIT "+window_size+" OFFSET "+offset);
 		stmt.setString(1, member_id);
@@ -505,15 +517,16 @@ public class ApplicationDAO {
 	 * Remove and unregister member form an application
 	 * 
 	 * @param member_id member id
+	 * @param conn database connection
 	 * @param app_id application id
 	 * @return member removerd true
 	 * @throws SQLException sql exception
 	 */
-	public boolean removeMemberFromApp(String member_id, String app_id) throws SQLException {
+	public boolean removeMemberFromApp(Connection conn,String member_id, String app_id) throws SQLException {
 		
 		Statement statement;
 
-		statement = this.conn.createStatement();
+		statement = conn.createStatement();
 		ResultSet rs = statement.executeQuery("SELECT remove_member_from_app('"+ member_id +"','"+ app_id +"')");
 		if(rs.next()){
 			return true;				
@@ -526,14 +539,15 @@ public class ApplicationDAO {
 	 * Add member to application, inserting member and app id to member-application table
 	 * 
 	 * @param app_id application id
+	 * @param conn database connection
 	 * @param member_id member id
 	 * @return member added true
 	 * @throws SQLException sql exception
 	 */
-	public boolean addMemberToApp(String app_id, String member_id) throws SQLException{
+	public boolean addMemberToApp(Connection conn,String app_id, String member_id) throws SQLException{
 		Statement statement;
 
-		statement = this.conn.createStatement();
+		statement = conn.createStatement();
 		ResultSet rs = statement.executeQuery("SELECT init_member_to_app('"+ member_id +"','"+ app_id +"')");
 		if(rs.next()){
 			return true;				

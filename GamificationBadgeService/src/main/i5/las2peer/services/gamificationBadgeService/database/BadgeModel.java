@@ -18,18 +18,15 @@ public class BadgeModel{
 	private String name;
 	@ApiModelProperty( value = "Badge description") 
 	private String description;
-	@ApiModelProperty( value = "Badge image path", required = true ) 
-	private String imagepath;
 	@ApiModelProperty( value = "Use notification status", required = true ) 
 	private boolean use_notification;
 	@ApiModelProperty( value = "Notification Message") 
 	private String notif_message;
 	
-	public BadgeModel(String id, String name, String description, String imagepath, boolean use_notification, String notif_message){
+	public BadgeModel(String id, String name, String description, boolean use_notification, String notif_message){
 		this.id = id;
 		this.name = name;
 		this.description = description;
-		this.imagepath = imagepath;
 		this.use_notification = use_notification;
 		this.notif_message = notif_message;
 	}
@@ -88,23 +85,6 @@ public class BadgeModel{
 		this.description = description;
 	}
 	
-	/**
-	 * Getter for image path
-	 * 
-	 * @return image path of a badge
-	 */
-	public String getImagePath(){
-		return imagepath;
-	}
-	
-	/**
-	 * Setter for image path
-	 * 
-	 * @param imagepath image path of a badge
-	 */
-	public void setImagePath(String imagepath){
-		this.imagepath = imagepath;
-	}
 	
 	/**
 	 * Getter for use notification status

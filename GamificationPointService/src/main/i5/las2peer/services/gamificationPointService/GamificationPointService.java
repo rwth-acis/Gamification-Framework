@@ -3,6 +3,7 @@ package i5.las2peer.services.gamificationPointService;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Random;
 import java.util.logging.Level;
@@ -24,7 +25,7 @@ import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationPointService.database.PointDAO;
-import i5.las2peer.services.gamificationPointService.database.SQLDatabase;
+import i5.las2peer.services.gamificationPointService.database.DatabaseManager;
 import i5.las2peer.services.gamificationPointService.helper.LocalFileManager;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -92,38 +93,19 @@ public class GamificationPointService extends Service {
 	private String jdbcDriverClassName;
 	private String jdbcLogin;
 	private String jdbcPass;
-	private String jdbcHost;
-	private int jdbcPort;
+	private String jdbcUrl;
 	private String jdbcSchema;
-	private String epURL;
-	private SQLDatabase DBManager;
+	private DatabaseManager dbm;
 	private PointDAO pointAccess;
 	
 	public GamificationPointService() {
 		// read and set properties values
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		setFieldValues();
+		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		this.pointAccess = new PointDAO();
 	}
-	
-	/**
-	 * Initialize database connection
-	 * @return true if database is connected
-	 */
-	private boolean initializeDBConnection() {
 
-		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
-		logger.info(jdbcDriverClassName + " " + jdbcLogin);
-		try {
-				this.DBManager.connect();
-				this.pointAccess = new PointDAO(this.DBManager.getConnection());
-				logger.info("Monitoring: Database connected!");
-				return true;
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.info("Monitoring: Could not connect to database!. " + e.getMessage());
-				return false;
-			}
-	}
 	
 	/**
 	 * Fetch configuration data from file system
@@ -295,59 +277,66 @@ public class GamificationPointService extends Service {
 		
 		
 		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
 			return unauthorizedMessage();
 		}
 		try {
-			if(!initializeDBConnection()){
-				objResponse.put("message", "Cannot connect to database");
-				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-			}
+			conn = dbm.getConnection();
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
 			
-			if(!pointAccess.isAppIdExist(appId)){
+			if(!pointAccess.isAppIdExist(conn,appId)){
 				objResponse.put("message", "Cannot update point unit name. App not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			if(unitName != null){
+				JSONObject objRetrieve;
+				try {
+					objRetrieve = fetchConfigurationFromSystem(appId);
+					objRetrieve.put("pointUnitName", unitName);
+					storeConfigurationToSystem(appId, objRetrieve);
+					logger.info(objRetrieve.toJSONString());
+					objResponse.put("message", "Unit name "+unitName+" is updated");
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+appId);
+					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+				} catch (IOException e) {
+					e.printStackTrace();
+					// return HTTP Response on error
+					objResponse.put("message", "Cannot update point unit name. IO Exception. " + e.getMessage());
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				}
+			}
+			else{
+				// Unit name is null
+				
+				// return HTTP Response on error
+				objResponse.put("message", "Cannot update point unit name. Unit Name cannot be null. " );
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 			objResponse.put("message", "Cannot update point unit name. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
 			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
-		if(unitName != null){
-			JSONObject objRetrieve;
-			try {
-				objRetrieve = fetchConfigurationFromSystem(appId);
-				objRetrieve.put("pointUnitName", unitName);
-				storeConfigurationToSystem(appId, objRetrieve);
-				logger.info(objRetrieve.toJSONString());
-				objResponse.put("message", "Unit name "+unitName+" is updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+appId);
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-			} catch (IOException e) {
-				e.printStackTrace();
-				// return HTTP Response on error
-				objResponse.put("message", "Cannot update point unit name. IO Exception. " + e.getMessage());
-				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-			}
-		}
-		else{
-			// Unit name is null
-			
-			// return HTTP Response on error
-			objResponse.put("message", "Cannot update point unit name. Unit Name cannot be null. " );
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-
-		}
+		}		 
+		// always close connections
+	    finally {
+	      try {
+	        conn.close();
+	      } catch (SQLException e) {
+	        logger.printStackTrace(e);
+	      }
+	    }
+		
 	}
 	
 	/**
@@ -375,53 +364,60 @@ public class GamificationPointService extends Service {
 			
 		
 		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
 			return unauthorizedMessage();
 		}
 		try {
-			if(!initializeDBConnection()){
-				objResponse.put("message", "Cannot connect to database");
-				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-			}
+			conn = dbm.getConnection();
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
 			
-			if(!pointAccess.isAppIdExist(appId)){
+			if(!pointAccess.isAppIdExist(conn,appId)){
 				objResponse.put("message", "Cannot get point unit name. App not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			}
+			JSONObject objRetrieve;
+			try {
+				objRetrieve = fetchConfigurationFromSystem(appId);
+				String pointUnitName = (String) objRetrieve.get("pointUnitName");
+				if(pointUnitName==null){
+					objRetrieve.put("pointUnitName", "");
+				}
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+appId);
+				
+				return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
+		
+
+			} catch (IOException e) {
+				e.printStackTrace();
+				
+				// return HTTP Response on error
+				objResponse.put("message", "Cannot get point unit name. IO Exception. " + e.getMessage());
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 			objResponse.put("message", "Cannot get point unit name. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
 			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
-		JSONObject objRetrieve;
-		try {
-			objRetrieve = fetchConfigurationFromSystem(appId);
-			String pointUnitName = (String) objRetrieve.get("pointUnitName");
-			if(pointUnitName==null){
-				objRetrieve.put("pointUnitName", "");
-			}
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+appId);
-			
-			return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
-	
+		}		 
+		// always close connections
+	    finally {
+	      try {
+	        conn.close();
+	      } catch (SQLException e) {
+	        logger.printStackTrace(e);
+	      }
+	    }
 
-		} catch (IOException e) {
-			e.printStackTrace();
-			
-			// return HTTP Response on error
-			objResponse.put("message", "Cannot get point unit name. IO Exception. " + e.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-
-		}
 		
 	}
 	

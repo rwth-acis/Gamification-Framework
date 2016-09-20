@@ -9,10 +9,9 @@ public class PointDAO {
 	
 	
 	PreparedStatement stmt;
-	Connection conn;
 	
-	public PointDAO( Connection conn){
-		this.conn = conn;
+	public PointDAO(){
+		
 	}
 	
 	/**
@@ -22,7 +21,7 @@ public class PointDAO {
 	 * @return true app_id is already exist
 	 * @throws SQLException SQL Exception
 	 */
-	public boolean isAppIdExist(String app_id) throws SQLException  {
+	public boolean isAppIdExist(Connection conn,String app_id) throws SQLException  {
 			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
 			stmt.setString(1, app_id);
 			ResultSet rs = stmt.executeQuery();

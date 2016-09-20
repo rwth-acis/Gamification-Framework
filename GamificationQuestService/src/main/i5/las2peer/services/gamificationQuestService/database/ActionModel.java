@@ -3,6 +3,10 @@ package i5.las2peer.services.gamificationQuestService.database;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+
+
+
+
 /**
 * Action Model
 * 
@@ -12,6 +16,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel( value = "ActionModel", description = "Action resource representation" )
 public class ActionModel{
+	
 
 	@ApiModelProperty( value = "Action ID", required = true ) 
 	private String action_id;
