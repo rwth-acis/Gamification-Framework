@@ -825,7 +825,7 @@ public class GamificationQuestService extends Service {
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 			int offset = (currentPage - 1) * windowSize;
-			int totalNum = actionAccess.getNumberOfActions(appId);
+			int totalNum = questAccess.getNumberOfQuests(appId);
 
 			if(windowSize == -1){
 				offset = 0;

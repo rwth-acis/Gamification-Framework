@@ -153,13 +153,13 @@ public class QuestDAO {
 	 * 
 	 * @param appId application id
 	 * @param offset offset
-	 * @param window_size number of fetched data
+	 * @param window_size windowSize
 	 * @param searchPhrase search phrase
 	 * @return list of quests
 	 * @throws SQLException sql exception
 	 * @throws IOException  io exception
 	 */
-	public List<QuestModel> getQuestsWithOffsetAndSearchPhrase(String appId, int offset, int window_size, String searchPhrase) throws SQLException, IOException {
+	public List<QuestModel> getQuestsWithOffsetAndSearchPhrase(String appId, int offset, int window_size,String searchPhrase) throws SQLException, IOException {
 		List<QuestModel> qs= new ArrayList<QuestModel>();
 		String pattern = "%"+searchPhrase+"%";
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".quest WHERE quest_id LIKE '"+pattern+"' ORDER BY quest_id LIMIT "+window_size+" OFFSET "+offset);

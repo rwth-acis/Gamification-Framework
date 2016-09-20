@@ -7,6 +7,15 @@
         <parameter annotation="content" index="1" name="" type="[B"/>
       </parameters>
     </method>
+    <method httpMethod="get" name="getSeparateApplicationInfo" path="list/separated" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters/>
+    </method>
+    <method httpMethod="post" name="addMemberToApp" path="data/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
     <method httpMethod="get" name="getApplicationDetails" path="data/{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
@@ -24,15 +33,6 @@
       </parameters>
     </method>
     <method httpMethod="post" name="memberLoginValidation" path="validation" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters/>
-    </method>
-    <method httpMethod="post" name="addMemberToApp" path="data/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getSeparateApplicationInfo" path="list/separated" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters/>
     </method>
   </methods>

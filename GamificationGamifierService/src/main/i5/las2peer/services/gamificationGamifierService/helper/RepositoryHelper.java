@@ -582,7 +582,7 @@ public abstract class RepositoryHelper {
   }
   
   public static String appendWidget(String widget, String gitHubOrganization, String repositoryName) {
-	  Integer headCloseIndex = widget.indexOf("</head>");
+	  Integer headCloseIndex = widget.indexOf("</body>");
 	  String additionalString = "";
 	  additionalString += "<script type=\"text/javascript\" src=\"http://"+ gitHubOrganization +".github.io/"+ repositoryName +"/gamification/aop.pack.js\"></script>\n";
 	  additionalString += "<script type=\"text/javascript\" src=\"http://"+ gitHubOrganization +".github.io/"+ repositoryName +"/gamification/gamifier.js\"></script>\n";

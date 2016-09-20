@@ -63,7 +63,7 @@ DECLARE
   hidden text;
   comm_type text;
 BEGIN
-	EXECUTE 'CREATE SCHEMA ' || new_schema;
+	EXECUTE 'CREATE SCHEMA ' || new_schema ||';';
 
 	EXECUTE 'CREATE TABLE ' || new_schema || '.member (
 	  member_id character varying(20) NOT NULL
@@ -222,22 +222,6 @@ BEGIN
 	);';
 
 	-- m to m
-	-- not unique relation (member,quest,action)
-	EXECUTE 'CREATE TABLE ' || new_schema || '.member_quest_action (
-	  member_id character varying(20) NOT NULL
-	, quest_id character varying(20) NOT NULL
-	, action_id character varying(20) NOT NULL
-	, completed boolean DEFAULT false
-	, CONSTRAINT member_quest_action_pkey PRIMARY KEY (member_id, quest_id, action_id)
-	, CONSTRAINT member_id FOREIGN KEY (member_id)
-	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
-	, CONSTRAINT quest_id FOREIGN KEY (quest_id)
-	      REFERENCES ' || new_schema || '.quest (quest_id) ON UPDATE CASCADE ON DELETE CASCADE
-	, CONSTRAINT action_id FOREIGN KEY (action_id)
-	      REFERENCES ' || new_schema || '.action (action_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
-	);';
-
-	-- m to m
 	-- unique relation (quest,action)
 	-- times > 0
 	EXECUTE 'CREATE TABLE ' || new_schema || '.quest_action (
@@ -251,6 +235,22 @@ BEGIN
 	      REFERENCES ' || new_schema || '.action (action_id) ON UPDATE CASCADE ON DELETE CASCADE
 	, CHECK (times > 0)
 	);';
+
+	-- m to m
+	-- not unique relation (member,quest,action)
+	EXECUTE 'CREATE TABLE ' || new_schema || '.member_quest_action (
+	  member_id character varying(20) NOT NULL
+	, quest_id character varying(20) NOT NULL
+	, action_id character varying(20) NOT NULL
+	, completed boolean DEFAULT false
+	, CONSTRAINT member_quest_action_pkey PRIMARY KEY (member_id, quest_id, action_id)
+	, CONSTRAINT member_id FOREIGN KEY (member_id)
+	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
+	, CONSTRAINT quest_action_id FOREIGN KEY (quest_id, action_id)
+	      REFERENCES ' || new_schema || '.quest_action (quest_id, action_id) ON UPDATE CASCADE ON DELETE CASCADE
+	);';
+--, CONSTRAINT action_id FOREIGN KEY (action_id)
+--	      REFERENCES ' || new_schema || '.quest_action (action_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
 
 	EXECUTE 'CREATE TYPE ' || new_schema || '.notification_type AS ENUM (''BADGE'',''ACHIEVEMENT'',''QUEST'',''LEVEL'');';
 	EXECUTE 'CREATE TABLE ' || new_schema || '.notification (
