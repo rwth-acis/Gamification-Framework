@@ -519,9 +519,7 @@ public class GamificationActionService extends Service {
 				if (partPV != null) {
 					// optional description text input form element
 					actionpointvalue = Integer.parseInt(partPV.getContent());
-					if(actionpointvalue!=0){
-						action.setPointValue(actionpointvalue);
-					}
+					action.setPointValue(actionpointvalue);
 				}
 				FormDataPart partNotificationCheck = parts.get("actionnotificationcheck");
 				if (partNotificationCheck != null) {

@@ -530,9 +530,8 @@ public class GamificationAchievementService extends Service {
 				if (partPV != null) {
 					// optional description text input form element
 					achievementpointvalue = Integer.parseInt(partPV.getContent());
-					if(achievementpointvalue!=0){
-						currentAchievement.setPointValue(achievementpointvalue);
-					}
+					currentAchievement.setPointValue(achievementpointvalue);
+					
 				}
 				
 				FormDataPart partBID = parts.get("achievementbadgeid");

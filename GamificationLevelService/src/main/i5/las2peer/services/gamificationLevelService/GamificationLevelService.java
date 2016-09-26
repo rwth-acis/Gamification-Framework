@@ -512,9 +512,7 @@ public class GamificationLevelService extends Service {
 					if (partPV != null) {
 						// optional description text input form element
 						levelpointvalue = Integer.parseInt(partPV.getContent());
-						if(levelpointvalue!=0){
-							model.setPointValue(levelpointvalue);
-						}
+						model.setPointValue(levelpointvalue);
 					}
 					FormDataPart partNotificationCheck = parts.get("levelnotificationcheck");
 					if (partNotificationCheck != null) {
