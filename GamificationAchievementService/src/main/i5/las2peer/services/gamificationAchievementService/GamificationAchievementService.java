@@ -542,6 +542,9 @@ public class GamificationAchievementService extends Service {
 					
 					logger.info(achievementbadgeid);
 					if(achievementbadgeid!=null){
+						if(achievementbadgeid.equals("")){
+							achievementbadgeid = null;
+						}
 						currentAchievement.setBadgeId(achievementbadgeid);
 					}
 				}

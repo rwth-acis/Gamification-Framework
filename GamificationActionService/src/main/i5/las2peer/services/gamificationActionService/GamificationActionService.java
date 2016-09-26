@@ -785,8 +785,7 @@ public class GamificationActionService extends Service {
 			JSONArray arr = new JSONArray();
 			
 			if(!actionAccess.isActionIdExist(conn,appId, actionId)){
-				
-				throw new SQLException("Action ID is not exist");
+				return null;
 			}
 			
 			arr = actionAccess.triggerAction(conn,appId, memberId, actionId);

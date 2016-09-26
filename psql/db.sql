@@ -451,7 +451,14 @@ LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION remove_member_from_app(member_id text, app_id text) RETURNS void AS
 $BODY$
+DECLARE
+comm_type text;
 BEGIN
+	EXECUTE 'SELECT community_type FROM manager.application_info WHERE app_id = '||quote_literal(app_id)||'' INTO comm_type;
+	RAISE NOTICE 'Community type : %', comm_type;
+	EXECUTE 'DELETE FROM global_leaderboard.'|| comm_type ||' WHERE member_id = '||quote_literal(member_id)||';';
+
+	
 	EXECUTE 'DELETE FROM manager.member_application WHERE member_id = '|| quote_literal(member_id) ||' AND app_id = '|| quote_literal(app_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.member_point WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.member_achievement WHERE member_id = '|| quote_literal(member_id) ||';';
@@ -463,6 +470,7 @@ BEGIN
 	EXECUTE 'DELETE FROM '|| app_id ||'.member_quest_action WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.member WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.notification WHERE member_id = '|| quote_literal(member_id) ||';';
+
 
 END;
 $BODY$
@@ -739,8 +747,9 @@ BEGIN
 	EXECUTE 'CREATE TABLE '|| app_id ||'.temp (type '|| app_id ||'.notification_type);';
 	EXECUTE 'INSERT INTO '|| app_id ||'.temp VALUES(''LEVEL'');';
 	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type)
-	WITH res as (SELECT member_id, '|| app_id ||'.member_level.level_num, use_notification,notif_message FROM '|| app_id ||'.member_level INNER JOIN '|| app_id ||'.level
-	ON ('|| app_id ||'.member_level.level_num = '|| app_id ||'.level.level_num) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_level.level_num = '|| NEW.level_num ||') SELECT * FROM res CROSS JOIN '|| app_id ||'.temp ;';
+	WITH res as (SELECT member_id, '|| app_id ||'.member_level.level_num, name, use_notification,notif_message FROM '|| app_id ||'.member_level INNER JOIN '|| app_id ||'.level
+	ON ('|| app_id ||'.member_level.level_num = '|| app_id ||'.level.level_num) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_level.level_num = '|| NEW.level_num ||')
+	SELECT member_id, name, use_notification, notif_message,type FROM res CROSS JOIN '|| app_id ||'.temp ;';
 
 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
@@ -752,7 +761,7 @@ CREATE OR REPLACE FUNCTION create_trigger_member_level_observer(app_id text) RET
 $BODY$
 BEGIN
 	EXECUTE 'CREATE TRIGGER member_level_observer
-		AFTER INSERT ON '|| app_id ||'.member_level
+		AFTER UPDATE ON '|| app_id ||'.member_level
 		FOR EACH ROW
 		EXECUTE PROCEDURE member_level_observer_function();';
 END;

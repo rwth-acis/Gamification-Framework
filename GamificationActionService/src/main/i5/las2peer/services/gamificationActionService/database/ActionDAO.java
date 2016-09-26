@@ -236,7 +236,6 @@ public class ActionDAO {
 				resObj.put("type", NotificationType.valueOf(rs.getString("type")));
 				resObj.put("typeId", rs.getString("type_id"));
 				resObj.put("message", rs.getString("message"));
-				resObj.put("otherMessage", rs.getString("other_message"));
 				resArray.add(resObj);
 			}
 		}

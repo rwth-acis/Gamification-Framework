@@ -40,7 +40,7 @@ public class MemberDAO {
 	 */
 	public List<BadgeModel> getObtainedBadges(Connection conn,String appId, String memberId) throws SQLException {
 		List<BadgeModel> badges = new ArrayList<BadgeModel>();
-		stmt = conn.prepareStatement("WITH bdg AS (SELECT badge_id FROM "+appId+".member_badge WHERE member_id=?) SELECT "+appId+".badge.badge_id, name, description, image_path, use_notification, notif_message FROM "+appId+".badge INNER JOIN bdg ON ("+appId+".badge.badge_id = bdg.badge_id)");
+		stmt = conn.prepareStatement("WITH bdg AS (SELECT badge_id FROM "+appId+".member_badge WHERE member_id=?) SELECT "+appId+".badge.badge_id, name, description, use_notification, notif_message FROM "+appId+".badge INNER JOIN bdg ON ("+appId+".badge.badge_id = bdg.badge_id)");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
@@ -326,7 +326,7 @@ public class MemberDAO {
 			throw new SQLException("Member ID not found");
 		}
 		//Get current and next level
-		stmt = conn.prepareStatement("SELECT level_num, level_name, point_value FROM "+appId+".level WHERE level_num >= ? LIMIT 2");
+		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+appId+".level WHERE level_num >= ? LIMIT 2");
 		stmt.setInt(1, currentLevel);
 		rs = stmt.executeQuery();
 		if (rs.next()) {
