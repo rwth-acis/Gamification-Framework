@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<service consumes="*" name="i5.las2peer.services.gamificationApplicationService.GamificationApplicationService" path="gamification/applications" produces="text/plain" version="0.1">
+<service consumes="*" name="i5.las2peer.services.gamificationLevelService.GamificationLevelService" path="gamification/levels" produces="text/plain" version="0.1">
   <methods>
-    <method httpMethod="post" name="createApplication" path="data" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="header" index="0" name="Content-Type" type="java.lang.String"/>
-        <parameter annotation="content" index="1" name="" type="[B"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getApplicationDetails" path="data/{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="post" name="createLevel" path="{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="header" index="1" name="Content-Type" type="java.lang.String"/>
+        <parameter annotation="content" index="2" name="" type="[B"/>
       </parameters>
     </method>
-    <method httpMethod="delete" name="deleteApplication" path="data/{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="get" name="getlevelWithNum" path="{appId}/{levelNum}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="levelNum" type="int"/>
       </parameters>
     </method>
-    <method httpMethod="delete" name="removeMemberFromApp" path="data/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="put" name="updateLevel" path="{appId}/{levelNum}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="levelNum" type="int"/>
+        <parameter annotation="header" index="2" name="Content-Type" type="java.lang.String"/>
+        <parameter annotation="content" index="3" name="" type="[B"/>
       </parameters>
     </method>
-    <method httpMethod="post" name="memberLoginValidation" path="validation" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters/>
-    </method>
-    <method httpMethod="post" name="addMemberToApp" path="data/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="delete" name="deleteLevel" path="{appId}/{levelNum}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="levelNum" type="int"/>
       </parameters>
     </method>
-    <method httpMethod="get" name="getSeparateApplicationInfo" path="list/separated" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters/>
+    <method httpMethod="get" name="getLevelList" path="{appId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="query" index="1" name="current" type="int"/>
+        <parameter annotation="query" index="2" name="rowCount" type="int"/>
+        <parameter annotation="query" index="3" name="searchPhrase" type="java.lang.String"/>
+      </parameters>
     </method>
   </methods>
 </service>

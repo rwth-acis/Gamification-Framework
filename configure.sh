@@ -4,8 +4,7 @@ source config
 OLD_NODE_IP="192.168.56.1"
 
 CONF_PROPERTIES="jdbcDriverClassName=$jdbcDriverClassName\n\
-jdbcHost=$jdbcHost\n\
-jdbcPort=$jdbcPort\n\
+jdbcUrl=$jdbcUrl\n\
 jdbcSchema=$jdbcSchema\n\
 jdbcLogin=$jdbcLogin\n\
 jdbcPass=$jdbcPass\n\

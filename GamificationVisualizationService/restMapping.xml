@@ -1,28 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <service consumes="*" name="i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService" path="visualization" produces="text/plain" version="0.1">
   <methods>
-    <method httpMethod="get" name="getPointOfMember" path="points/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="post" name="triggerAction" path="actions/{appId}/{actionId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="actionId" type="java.lang.String"/>
-        <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getNotification" path="notifications/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-        <parameter annotation="query" index="2" name="current" type="int"/>
-        <parameter annotation="query" index="3" name="rowCount" type="int"/>
-        <parameter annotation="query" index="4" name="searchPhrase" type="java.lang.String"/>
-      </parameters>
-    </method>
     <method httpMethod="get" name="getStatusOfMember" path="status/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
@@ -99,6 +77,28 @@
         <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
         <parameter annotation="path" index="1" name="achievementId" type="java.lang.String"/>
         <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getPointOfMember" path="points/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="post" name="triggerAction" path="actions/{appId}/{actionId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="actionId" type="java.lang.String"/>
+        <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getNotification" path="notifications/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+        <parameter annotation="query" index="2" name="current" type="int"/>
+        <parameter annotation="query" index="3" name="rowCount" type="int"/>
+        <parameter annotation="query" index="4" name="searchPhrase" type="java.lang.String"/>
       </parameters>
     </method>
   </methods>

@@ -63,7 +63,7 @@ DECLARE
   hidden text;
   comm_type text;
 BEGIN
-	EXECUTE 'CREATE SCHEMA ' || new_schema;
+	EXECUTE 'CREATE SCHEMA ' || new_schema ||';';
 
 	EXECUTE 'CREATE TABLE ' || new_schema || '.member (
 	  member_id character varying(20) NOT NULL
@@ -77,7 +77,6 @@ BEGIN
 	  badge_id character varying(20) NOT NULL
 	, name character varying(20) NOT NULL
 	, description character varying(100)
-	, image_path character varying
 	, use_notification boolean
 	, notif_message character varying
 	, CONSTRAINT badge_id PRIMARY KEY (badge_id)
@@ -222,22 +221,6 @@ BEGIN
 	);';
 
 	-- m to m
-	-- not unique relation (member,quest,action)
-	EXECUTE 'CREATE TABLE ' || new_schema || '.member_quest_action (
-	  member_id character varying(20) NOT NULL
-	, quest_id character varying(20) NOT NULL
-	, action_id character varying(20) NOT NULL
-	, completed boolean DEFAULT false
-	, CONSTRAINT member_quest_action_pkey PRIMARY KEY (member_id, quest_id, action_id)
-	, CONSTRAINT member_id FOREIGN KEY (member_id)
-	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
-	, CONSTRAINT quest_id FOREIGN KEY (quest_id)
-	      REFERENCES ' || new_schema || '.quest (quest_id) ON UPDATE CASCADE ON DELETE CASCADE
-	, CONSTRAINT action_id FOREIGN KEY (action_id)
-	      REFERENCES ' || new_schema || '.action (action_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
-	);';
-
-	-- m to m
 	-- unique relation (quest,action)
 	-- times > 0
 	EXECUTE 'CREATE TABLE ' || new_schema || '.quest_action (
@@ -252,6 +235,22 @@ BEGIN
 	, CHECK (times > 0)
 	);';
 
+	-- m to m
+	-- not unique relation (member,quest,action)
+	EXECUTE 'CREATE TABLE ' || new_schema || '.member_quest_action (
+	  member_id character varying(20) NOT NULL
+	, quest_id character varying(20) NOT NULL
+	, action_id character varying(20) NOT NULL
+	, completed boolean DEFAULT false
+	, CONSTRAINT member_quest_action_pkey PRIMARY KEY (member_id, quest_id, action_id)
+	, CONSTRAINT member_id FOREIGN KEY (member_id)
+	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
+	, CONSTRAINT quest_action_id FOREIGN KEY (quest_id, action_id)
+	      REFERENCES ' || new_schema || '.quest_action (quest_id, action_id) ON UPDATE CASCADE ON DELETE CASCADE
+	);';
+--, CONSTRAINT action_id FOREIGN KEY (action_id)
+--	      REFERENCES ' || new_schema || '.quest_action (action_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
+
 	EXECUTE 'CREATE TYPE ' || new_schema || '.notification_type AS ENUM (''BADGE'',''ACHIEVEMENT'',''QUEST'',''LEVEL'');';
 	EXECUTE 'CREATE TABLE ' || new_schema || '.notification (
 	  member_id character varying(20) NOT NULL
@@ -259,7 +258,6 @@ BEGIN
 	, type_id character varying (20) NOT NULL
 	, use_notification boolean
 	, message character varying
-	, other_message character varying
 	, CONSTRAINT notification_pkey PRIMARY KEY (member_id , type_id)
 	, CONSTRAINT member_id FOREIGN KEY (member_id)
 	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
@@ -302,7 +300,7 @@ BEGIN
 	EXECUTE 'SELECT community_type FROM manager.application_info WHERE app_id = '||quote_literal(app_id)||'' INTO comm_type;
 	RAISE NOTICE 'Community type : %', comm_type;
 	-- check comm type table, delete table if no app with specific community type
-	EXECUTE 'DROP SCHEMA '|| app_id ||' CASCADE;';
+	EXECUTE 'DROP SCHEMA IF EXISTS '|| app_id ||' CASCADE;';
 	-- drop table if no app with community type
 	EXECUTE format($f$SELECT 1 FROM manager.application_info WHERE  community_type = '%s'$f$, comm_type);
 	GET DIAGNOSTICS _found = ROW_COUNT;
@@ -346,11 +344,11 @@ BEGIN
 	EXECUTE 'SELECT create_new_application('|| quote_literal(schema) ||');';
 
  	EXECUTE '
-	INSERT INTO '|| schema ||'.badge VALUES (''badge1'',''Badge 1'',''The badge number 1'',''http://badge1.example.com'',true,''badge1messagethisis'');
-	INSERT INTO '|| schema ||'.badge VALUES (''badge2'',''Badge 2'',''The badge number 2'',''http://badge2.example.com'',true,''badge2messagethisis'');
-	INSERT INTO '|| schema ||'.badge VALUES (''badge3'',''Badge 3'',''The badge number 3'',''http://badge3.example.com'',false,''badge3messagethisis'');
-	INSERT INTO '|| schema ||'.badge VALUES (''badge4'',''Badge 4'',''The badge number 4'',''http://badge4.example.com'',false,''badge4messagethisis'');
-	INSERT INTO '|| schema ||'.badge VALUES (''badge5'',''Badge 5'',''The badge number 5'',''http://badge5.example.com'',false,''badge5messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''badge1'',''Badge 1'',''The badge number 1'',true,''badge1messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''badge2'',''Badge 2'',''The badge number 2'',true,''badge2messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''badge3'',''Badge 3'',''The badge number 3'',false,''badge3messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''badge4'',''Badge 4'',''The badge number 4'',false,''badge4messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''badge5'',''Badge 5'',''The badge number 5'',false,''badge5messagethisis'');
 
 	INSERT INTO '|| schema ||'.achievement VALUES (''achievement1'',''achievement 1'',''The achievement number 1'',1,''badge1'',false,''achievement1messagethisis'');
 	INSERT INTO '|| schema ||'.achievement VALUES (''achievement2'',''achievement 2'',''The achievement number 2'',2,''badge2'',false,''achievement2messagethisis'');
@@ -453,7 +451,14 @@ LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION remove_member_from_app(member_id text, app_id text) RETURNS void AS
 $BODY$
+DECLARE
+comm_type text;
 BEGIN
+	EXECUTE 'SELECT community_type FROM manager.application_info WHERE app_id = '||quote_literal(app_id)||'' INTO comm_type;
+	RAISE NOTICE 'Community type : %', comm_type;
+	EXECUTE 'DELETE FROM global_leaderboard.'|| comm_type ||' WHERE member_id = '||quote_literal(member_id)||';';
+
+	
 	EXECUTE 'DELETE FROM manager.member_application WHERE member_id = '|| quote_literal(member_id) ||' AND app_id = '|| quote_literal(app_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.member_point WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.member_achievement WHERE member_id = '|| quote_literal(member_id) ||';';
@@ -465,6 +470,7 @@ BEGIN
 	EXECUTE 'DELETE FROM '|| app_id ||'.member_quest_action WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.member WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| app_id ||'.notification WHERE member_id = '|| quote_literal(member_id) ||';';
+
 
 END;
 $BODY$
@@ -673,8 +679,8 @@ BEGIN
 	EXECUTE 'DROP TABLE IF EXISTS '|| app_id ||'.temp;';
 	EXECUTE 'CREATE TABLE '|| app_id ||'.temp (type '|| app_id ||'.notification_type);';
 	EXECUTE 'INSERT INTO '|| app_id ||'.temp VALUES(''BADGE'');';
-	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, other_message, type)
-	WITH res as (SELECT member_id, '|| app_id ||'.member_badge.badge_id, use_notification,notif_message, image_path FROM '|| app_id ||'.member_badge INNER JOIN '|| app_id ||'.badge
+	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type)
+	WITH res as (SELECT member_id, '|| app_id ||'.member_badge.badge_id, use_notification,notif_message FROM '|| app_id ||'.member_badge INNER JOIN '|| app_id ||'.badge
 	ON ('|| app_id ||'.member_badge.badge_id = '|| app_id ||'.badge.badge_id) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_badge.badge_id = '|| quote_literal(NEW.badge_id) ||') SELECT * FROM res CROSS JOIN '|| app_id ||'.temp ;';
 
 
@@ -741,8 +747,9 @@ BEGIN
 	EXECUTE 'CREATE TABLE '|| app_id ||'.temp (type '|| app_id ||'.notification_type);';
 	EXECUTE 'INSERT INTO '|| app_id ||'.temp VALUES(''LEVEL'');';
 	EXECUTE 'INSERT INTO '|| app_id ||'.notification (member_id, type_id, use_notification, message, type)
-	WITH res as (SELECT member_id, '|| app_id ||'.member_level.level_num, use_notification,notif_message FROM '|| app_id ||'.member_level INNER JOIN '|| app_id ||'.level
-	ON ('|| app_id ||'.member_level.level_num = '|| app_id ||'.level.level_num) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_level.level_num = '|| NEW.level_num ||') SELECT * FROM res CROSS JOIN '|| app_id ||'.temp ;';
+	WITH res as (SELECT member_id, '|| app_id ||'.member_level.level_num, name, use_notification,notif_message FROM '|| app_id ||'.member_level INNER JOIN '|| app_id ||'.level
+	ON ('|| app_id ||'.member_level.level_num = '|| app_id ||'.level.level_num) WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND '|| app_id ||'.member_level.level_num = '|| NEW.level_num ||')
+	SELECT member_id, name, use_notification, notif_message,type FROM res CROSS JOIN '|| app_id ||'.temp ;';
 
 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
@@ -754,7 +761,7 @@ CREATE OR REPLACE FUNCTION create_trigger_member_level_observer(app_id text) RET
 $BODY$
 BEGIN
 	EXECUTE 'CREATE TRIGGER member_level_observer
-		AFTER INSERT ON '|| app_id ||'.member_level
+		AFTER UPDATE ON '|| app_id ||'.member_level
 		FOR EACH ROW
 		EXECUTE PROCEDURE member_level_observer_function();';
 END;

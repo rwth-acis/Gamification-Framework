@@ -12,20 +12,19 @@ public class AchievementDAO {
 	
 	
 	PreparedStatement stmt;
-	Connection conn;
 	
-	public AchievementDAO( Connection conn){
-		this.conn = conn;
+	public AchievementDAO( ){
 	}
 	
 	/**
 	 * Check whether the application id is already exist
 	 * 
 	 * @param app_id application id
+	 * @param conn database connection
 	 * @return true app_id is already exist
 	 * @throws SQLException SQL Exception
 	 */
-	public boolean isAppIdExist(String app_id) throws SQLException  {
+	public boolean isAppIdExist(Connection conn, String app_id) throws SQLException  {
 			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
 			stmt.setString(1, app_id);
 			ResultSet rs = stmt.executeQuery();
@@ -41,10 +40,11 @@ public class AchievementDAO {
 	 * Get all achievements in the database
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @return list of achievements
 	 * @throws SQLException sql exception
 	 */
-	public List<AchievementModel> getAllAchievements(String appId) throws SQLException{
+	public List<AchievementModel> getAllAchievements(Connection conn,String appId) throws SQLException{
 
 		List<AchievementModel> achs = new ArrayList<AchievementModel>();
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".achievement");
@@ -61,11 +61,12 @@ public class AchievementDAO {
 	 * Check whether an achievement with achievement id is already exist
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param achievement_id achievement id
 	 * @return true if the achievement is already exist
 	 * @throws SQLException sql exception
 	 */
-	public boolean isAchievementIdExist(String appId, String achievement_id) throws SQLException {
+	public boolean isAchievementIdExist(Connection conn,String appId, String achievement_id) throws SQLException {
 		stmt = conn.prepareStatement("SELECT achievement_id FROM "+appId+".achievement WHERE achievement_id=?");
 		stmt.setString(1, achievement_id);
 		try {
@@ -86,11 +87,12 @@ public class AchievementDAO {
 	 * Get an achievement with specific id
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param achievement_id achievement id
 	 * @return AchievementModel
 	 * @throws SQLException sql exception
 	 */
-	public AchievementModel getAchievementWithId(String appId, String achievement_id) throws SQLException {
+	public AchievementModel getAchievementWithId(Connection conn,String appId, String achievement_id) throws SQLException {
 		
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".achievement WHERE achievement_id = ?");
 		stmt.setString(1, achievement_id);
@@ -105,10 +107,11 @@ public class AchievementDAO {
 	 * Get total number of achievement
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @return total number of achievement
 	 * @throws SQLException sql exception
 	 */
-	public int getNumberOfAchievements(String appId) throws SQLException {
+	public int getNumberOfAchievements(Connection conn,String appId) throws SQLException {
 		// TODO Auto-generated method stub
 
 			stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".achievement");
@@ -125,13 +128,14 @@ public class AchievementDAO {
 	 * Get achievements with search parameter
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param offset offset
 	 * @param window_size number of fetched data
 	 * @param searchPhrase search phrase
 	 * @return list of achievements
 	 * @throws SQLException sql exception
 	 */
-	public List<AchievementModel> getAchievementsWithOffsetAndSearchPhrase(String appId, int offset, int window_size, String searchPhrase) throws SQLException {
+	public List<AchievementModel> getAchievementsWithOffsetAndSearchPhrase(Connection conn,String appId, int offset, int window_size, String searchPhrase) throws SQLException {
 		List<AchievementModel> achs= new ArrayList<AchievementModel>();
 		String pattern = "%"+searchPhrase+"%";
 		stmt = conn.prepareStatement("SELECT * FROM "+appId+".achievement WHERE achievement_id LIKE '"+pattern+"' ORDER BY achievement_id LIMIT "+window_size+" OFFSET "+offset);
@@ -147,10 +151,11 @@ public class AchievementDAO {
 	 * Update an achievement information
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param achievement model to be updated
 	 * @throws SQLException sql exception
 	 */
-	public void updateAchievement(String appId, AchievementModel achievement) throws SQLException {
+	public void updateAchievement(Connection conn,String appId, AchievementModel achievement) throws SQLException {
 		// check whether the badgeid exist or not
 
 		stmt = conn.prepareStatement("UPDATE "+appId+".achievement SET name = ?, description = ?, point_value = ?, badge_id = ?, use_notification = ?, notif_message = ? WHERE achievement_id = ?");
@@ -168,10 +173,11 @@ public class AchievementDAO {
 	 * Delete a specific achievement
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param achievement_id achievement id
 	 * @throws SQLException sql exception
 	 */
-	public void deleteAchievement(String appId, String achievement_id) throws SQLException {
+	public void deleteAchievement(Connection conn,String appId, String achievement_id) throws SQLException {
 		// TODO Auto-generated method stub
 			stmt = conn.prepareStatement("DELETE FROM "+appId+".achievement WHERE achievement_id = ?");
 			stmt.setString(1, achievement_id);
@@ -182,10 +188,11 @@ public class AchievementDAO {
 	 * Add a new achievement
 	 * 
 	 * @param appId application id
+	 * @param conn database connection
 	 * @param achievement achievement model
 	 * @throws SQLException sql exception
 	 */
-	public void addNewAchievement(String appId, AchievementModel achievement) throws SQLException {
+	public void addNewAchievement(Connection conn,String appId, AchievementModel achievement) throws SQLException {
 		// TODO Auto-generated method stub
 
 			stmt = conn.prepareStatement("INSERT INTO "+appId+".achievement (achievement_id, name, description, point_value, badge_id, use_notification, notif_message) VALUES (?, ?, ?, ?, ?, ?, ?)");
