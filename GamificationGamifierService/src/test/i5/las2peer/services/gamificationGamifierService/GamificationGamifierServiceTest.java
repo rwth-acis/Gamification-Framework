@@ -57,7 +57,7 @@ public class GamificationGamifierServiceTest {
 	private static final ServiceNameVersion testGamificationGamifierService = new ServiceNameVersion(GamificationGamifierService.class.getCanonicalName(),"0.1");
 	private static final ServiceNameVersion testGamificationActionService = new ServiceNameVersion(GamificationActionService.class.getCanonicalName(),"0.1");
 
-	private static String appId = "test";
+	private static String gameId = "test";
 	private static final String mainPath = "gamification/gamifier/";
 	
 
@@ -193,7 +193,7 @@ public class GamificationGamifierServiceTest {
 			obj.put("current", 1);
 			obj.put("rowCount", 10);
 			obj.put("searchPhrase", "");
-			ClientResponse result = c1.sendRequest("GET", mainPath + "actions/" + appId, "");
+			ClientResponse result = c1.sendRequest("GET", mainPath + "actions/" + gameId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{

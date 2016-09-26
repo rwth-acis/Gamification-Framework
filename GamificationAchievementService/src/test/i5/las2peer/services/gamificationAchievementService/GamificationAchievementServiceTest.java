@@ -65,7 +65,7 @@ public class GamificationAchievementServiceTest {
 	// during testing, the specified service version does not matter
 	private static final ServiceNameVersion testGamificationAchievementService = new ServiceNameVersion(GamificationAchievementService.class.getCanonicalName(),"0.1");
 
-	private static String appId = "test";
+	private static String gameId = "test";
 	private static String badgeId = "badge1";
 	private static String achievementId = "ach_test_id";
 	private static final String mainPath = "gamification/achievements/";
@@ -220,7 +220,7 @@ public class GamificationAchievementServiceTest {
 			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
 			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			
-			ClientResponse result = c1.sendRequest("POST", mainPath + "" + appId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+			ClientResponse result = c1.sendRequest("POST", mainPath + "" + gameId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
 
 			System.out.println(result.getResponse());
 			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
@@ -246,7 +246,7 @@ public class GamificationAchievementServiceTest {
 		System.out.println("Test --- Get Achievement With Id");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET",  mainPath + "" + appId + "/" + achievementId, "");
+			ClientResponse result = c1.sendRequest("GET",  mainPath + "" + gameId + "/" + achievementId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -288,7 +288,7 @@ public class GamificationAchievementServiceTest {
 			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
 			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			
-			ClientResponse result = c1.sendRequest("PUT", mainPath + "" + appId +"/"+ achievementId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+			ClientResponse result = c1.sendRequest("PUT", mainPath + "" + gameId +"/"+ achievementId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
 
 			System.out.println(result.getResponse());
 			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
@@ -316,7 +316,7 @@ public class GamificationAchievementServiceTest {
 		System.out.println("Test --- Get Achievement List");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET", mainPath + "" + appId + "?current=1&rowCount=10&searchPhrase=", "");
+			ClientResponse result = c1.sendRequest("GET", mainPath + "" + gameId + "?current=1&rowCount=10&searchPhrase=", "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -334,7 +334,7 @@ public class GamificationAchievementServiceTest {
 		System.out.println("Test --- Delete Achievement");
 		try
 		{
-			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "" + appId + "/" + achievementId, "");
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "" + gameId + "/" + achievementId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{

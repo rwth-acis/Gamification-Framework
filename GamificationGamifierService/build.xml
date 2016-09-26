@@ -199,7 +199,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
     	
 
         <!-- For development, all services will be executed in one node !-->
-    	<jar jarfile="../GamificationApplicationService/service/${service.name}-${service.version}.jar">
+    	<jar jarfile="../GamificationGameService/service/${service.name}-${service.version}.jar">
             <fileset dir="${tmp.classes}" includes="${service.path}/**" />
             <manifest>
                 <attribute name="Library-Version" value="${service.version}" />

@@ -66,7 +66,7 @@ public class GamificationQuestServiceTest {
 	private static final ServiceNameVersion testGamificationQuestService = new ServiceNameVersion(GamificationQuestService.class.getCanonicalName(),"0.1");
 
 	
-	private static String appId = "test";
+	private static String gameId = "test";
 	private static String achievementId = "achievement1";
 	private static String actionId = "actionquestid";
 	private static String questId = "quest_test_id";
@@ -221,7 +221,7 @@ public class GamificationQuestServiceTest {
 			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
 			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			
-			ClientResponse result = c1.sendRequest("POST", mainPath + appId, obj.toJSONString(), "application/json", "*/*", headers);
+			ClientResponse result = c1.sendRequest("POST", mainPath + gameId, obj.toJSONString(), "application/json", "*/*", headers);
 
 			System.out.println(result.getResponse());
 			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
@@ -246,7 +246,7 @@ public class GamificationQuestServiceTest {
 		System.out.println("Test --- Get Quest With Id");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET",  mainPath + appId + "/" + questId, "");
+			ClientResponse result = c1.sendRequest("GET",  mainPath + gameId + "/" + questId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -288,7 +288,7 @@ public class GamificationQuestServiceTest {
 			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
 			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			
-			ClientResponse result = c1.sendRequest("PUT", mainPath + appId +"/"+ questId, obj.toJSONString(), "application/json", "*/*", headers);
+			ClientResponse result = c1.sendRequest("PUT", mainPath + gameId +"/"+ questId, obj.toJSONString(), "application/json", "*/*", headers);
 			
 			System.out.println(result.getResponse());
 			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
@@ -314,7 +314,7 @@ public class GamificationQuestServiceTest {
 		System.out.println("Test --- Get Quest List");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET", mainPath + appId + "?current=1&rowCount=10&searchPhrase=", "");
+			ClientResponse result = c1.sendRequest("GET", mainPath + gameId + "?current=1&rowCount=10&searchPhrase=", "");
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -331,7 +331,7 @@ public class GamificationQuestServiceTest {
 	public void testZ3_deleteQuest(){
 		try
 		{
-			ClientResponse result = c1.sendRequest("DELETE",  mainPath + appId + "/" + questId, "");
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + gameId + "/" + questId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{

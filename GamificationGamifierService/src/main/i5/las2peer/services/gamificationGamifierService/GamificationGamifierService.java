@@ -178,18 +178,18 @@ public class GamificationGamifierService extends Service {
 	// Get action information 
 	/**
 	 * Get action data from database
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
-	@Path("/actions/{appId}")
+	@Path("/actions/{gameId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Fetch the actions"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
 	public HttpResponse getActions(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId)
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId)
 	{
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
@@ -209,7 +209,7 @@ public class GamificationGamifierService extends Service {
 			// RMI call with parameters
 			try {
 				Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationActionService.GamificationActionService@0.1", "getActionsRMI",
-						new Serializable[] { appId });
+						new Serializable[] { gameId });
 				if (result != null) {
 					L2pLogger.logEvent(Event.RMI_SUCCESSFUL, "Get Actions RMI success");
 					return new HttpResponse((String) result, HttpURLConnection.HTTP_OK);
@@ -285,7 +285,7 @@ public class GamificationGamifierService extends Service {
 		String originRepositoryName;
 		String newRepositoryName;
 		String fileContent;
-		String appId;
+		String gameId;
 		String epURL;
 		String aopScript;
 		
@@ -294,7 +294,7 @@ public class GamificationGamifierService extends Service {
 			originRepositoryName = stringfromJSON(obj,"originRepositoryName");
 			newRepositoryName = stringfromJSON(obj,"newRepositoryName");
 			//fileContent = stringfromJSON(obj,"fileContent");
-			appId = stringfromJSON(obj,"appId");
+			gameId = stringfromJSON(obj,"gameId");
 			epURL = stringfromJSON(obj,"epURL");
 			aopScript = stringfromJSON(obj,"aopScript");
 		} catch (ParseException e) {
@@ -358,7 +358,7 @@ public class GamificationGamifierService extends Service {
 			String oidcwidgetfilestring = RepositoryHelper.readFile("../GamificationGamifierService/jsfiles/oidc-widget.js", Charset.forName("UTF-8"));
 			String gamifierstring = RepositoryHelper.readFile("../GamificationGamifierService/jsfiles/gamifier.js", Charset.forName("UTF-8"));
 			
-			gamifierstring = gamifierstring.replace("$Application_Id$", appId);
+			gamifierstring = gamifierstring.replace("$Game_Id$", gameId);
 			gamifierstring = gamifierstring.replace("$Endpoint_URL$", epURL);
 			gamifierstring = gamifierstring.replace("$AOP_Script$", aopScript);
 			
@@ -405,7 +405,7 @@ public class GamificationGamifierService extends Service {
 	  
 		objResponse.put("message", "Updated");
 		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10, "" + randomLong);
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_22, "" + appId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_22, "" + gameId);
 		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_23, "" + name);
 		
 		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
@@ -448,7 +448,7 @@ public class GamificationGamifierService extends Service {
 	}
 
 	/**
-	 * This method is needed for every RESTful application in LAS2peer. There is no need to change!
+	 * This method is needed for every RESTful game in LAS2peer. There is no need to change!
 	 * 
 	 * @return the mapping
 	 */

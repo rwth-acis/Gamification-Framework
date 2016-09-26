@@ -28,19 +28,19 @@ public class ActionDAO {
 	}
 	
 	/**
-	 * Check whether the application id is already exist
+	 * Check whether the game id is already exist
 	 * 
-	 * @param app_id application id
+	 * @param game_id game id
 	 * @param conn database connection
-	 * @return true app_id is already exist
+	 * @return true game_id is already exist
 	 * @throws SQLException SQL Exception
 	 */
-	public boolean isAppIdExist(Connection conn,String app_id) throws SQLException  {
-			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
-			stmt.setString(1, app_id);
+	public boolean isGameIdExist(Connection conn,String game_id) throws SQLException  {
+			stmt = conn.prepareStatement("SELECT game_id FROM manager.game_info WHERE game_id=?");
+			stmt.setString(1, game_id);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()){
-				//if(rs.getString("app_id").equals(app_id)){
+				//if(rs.getString("game_id").equals(game_id)){
 					return true;
 				//}
 			}
@@ -50,15 +50,15 @@ public class ActionDAO {
 	/**
 	 * Get all actions in the database
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @return list of actions
 	 * @throws SQLException sql exception
 	 */
-	public List<ActionModel> getAllActions(Connection conn,String appId) throws SQLException{
+	public List<ActionModel> getAllActions(Connection conn,String gameId) throws SQLException{
 
 		List<ActionModel> acts = new ArrayList<ActionModel>();
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".action");
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".action");
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			ActionModel bmodel = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
@@ -71,14 +71,14 @@ public class ActionDAO {
 	/**
 	 * Check whether an action with action id is already exist
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param action_id action id
 	 * @return true if the action is already exist
 	 * @throws SQLException sql exception
 	 */
-	public boolean isActionIdExist(Connection conn,String appId, String action_id) throws SQLException {
-		stmt = conn.prepareStatement("SELECT action_id FROM "+appId+".action WHERE action_id=?");
+	public boolean isActionIdExist(Connection conn,String gameId, String action_id) throws SQLException {
+		stmt = conn.prepareStatement("SELECT action_id FROM "+gameId+".action WHERE action_id=?");
 		stmt.setString(1, action_id);
 		ResultSet rs = stmt.executeQuery();
 		if(rs.next()){
@@ -90,15 +90,15 @@ public class ActionDAO {
 	/**
 	 * Get an action with specific id
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param action_id action id
 	 * @return ActionModel
 	 * @throws SQLException sql exception
 	 */
-	public ActionModel getActionWithId(Connection conn,String appId, String action_id) throws SQLException {
+	public ActionModel getActionWithId(Connection conn,String gameId, String action_id) throws SQLException {
 		
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".action WHERE action_id = ?");
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".action WHERE action_id = ?");
 		stmt.setString(1, action_id);
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()){
@@ -110,15 +110,15 @@ public class ActionDAO {
 	/**
 	 * Get total number of action
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @return total number of action
 	 * @throws SQLException sql exception
 	 */
-	public int getNumberOfActions(Connection conn,String appId) throws SQLException {
+	public int getNumberOfActions(Connection conn,String gameId) throws SQLException {
 		// TODO Auto-generated method stub
 
-			stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".action");
+			stmt = conn.prepareStatement("SELECT count(*) FROM "+gameId+".action");
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()){
 				return rs.getInt(1);
@@ -131,7 +131,7 @@ public class ActionDAO {
 	/**
 	 * Get actions with search parameter
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param offset offset
 	 * @param window_size number of fetched data
@@ -139,10 +139,10 @@ public class ActionDAO {
 	 * @return list of actions
 	 * @throws SQLException sql exception
 	 */
-	public List<ActionModel> getActionsWithOffsetAndSearchPhrase(Connection conn,String appId, int offset, int window_size, String searchPhrase) throws SQLException {
+	public List<ActionModel> getActionsWithOffsetAndSearchPhrase(Connection conn,String gameId, int offset, int window_size, String searchPhrase) throws SQLException {
 		List<ActionModel> achs= new ArrayList<ActionModel>();
 		String pattern = "%"+searchPhrase+"%";
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".action WHERE action_id LIKE '"+pattern+"' ORDER BY action_id LIMIT "+window_size+" OFFSET "+offset);
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".action WHERE action_id LIKE '"+pattern+"' ORDER BY action_id LIMIT "+window_size+" OFFSET "+offset);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			ActionModel a = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
@@ -154,15 +154,15 @@ public class ActionDAO {
 	/**
 	 * Update a action information
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param action model to be updated
 	 * @throws SQLException sql exception
 	 */
-	public void updateAction(Connection conn,String appId, ActionModel action) throws SQLException {
+	public void updateAction(Connection conn,String gameId, ActionModel action) throws SQLException {
 		// TODO Auto-generated method stub
 
-			stmt = conn.prepareStatement("UPDATE "+appId+".action SET name = ?, description = ?, point_value = ?, use_notification = ?, notif_message = ? WHERE action_id = ?");
+			stmt = conn.prepareStatement("UPDATE "+gameId+".action SET name = ?, description = ?, point_value = ?, use_notification = ?, notif_message = ? WHERE action_id = ?");
 			stmt.setString(1, action.getName());
 			stmt.setString(2, action.getDescription());
 			stmt.setInt(3, action.getPointValue());
@@ -175,13 +175,13 @@ public class ActionDAO {
 	/**
 	 * Delete a specific action
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param action_id action id
 	 * @throws SQLException sql exception
 	 */
-	public void deleteAction(Connection conn,String appId, String action_id) throws SQLException {
-		stmt = conn.prepareStatement("DELETE FROM "+appId+".action WHERE action_id = ?");
+	public void deleteAction(Connection conn,String gameId, String action_id) throws SQLException {
+		stmt = conn.prepareStatement("DELETE FROM "+gameId+".action WHERE action_id = ?");
 		stmt.setString(1, action_id);
 		stmt.executeUpdate();
 	}
@@ -189,13 +189,13 @@ public class ActionDAO {
 	/**
 	 * Add a new action
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param action action model
 	 * @throws SQLException sql exception
 	 */
-	public void addNewAction(Connection conn,String appId, ActionModel action) throws SQLException {
-			stmt = conn.prepareStatement("INSERT INTO "+appId+".action (action_id, name, description, point_value, use_notification, notif_message) VALUES (?, ?, ?, ?, ?, ?)");
+	public void addNewAction(Connection conn,String gameId, ActionModel action) throws SQLException {
+			stmt = conn.prepareStatement("INSERT INTO "+gameId+".action (action_id, name, description, point_value, use_notification, notif_message) VALUES (?, ?, ?, ?, ?, ?)");
 			stmt.setString(1, action.getId());
 			stmt.setString(2, action.getName());
 			stmt.setString(3, action.getDescription());
@@ -208,25 +208,25 @@ public class ActionDAO {
 	/**
 	 * trigger an action and fetch the notifications
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param memberId member id
 	 * @param actionId action id
 	 * @throws SQLException sql exception
 	 * @return JSONArray of notifications
 	 */
-	public JSONArray triggerAction(Connection conn,String appId, String memberId, String actionId) throws SQLException {
+	public JSONArray triggerAction(Connection conn,String gameId, String memberId, String actionId) throws SQLException {
 		
 		JSONArray resArray = new JSONArray();
-		System.out.println("data : " + appId + " " + memberId);
+		System.out.println("data : " + gameId + " " + memberId);
 		// Submit action into member_action
-		stmt = conn.prepareStatement("INSERT INTO "+appId+".member_action (member_id, action_id) VALUES (?, ?)");
+		stmt = conn.prepareStatement("INSERT INTO "+gameId+".member_action (member_id, action_id) VALUES (?, ?)");
 		stmt.setString(1, memberId);
 		stmt.setString(2, actionId);
 		stmt.executeUpdate();	
 		
 		// Fetch notifications caused by action
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".notification WHERE member_id = ?");
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".notification WHERE member_id = ?");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()){
@@ -240,7 +240,7 @@ public class ActionDAO {
 			}
 		}
 		// Clean up notification for the member
-		stmt = conn.prepareStatement("DELETE FROM "+appId+".notification WHERE member_id = ?");
+		stmt = conn.prepareStatement("DELETE FROM "+gameId+".notification WHERE member_id = ?");
 		stmt.setString(1, memberId);
 		stmt.executeUpdate();	
 		

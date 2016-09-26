@@ -78,7 +78,7 @@ import net.minidev.json.JSONValue;
 @Api( value = "/levels", authorizations = {
 		@Authorization(value = "levels_auth",
 		scopes = {
-			@AuthorizationScope(scope = "write:levels", description = "modify levels in your application"),
+			@AuthorizationScope(scope = "write:levels", description = "modify levels in your game"),
 			@AuthorizationScope(scope = "read:levels", description = "read your levels")
 				  })
 }, tags = "levels")
@@ -159,13 +159,13 @@ public class GamificationLevelService extends Service {
 	
 	/**
 	 * Post a new level
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param formData form data
 	 * @param contentType content type
 	 * @return HttpResponse with the returnString
 	 */
 	@POST
-	@Path("/{appId}")
+	@Path("/{gameId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "{\"status\": 3, \"message\": \"Level upload success ( (levelnum) )\"}"),
@@ -179,12 +179,12 @@ public class GamificationLevelService extends Service {
 	@ApiOperation(value = "createLevel",
 				 notes = "A method to store a new level with details (Level number, level name, level point value, level point id)")
 	public HttpResponse createLevel(
-			@ApiParam(value = "Application ID to store a new level", required = true) @PathParam("appId") String appId,
+			@ApiParam(value = "Game ID to store a new level", required = true) @PathParam("gameId") String gameId,
 			@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/levels/"+appId);
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/levels/"+gameId);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		// parse given multipart form data
@@ -208,14 +208,14 @@ public class GamificationLevelService extends Service {
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
 			
 			try {
-				if(!levelAccess.isAppIdExist(conn,appId)){
-					objResponse.put("message", "Cannot create level. App not found");
+				if(!levelAccess.isGameIdExist(conn,gameId)){
+					objResponse.put("message", "Cannot create level. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				objResponse.put("message", "Cannot create level. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				objResponse.put("message", "Cannot create level. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
@@ -223,7 +223,7 @@ public class GamificationLevelService extends Service {
 			FormDataPart partNum = parts.get("levelnum");
 			if (partNum != null) {
 				levelnum = Integer.parseInt(partNum.getContent());
-				if(levelAccess.isLevelNumExist(conn,appId, levelnum)){
+				if(levelAccess.isLevelNumExist(conn,gameId, levelnum)){
 					// level id already exist
 					objResponse.put("message", "Cannot create level. Failed to add the level. levelnum already exist!");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -257,11 +257,11 @@ public class GamificationLevelService extends Service {
 				LevelModel model = new LevelModel(levelnum, levelname, levelpointvalue, levelnotifcheck, levelnotifmessage);
 				
 				try{
-					levelAccess.addNewLevel(conn,appId, model);
+					levelAccess.addNewLevel(conn,gameId, model);
 					objResponse.put("message", "Level upload success (" + levelnum +")");
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+appId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+gameId);
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 				} catch (SQLException e) {
@@ -316,12 +316,12 @@ public class GamificationLevelService extends Service {
 	
 	/**
 	 * Get a level data with specific ID from database
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param levelNum level number
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
-	@Path("/{appId}/{levelNum}")
+	@Path("/{gameId}/{levelNum}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
@@ -332,12 +332,12 @@ public class GamificationLevelService extends Service {
 				  response = LevelModel.class
 				  )
 	public HttpResponse getlevelWithNum(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Level number")@PathParam("levelNum") int levelNum)
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+appId+"/"+levelNum);
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+gameId+"/"+levelNum);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		LevelModel level = null;
@@ -355,23 +355,23 @@ public class GamificationLevelService extends Service {
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
 				
 				try {
-					if(!levelAccess.isAppIdExist(conn,appId)){
-						objResponse.put("message", "Cannot fetched level. App not found");
+					if(!levelAccess.isGameIdExist(conn,gameId)){
+						objResponse.put("message", "Cannot fetched level. Game not found");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
-					objResponse.put("message", "Cannot fetched level. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+					objResponse.put("message", "Cannot fetched level. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
-				if(!levelAccess.isLevelNumExist(conn,appId, levelNum)){
+				if(!levelAccess.isLevelNumExist(conn,gameId, levelNum)){
 					objResponse.put("message", "Cannot fetched level. level not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
-				level = levelAccess.getLevelWithNumber(conn,appId, levelNum);
+				level = levelAccess.getLevelWithNumber(conn,gameId, levelNum);
 				if(level != null){
 					ObjectMapper objectMapper = new ObjectMapper();
 			    	//Set pretty printing of json
@@ -380,7 +380,7 @@ public class GamificationLevelService extends Service {
 			    	String levelString = objectMapper.writeValueAsString(level);
 			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
 			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+appId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+gameId);
 					return new HttpResponse(levelString, HttpURLConnection.HTTP_OK);
 				}
 				else{
@@ -421,14 +421,14 @@ public class GamificationLevelService extends Service {
 
 	/**
 	 * Update a level
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param levelNum levelNum
 	 * @param formData form data
 	 * @param contentType content type
 	 * @return HttpResponse with the returnString
 	 */
 	@PUT
-	@Path("/{appId}/{levelNum}")
+	@Path("/{gameId}/{levelNum}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Level Updated"),
@@ -439,13 +439,13 @@ public class GamificationLevelService extends Service {
 	@ApiOperation(value = "updateLevel",
 				 notes = "A method to update an level with details (Level number, level name, level point value, level point id)")
 	public HttpResponse updateLevel(
-			@ApiParam(value = "Application ID to store a new level", required = true) @PathParam("appId") String appId,
+			@ApiParam(value = "Game ID to store a new level", required = true) @PathParam("gameId") String gameId,
 				@PathParam("levelNum") int levelNum,
 			@ApiParam(value = "Content type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/levels/"+appId+"/"+levelNum);
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/levels/"+gameId+"/"+levelNum);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		
@@ -470,18 +470,18 @@ public class GamificationLevelService extends Service {
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
 				
 				try {
-					if(!levelAccess.isAppIdExist(conn,appId)){
-						objResponse.put("message", "Cannot update level. App not found");
+					if(!levelAccess.isGameIdExist(conn,gameId)){
+						objResponse.put("message", "Cannot update level. Game not found");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
-					objResponse.put("message", "Cannot update level. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+					objResponse.put("message", "Cannot update level. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
-				if(!levelAccess.isLevelNumExist(conn,appId, levelNum)){
+				if(!levelAccess.isLevelNumExist(conn,gameId, levelNum)){
 					objResponse.put("message", "Cannot update level. Level not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
@@ -497,7 +497,7 @@ public class GamificationLevelService extends Service {
 
 				}
 					
-				LevelModel model =levelAccess.getLevelWithNumber(conn,appId, levelNum);
+				LevelModel model =levelAccess.getLevelWithNumber(conn,gameId, levelNum);
 
 				if(model != null){
 					FormDataPart partName = parts.get("levelname");
@@ -532,11 +532,11 @@ public class GamificationLevelService extends Service {
 						}
 					}
 					try{
-						levelAccess.updateLevel(conn,appId, model);
+						levelAccess.updateLevel(conn,gameId, model);
 						objResponse.put("message", "Level updated");
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+appId);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+gameId);
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -590,12 +590,12 @@ public class GamificationLevelService extends Service {
 
 	/**
 	 * Delete a level data with specified ID
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param levelNum levelNum
 	 * @return HttpResponse with the returnString
 	 */
 	@DELETE
-	@Path("/{appId}/{levelNum}")
+	@Path("/{gameId}/{levelNum}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Level Delete Success"),
@@ -605,12 +605,12 @@ public class GamificationLevelService extends Service {
 	@ApiOperation(value = "deleteLevel",
 				  notes = "delete a level")
 	public HttpResponse deleteLevel(
-			@ApiParam(value = "Application ID to delete a level", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID to delete a level", required = true)@PathParam("gameId") String gameId,
 			@ApiParam(value = "Level number that will be deleted", required = true)@PathParam("levelNum") int levelNum)
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/levels/"+appId+"/"+levelNum);
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/levels/"+gameId+"/"+levelNum);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		
@@ -627,29 +627,29 @@ public class GamificationLevelService extends Service {
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
 			
 			try {
-				if(!levelAccess.isAppIdExist(conn,appId)){
-					objResponse.put("message", "Cannot delete level. App not found");
+				if(!levelAccess.isGameIdExist(conn,gameId)){
+					objResponse.put("message", "Cannot delete level. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				objResponse.put("message", "Cannot delete level. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				objResponse.put("message", "Cannot delete level. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
-			if(!levelAccess.isLevelNumExist(conn,appId, levelNum)){
+			if(!levelAccess.isLevelNumExist(conn,gameId, levelNum)){
 				objResponse.put("message", "Cannot delete level. Level not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 			}
 			
-			levelAccess.deleteLevel(conn,appId, levelNum);
+			levelAccess.deleteLevel(conn,gameId, levelNum);
 			objResponse.put("message", "Level Deleted");
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+appId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -673,14 +673,14 @@ public class GamificationLevelService extends Service {
 	// TODO Batch Processing
 	/**
 	 * Get a list of levels from database
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param currentPage current cursor page
 	 * @param windowSize size of fetched data
 	 * @param searchPhrase search word
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
-	@Path("/{appId}")
+	@Path("/{gameId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a list of levels"),
@@ -692,14 +692,14 @@ public class GamificationLevelService extends Service {
 				  responseContainer = "List"
 				  )
 	public HttpResponse getLevelList(
-			@ApiParam(value = "Application ID to return")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+appId);
+		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+gameId);
 
 		
 		List<LevelModel> model = null;
@@ -716,14 +716,14 @@ public class GamificationLevelService extends Service {
 			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Levels");
 			
 			try {
-				if(!levelAccess.isAppIdExist(conn,appId)){
-					objResponse.put("message", "Cannot get levels. App not found");
+				if(!levelAccess.isGameIdExist(conn,gameId)){
+					objResponse.put("message", "Cannot get levels. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				objResponse.put("message", "Cannot get levels. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				objResponse.put("message", "Cannot get levels. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
@@ -733,14 +733,14 @@ public class GamificationLevelService extends Service {
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			
-			int totalNum = levelAccess.getNumberOfLevels(conn,appId);
+			int totalNum = levelAccess.getNumberOfLevels(conn,gameId);
 			
 			if(windowSize == -1){
 				offset = 0;
 				windowSize = totalNum;
 			}
 			
-			model = levelAccess.getLevelsWithOffsetAndSearchPhrase(conn,appId, offset, windowSize, searchPhrase);
+			model = levelAccess.getLevelsWithOffsetAndSearchPhrase(conn,gameId, offset, windowSize, searchPhrase);
 			String modelString = objectMapper.writeValueAsString(model);
 			JSONArray modelArray = (JSONArray) JSONValue.parse(modelString);
 			logger.info(modelArray.toJSONString());
@@ -748,8 +748,8 @@ public class GamificationLevelService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", modelArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, "Levels fetched : " + appId + " : " + userAgent);
-			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Levels fetched : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, "Levels fetched : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Levels fetched : " + gameId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
@@ -811,7 +811,7 @@ public class GamificationLevelService extends Service {
 	}
 
 	/**
-	 * This method is needed for every RESTful application in LAS2peer. There is no need to change!
+	 * This method is needed for every RESTful game in LAS2peer. There is no need to change!
 	 * 
 	 * @return the mapping
 	 */

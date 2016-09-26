@@ -1,4 +1,4 @@
-cd GamificationApplicationService && \
+cd GamificationGameService && \
 if [ "$1" == "build" ]; then
 	echo "[Build only]"
   pwd

@@ -76,7 +76,7 @@
     	<ivy:retrieve type="jar, bundle" conf="bundle" pattern="${service}/[artifact]-[revision].[ext]"/>
     	
     	<!-- GamificationService Dependency -->
-    	<copy file="../GamificationApplicationService/service/i5.las2peer.services.gamificationApplicationService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationApplicationService-0.1.jar"/>
+    	<copy file="../GamificationGameService/service/i5.las2peer.services.gamificationGameService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationGameService-0.1.jar"/>
     	<copy file="../GamificationBadgeService/service/i5.las2peer.services.gamificationBadgeService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationBadgeService-0.1.jar"/>
     	<copy file="../GamificationPointService/service/i5.las2peer.services.gamificationPointService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationPointService-0.1.jar"/>
     	<copy file="../GamificationAchievementService/service/i5.las2peer.services.gamificationAchievementService-0.1.jar" tofile="${lib}/i5.las2peer.services.gamificationAchievementService-0.1.jar"/>
@@ -208,7 +208,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
         </jar>
 
     	<!-- Add the same Jar to the root node !-->
-    	    	<jar jarfile="../GamificationApplicationService/service/${service.name}-${service.version}.jar">
+    	    	<jar jarfile="../GamificationGameService/service/${service.name}-${service.version}.jar">
     	            <fileset dir="${tmp.classes}" includes="${service.path}/**" />
     	            <manifest>
     	                <attribute name="Library-Version" value="${service.version}" />

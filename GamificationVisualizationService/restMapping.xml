@@ -1,100 +1,100 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <service consumes="*" name="i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService" path="visualization" produces="text/plain" version="0.1">
   <methods>
-    <method httpMethod="get" name="getStatusOfMember" path="status/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="get" name="getQuestsWithStatusOfMember" path="quests/{gameId}/{memberId}/status/{statusId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getBadgesOfMember" path="badges/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getQuestProgressOfMember" path="quests/{appId}/{memberId}/progress/{questId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-        <parameter annotation="path" index="2" name="questId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getAchievementsOfMember" path="achievements/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getBadgeImageDetail" path="badges/{appId}/{memberId}/{badgeId}/img" produces="application/octet-stream" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="badgeId" type="java.lang.String"/>
-        <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getBadgeDetailWithId" path="badges/{appId}/{memberId}/{badgeId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="badgeId" type="java.lang.String"/>
-        <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getQuestDetailWithId" path="quests/{appId}/{memberId}/{questId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="questId" type="java.lang.String"/>
-        <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getLocalLeaderboard" path="leaderboard/local/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-        <parameter annotation="query" index="2" name="current" type="int"/>
-        <parameter annotation="query" index="3" name="rowCount" type="int"/>
-        <parameter annotation="query" index="4" name="searchPhrase" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getGlobalLeaderboard" path="leaderboard/global/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-        <parameter annotation="query" index="2" name="current" type="int"/>
-        <parameter annotation="query" index="3" name="rowCount" type="int"/>
-        <parameter annotation="query" index="4" name="searchPhrase" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getQuestsWithStatusOfMember" path="quests/{appId}/{memberId}/status/{statusId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
         <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
         <parameter annotation="path" index="2" name="statusId" type="java.lang.String"/>
       </parameters>
     </method>
-    <method httpMethod="get" name="getAchievementDetailWithId" path="achievements/{appId}/{memberId}/{achievementId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="get" name="getAchievementDetailWithId" path="achievements/{gameId}/{memberId}/{achievementId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
         <parameter annotation="path" index="1" name="achievementId" type="java.lang.String"/>
         <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
       </parameters>
     </method>
-    <method httpMethod="get" name="getPointOfMember" path="points/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="get" name="getPointOfMember" path="points/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
         <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
       </parameters>
     </method>
-    <method httpMethod="post" name="triggerAction" path="actions/{appId}/{actionId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="post" name="triggerAction" path="actions/{gameId}/{actionId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
         <parameter annotation="path" index="1" name="actionId" type="java.lang.String"/>
         <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
       </parameters>
     </method>
-    <method httpMethod="get" name="getNotification" path="notifications/{appId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="get" name="getNotification" path="notifications/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
-        <parameter annotation="path" index="0" name="appId" type="java.lang.String"/>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+        <parameter annotation="query" index="2" name="current" type="int"/>
+        <parameter annotation="query" index="3" name="rowCount" type="int"/>
+        <parameter annotation="query" index="4" name="searchPhrase" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getStatusOfMember" path="status/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getBadgesOfMember" path="badges/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getQuestProgressOfMember" path="quests/{gameId}/{memberId}/progress/{questId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+        <parameter annotation="path" index="2" name="questId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getAchievementsOfMember" path="achievements/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getBadgeImageDetail" path="badges/{gameId}/{memberId}/{badgeId}/img" produces="application/octet-stream" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="badgeId" type="java.lang.String"/>
+        <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getBadgeDetailWithId" path="badges/{gameId}/{memberId}/{badgeId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="badgeId" type="java.lang.String"/>
+        <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getQuestDetailWithId" path="quests/{gameId}/{memberId}/{questId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="questId" type="java.lang.String"/>
+        <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getLocalLeaderboard" path="leaderboard/local/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+        <parameter annotation="query" index="2" name="current" type="int"/>
+        <parameter annotation="query" index="3" name="rowCount" type="int"/>
+        <parameter annotation="query" index="4" name="searchPhrase" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getGlobalLeaderboard" path="leaderboard/global/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
         <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
         <parameter annotation="query" index="2" name="current" type="int"/>
         <parameter annotation="query" index="3" name="rowCount" type="int"/>

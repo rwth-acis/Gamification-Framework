@@ -1,5 +1,5 @@
 ﻿  var memberId,
-  appId = '$Application_Id$',
+  gameId = '$Game_Id$',
   epURL = '$Endpoint_URL$',
   iwcGamification;
 
@@ -16,7 +16,7 @@
     triggerAction : function(actionId){
       console.log("Action triggered : " + actionId);
       $.post(
-       useAuthentication(epURL + 'visualization/actions/' + appId + '/' + actionId + '/' + memberId),
+       useAuthentication(epURL + 'visualization/actions/' + gameId + '/' + actionId + '/' + memberId),
        ''
        ).done(function(data) {
          console.log('Trigger success : ' + actionId);
@@ -46,11 +46,11 @@
         // define your reactions on incoming iwc events here
 
         if(intent.action == "FETCH_APPID") {
-          sendRefreshAppIdIntent();
+          sendRefreshGameIdIntent();
         }
 
     });
-    sendRefreshAppIdIntent();
+    sendRefreshGameIdIntent();
   };
 
   function sendRefreshTabIntent(){
@@ -66,8 +66,8 @@
     iwcGamification.publish(intent);
   }
 
-  function sendRefreshAppIdIntent(){
-    var data = appId;
+  function sendRefreshGameIdIntent(){
+    var data = gameId;
     var intent = {
       "component": "",
       "data": data,

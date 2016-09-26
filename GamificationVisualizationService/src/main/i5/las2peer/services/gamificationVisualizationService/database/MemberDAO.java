@@ -17,7 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Class to maintain the model that are used in the application management
+ * Class to maintain the model that are used in the game management
  * 
  */
 
@@ -33,14 +33,14 @@ public class MemberDAO {
 	 * Get obtained badges of members
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @return list of badges
 	 * @throws SQLException sql exception
 	 */
-	public List<BadgeModel> getObtainedBadges(Connection conn,String appId, String memberId) throws SQLException {
+	public List<BadgeModel> getObtainedBadges(Connection conn,String gameId, String memberId) throws SQLException {
 		List<BadgeModel> badges = new ArrayList<BadgeModel>();
-		stmt = conn.prepareStatement("WITH bdg AS (SELECT badge_id FROM "+appId+".member_badge WHERE member_id=?) SELECT "+appId+".badge.badge_id, name, description, use_notification, notif_message FROM "+appId+".badge INNER JOIN bdg ON ("+appId+".badge.badge_id = bdg.badge_id)");
+		stmt = conn.prepareStatement("WITH bdg AS (SELECT badge_id FROM "+gameId+".member_badge WHERE member_id=?) SELECT "+gameId+".badge.badge_id, name, description, use_notification, notif_message FROM "+gameId+".badge INNER JOIN bdg ON ("+gameId+".badge.badge_id = bdg.badge_id)");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
@@ -54,16 +54,16 @@ public class MemberDAO {
 	 * Get quests of members with status
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @param status quest status
 	 * @return list of quests
 	 * @throws SQLException sql exception
 	 * @throws IOException io exception
 	 */
-	public List<QuestModel> getMemberQuestsWithStatus(Connection conn,String appId, String memberId, QuestStatus status) throws SQLException, IOException{
+	public List<QuestModel> getMemberQuestsWithStatus(Connection conn,String gameId, String memberId, QuestStatus status) throws SQLException, IOException{
 		List<QuestModel> qs = new ArrayList<QuestModel>();
-		stmt = conn.prepareStatement("WITH qs AS (SELECT quest_id FROM "+appId+".member_quest WHERE member_id=? AND status=?::"+appId+".quest_status) SELECT "+appId+".quest.quest_id, name, description, status, achievement_id, quest_flag, quest_id_completed, point_flag, point_value, use_notification, notif_message FROM "+appId+".quest INNER JOIN qs ON ("+appId+".quest.quest_id = qs.quest_id)");
+		stmt = conn.prepareStatement("WITH qs AS (SELECT quest_id FROM "+gameId+".member_quest WHERE member_id=? AND status=?::"+gameId+".quest_status) SELECT "+gameId+".quest.quest_id, name, description, status, achievement_id, quest_flag, quest_id_completed, point_flag, point_value, use_notification, notif_message FROM "+gameId+".quest INNER JOIN qs ON ("+gameId+".quest.quest_id = qs.quest_id)");
 		stmt.setString(1, memberId);
 		stmt.setString(2, status.toString());
 		ResultSet rs = stmt.executeQuery();
@@ -77,7 +77,7 @@ public class MemberDAO {
 		}
 		for(QuestModel q : qs){
 			List<Pair<String, Integer>> action_ids = new ArrayList<Pair<String, Integer>>();
-			stmt = conn.prepareStatement("SELECT action_id, times FROM "+appId+".quest_action WHERE quest_id=?");
+			stmt = conn.prepareStatement("SELECT action_id, times FROM "+gameId+".quest_action WHERE quest_id=?");
 			stmt.setString(1, q.getId());
 			ResultSet rs2 = stmt.executeQuery();
 			while (rs2.next()) {
@@ -93,15 +93,15 @@ public class MemberDAO {
 	 * Get all quests of members except hidden quests
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @return list of quests
 	 * @throws SQLException sql exception
 	 * @throws IOException io exception
 	 */
-	public List<QuestModel> getMemberQuests(Connection conn,String appId, String memberId) throws SQLException, IOException{
+	public List<QuestModel> getMemberQuests(Connection conn,String gameId, String memberId) throws SQLException, IOException{
 		List<QuestModel> qs = new ArrayList<QuestModel>();
-		stmt = conn.prepareStatement("WITH qs AS (SELECT quest_id,status FROM "+appId+".member_quest WHERE member_id=? AND status!='HIDDEN') SELECT "+appId+".quest.quest_id, name, description, qs.status, achievement_id, quest_flag, quest_id_completed, point_flag, point_value, use_notification, notif_message FROM "+appId+".quest INNER JOIN qs ON ("+appId+".quest.quest_id = qs.quest_id)");
+		stmt = conn.prepareStatement("WITH qs AS (SELECT quest_id,status FROM "+gameId+".member_quest WHERE member_id=? AND status!='HIDDEN') SELECT "+gameId+".quest.quest_id, name, description, qs.status, achievement_id, quest_flag, quest_id_completed, point_flag, point_value, use_notification, notif_message FROM "+gameId+".quest INNER JOIN qs ON ("+gameId+".quest.quest_id = qs.quest_id)");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
@@ -114,7 +114,7 @@ public class MemberDAO {
 		}
 		for(QuestModel q : qs){
 			List<Pair<String, Integer>> action_ids = new ArrayList<Pair<String, Integer>>();
-			stmt = conn.prepareStatement("SELECT action_id, times FROM "+appId+".quest_action WHERE quest_id=?");
+			stmt = conn.prepareStatement("SELECT action_id, times FROM "+gameId+".quest_action WHERE quest_id=?");
 			stmt.setString(1, q.getId());
 			ResultSet rs2 = stmt.executeQuery();
 			while (rs2.next()) {
@@ -130,18 +130,18 @@ public class MemberDAO {
 	 * Get revealed quests of members progress
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @param questId quest id
 	 * @return list of quests
 	 * @throws SQLException sql exception
 	 * @throws IOException io exception
 	 */
-	public JSONObject getMemberQuestProgress(Connection conn,String appId, String memberId, String questId) throws SQLException, IOException{
+	public JSONObject getMemberQuestProgress(Connection conn,String gameId, String memberId, String questId) throws SQLException, IOException{
 
 		JSONArray resArr = new JSONArray();
 		JSONObject outObj = new JSONObject();
-		stmt = conn.prepareStatement("SELECT "+appId+".member_quest_action.action_id,completed,times FROM "+appId+".member_quest_action INNER JOIN "+appId+".quest_action ON ("+appId+".member_quest_action.quest_id = "+appId+".quest_action.quest_id AND "+appId+".member_quest_action.action_id = "+appId+".quest_action.action_id) WHERE "+appId+".member_quest_action.quest_id=? AND member_id=?");
+		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,completed,times FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) WHERE "+gameId+".member_quest_action.quest_id=? AND member_id=?");
 		stmt.setString(1, questId);
 		stmt.setString(2, memberId);
 		ResultSet rs = stmt.executeQuery();
@@ -164,7 +164,7 @@ public class MemberDAO {
 			}
 			else{
 				// get how many times player has performed an action
-				stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".member_action WHERE member_id = ? AND action_id = ?");
+				stmt = conn.prepareStatement("SELECT count(*) FROM "+gameId+".member_action WHERE member_id = ? AND action_id = ?");
 				stmt.setString(1, memberId);
 				stmt.setString(2, rs.getString("action_id"));
 				ResultSet rs2 = stmt.executeQuery();
@@ -195,15 +195,15 @@ public class MemberDAO {
 	 * Get achievements of the members
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @return list of achievements
 	 * @throws SQLException sql exception
 	 */
-	public List<AchievementModel> getMemberAchievements(Connection conn,String appId, String memberId) throws SQLException{
+	public List<AchievementModel> getMemberAchievements(Connection conn,String gameId, String memberId) throws SQLException{
 		// TODO Auto-generated method stub
 		List<AchievementModel> achs = new ArrayList<AchievementModel>();
-		stmt = conn.prepareStatement("WITH ach AS (SELECT achievement_id FROM "+appId+".member_achievement WHERE member_id=?) SELECT "+appId+".achievement.achievement_id, name, description, point_value, badge_id, use_notification, notif_message FROM "+appId+".achievement INNER JOIN ach ON ("+appId+".achievement.achievement_id = ach.achievement_id)");
+		stmt = conn.prepareStatement("WITH ach AS (SELECT achievement_id FROM "+gameId+".member_achievement WHERE member_id=?) SELECT "+gameId+".achievement.achievement_id, name, description, point_value, badge_id, use_notification, notif_message FROM "+gameId+".achievement INNER JOIN ach ON ("+gameId+".achievement.achievement_id = ach.achievement_id)");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
@@ -218,14 +218,14 @@ public class MemberDAO {
 	 * Check if the member has a badge
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @param badgeId badge id
 	 * @return true if member has a badge
 	 * @throws SQLException sql exception
 	 */
-	public boolean isMemberHasBadge(Connection conn,String appId, String memberId, String badgeId) throws SQLException{
-		stmt = conn.prepareStatement("SELECT badge_id FROM "+appId+".member_badge WHERE member_id=? AND badge_id=?");
+	public boolean isMemberHasBadge(Connection conn,String gameId, String memberId, String badgeId) throws SQLException{
+		stmt = conn.prepareStatement("SELECT badge_id FROM "+gameId+".member_badge WHERE member_id=? AND badge_id=?");
 		stmt.setString(1, memberId);
 		stmt.setString(2, badgeId);
 
@@ -241,14 +241,14 @@ public class MemberDAO {
 	 * Check if the member has an achievement
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @param achievementId achievement id
 	 * @return true if member has an achievement
 	 * @throws SQLException sql exception
 	 */
-	public boolean isMemberHasAchievement(Connection conn,String appId, String memberId, String achievementId) throws SQLException{
-		stmt = conn.prepareStatement("SELECT achievement_id FROM "+appId+".member_achievement WHERE member_id=? AND achievement_id=?");
+	public boolean isMemberHasAchievement(Connection conn,String gameId, String memberId, String achievementId) throws SQLException{
+		stmt = conn.prepareStatement("SELECT achievement_id FROM "+gameId+".member_achievement WHERE member_id=? AND achievement_id=?");
 		stmt.setString(1, memberId);
 		stmt.setString(2, achievementId);
 	
@@ -263,14 +263,14 @@ public class MemberDAO {
 	 * Check if the member has completed a quest
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @param questId quest id
 	 * @return true if member has a badge
 	 * @throws SQLException sql exception
 	 */
-	public boolean isMemberHasCompletedQuest(Connection conn,String appId, String memberId, String questId) throws SQLException{
-		stmt = conn.prepareStatement("SELECT badge_id FROM "+appId+".member_quest WHERE member_id=? AND quest_id=? AND status='COMPLETED'");
+	public boolean isMemberHasCompletedQuest(Connection conn,String gameId, String memberId, String questId) throws SQLException{
+		stmt = conn.prepareStatement("SELECT badge_id FROM "+gameId+".member_quest WHERE member_id=? AND quest_id=? AND status='COMPLETED'");
 		stmt.setString(1, memberId);
 		stmt.setString(2, questId);
 
@@ -285,14 +285,14 @@ public class MemberDAO {
 	 * Get point of a member
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @return member point
 	 * @throws SQLException sql exception
 	 */
-	public Integer getMemberPoint(Connection conn,String appId, String memberId) throws SQLException{
+	public Integer getMemberPoint(Connection conn,String gameId, String memberId) throws SQLException{
 
-		stmt = conn.prepareStatement("SELECT point_value FROM "+appId+".member_point WHERE member_id=?");
+		stmt = conn.prepareStatement("SELECT point_value FROM "+gameId+".member_point WHERE member_id=?");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()) {
@@ -306,16 +306,16 @@ public class MemberDAO {
 	 * Get status of a member
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param memberId member id
 	 * @return member point
 	 * @throws SQLException sql exception
 	 */
-	public JSONObject getMemberStatus(Connection conn,String appId, String memberId) throws SQLException{
+	public JSONObject getMemberStatus(Connection conn,String gameId, String memberId) throws SQLException{
 		Integer currentLevel = 0;
 		Integer memberPoint = 0;
 		JSONObject resObj = new JSONObject();
-		stmt = conn.prepareStatement("SELECT level_num,point_value FROM "+appId+".member_level INNER JOIN "+appId+".member_point ON ("+appId+".member_level.member_id = "+appId+".member_point.member_id) WHERE "+appId+".member_level.member_id = ? LIMIT 1");
+		stmt = conn.prepareStatement("SELECT level_num,point_value FROM "+gameId+".member_level INNER JOIN "+gameId+".member_point ON ("+gameId+".member_level.member_id = "+gameId+".member_point.member_id) WHERE "+gameId+".member_level.member_id = ? LIMIT 1");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()) {
@@ -326,7 +326,7 @@ public class MemberDAO {
 			throw new SQLException("Member ID not found");
 		}
 		//Get current and next level
-		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+appId+".level WHERE level_num >= ? LIMIT 2");
+		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+gameId+".level WHERE level_num >= ? LIMIT 2");
 		stmt.setInt(1, currentLevel);
 		rs = stmt.executeQuery();
 		if (rs.next()) {
@@ -359,7 +359,7 @@ public class MemberDAO {
 				resObj.put("progress", 100);
 			}
 			
-			stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+appId+".member_point) SELECT * FROM sorted WHERE member_id = '"+memberId+"' LIMIT 1");
+			stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+gameId+".member_point) SELECT * FROM sorted WHERE member_id = '"+memberId+"' LIMIT 1");
 			ResultSet rs2 = stmt.executeQuery();
 			if (rs2.next()) {
 				resObj.put("rank", rs2.getInt("row_number"));
@@ -379,19 +379,19 @@ public class MemberDAO {
 	 * Get local leaderboard of a member
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param offset offset
 	 * @param window_size number of fetched data
 	 * @param searchPhrase search phrase
 	 * @return JSONObject leaderboard
 	 * @throws SQLException sql exception
 	 */
-	public JSONArray getMemberLocalLeaderboard(Connection conn,String appId, int offset, int window_size, String searchPhrase) throws SQLException{
+	public JSONArray getMemberLocalLeaderboard(Connection conn,String gameId, int offset, int window_size, String searchPhrase) throws SQLException{
 
 		JSONArray arr = new JSONArray();
 		String pattern = "%"+searchPhrase+"%";
 		
-		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+appId+".member_point) SELECT * FROM sorted WHERE member_id LIKE '"+pattern+"' LIMIT "+window_size+" OFFSET "+offset);
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+gameId+".member_point) SELECT * FROM sorted WHERE member_id LIKE '"+pattern+"' LIMIT "+window_size+" OFFSET "+offset);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			JSONObject obj = new JSONObject();
@@ -408,22 +408,22 @@ public class MemberDAO {
 	 * Get global leaderboard of a member
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param offset offset
 	 * @param window_size number of fetched data
 	 * @param searchPhrase search phrase
 	 * @return JSONObject leaderboard
 	 * @throws SQLException sql exception
 	 */
-	public JSONArray getMemberGlobalLeaderboard(Connection conn,String appId, int offset, int window_size, String searchPhrase) throws SQLException{
+	public JSONArray getMemberGlobalLeaderboard(Connection conn,String gameId, int offset, int window_size, String searchPhrase) throws SQLException{
 
 		JSONArray arr = new JSONArray();
 		String pattern = "%"+searchPhrase+"%";
 		String commType = null;
 		
-		// Get community type from an app
-		stmt = conn.prepareStatement("SELECT community_type FROM manager.application_info WHERE app_id = ?");
-		stmt.setString(1, appId);
+		// Get community type from an game
+		stmt = conn.prepareStatement("SELECT community_type FROM manager.game_info WHERE game_id = ?");
+		stmt.setString(1, gameId);
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()) {
 			commType = rs.getString("community_type");
@@ -446,13 +446,13 @@ public class MemberDAO {
 	 * Get total number of members for leaderboard
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @return total number of members for leaderboard
 	 * @throws SQLException sql exception
 	 */
-	public int getNumberOfMembers(Connection conn,String appId) throws SQLException {
+	public int getNumberOfMembers(Connection conn,String gameId) throws SQLException {
 		
-			stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".member_point");
+			stmt = conn.prepareStatement("SELECT count(*) FROM "+gameId+".member_point");
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()){
 				return rs.getInt(1);
@@ -469,11 +469,11 @@ public class MemberDAO {
 		LEVEL,
 	}
 	
-	public JSONArray getMemberNotification(Connection conn,String appId, String memberId) throws SQLException{
+	public JSONArray getMemberNotification(Connection conn,String gameId, String memberId) throws SQLException{
 		JSONArray resArray = new JSONArray();
 
 		// Fetch notifications caused by action
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".notification WHERE member_id = ?");
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".notification WHERE member_id = ?");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()){

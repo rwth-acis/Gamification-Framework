@@ -20,7 +20,7 @@ gitHubPasswordNewRepo=$gitHubPasswordNewRepo\n\
 monitor=TRUE"
 
 echo "Writing properties onfiguration "
-printf $CONF_PROPERTIES > GamificationApplicationService/etc/i5.las2peer.services.gamificationApplicationService.GamificationApplicationService.properties
+printf $CONF_PROPERTIES > GamificationGameService/etc/i5.las2peer.services.gamificationGameService.GamificationGameService.properties
 printf $CONF_PROPERTIES > GamificationAchievementService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties
 printf $CONF_PROPERTIES > GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties
 printf $CONF_PROPERTIES > GamificationBadgeService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties
@@ -39,7 +39,7 @@ cp -f GamificationPointService/bin/join_network.sh GamificationPointService/join
 cp -f GamificationQuestService/bin/join_network.sh GamificationQuestService/join_network.sh
 cp -f GamificationVisualizationService/bin/join_network.sh GamificationVisualizationService/join_network.sh
 cp -f GamificationGamifierService/bin/join_network.sh GamificationGamifierService/join_network.sh
-cp -f GamificationApplicationService/bin/start_network.sh GamificationApplicationService/start_network.sh
+cp -f GamificationGameService/bin/start_network.sh GamificationGameService/start_network.sh
 
 echo "Adjusting shell configuration"
 sed -i 's/'$OLD_NODE_IP'/'$NODE_IP'/g' GamificationAchievementService/join_network.sh

@@ -65,7 +65,7 @@ public class GamificationPointServiceTest {
 	// during testing, the specified service version does not matter
 	private static final ServiceNameVersion testGamificationPointService = new ServiceNameVersion(GamificationPointService.class.getCanonicalName(),"0.1");
 
-	private static String appId = "test";
+	private static String gameId = "test";
 	private static final String mainPath = "gamification/points/";
 	
 	// to fetch data per batch
@@ -193,7 +193,7 @@ public class GamificationPointServiceTest {
 		try
 		{
 			String memberId = user1.getLoginName();
-			ClientResponse result = c1.sendRequest("PUT", mainPath + ""+appId+"/name/"+unitName, ""); // testInput is
+			ClientResponse result = c1.sendRequest("PUT", mainPath + ""+gameId+"/name/"+unitName, ""); // testInput is
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -208,7 +208,7 @@ public class GamificationPointServiceTest {
 		System.out.println("Test --- Get Unit Name");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET", mainPath + ""+appId+"/name", ""); // testInput is
+			ClientResponse result = c1.sendRequest("GET", mainPath + ""+gameId+"/name", ""); // testInput is
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 //			JSONParser parse = new JSONParser(JSONParser.ACCEPT_NON_QUOTE|JSONParser.ACCEPT_SIMPLE_QUOTE);

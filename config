@@ -1,7 +1,7 @@
 jdbcDriverClassName="org.postgresql.Driver"
 jdbcUrl="jdbc:postgresql://127.0.0.1:5432/"
 jdbcSchema="gamification"
-jdbcLogin="gamification"
+jdbcLogin="gameadmin"
 jdbcPass=""
 NODE_IP="gaudi.informatik.rwth-aachen.de"
 NODE_PORT_HTTP="8081"
