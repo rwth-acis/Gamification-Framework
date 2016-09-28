@@ -278,7 +278,7 @@ public class GamificationQuestService extends Service {
 			@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB)  {
 
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/quests/"+gameId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/quests/"+gameId);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		
@@ -312,7 +312,7 @@ public class GamificationQuestService extends Service {
 		try {
 			conn = dbm.getConnection();
 			
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
 			
 			
 			String content = new String(contentB);
@@ -374,9 +374,9 @@ public class GamificationQuestService extends Service {
 			model.setActionIds(questactionids);
 			questAccess.addNewQuest(conn,gameId, model);
 			objResponse.put("message", "New quest created " + questid);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+gameId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 		} catch (MalformedStreamException e) {
@@ -444,7 +444,7 @@ public class GamificationQuestService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/quests/"+gameId+"/"+questId);
+		L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/quests/"+gameId+"/"+questId);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		QuestModel quest = null;
@@ -458,7 +458,7 @@ public class GamificationQuestService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!questAccess.isGameIdExist(conn,gameId)){
@@ -489,9 +489,9 @@ public class GamificationQuestService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String questString = objectMapper.writeValueAsString(quest);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+gameId);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
@@ -544,7 +544,7 @@ public class GamificationQuestService extends Service {
 			@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB) {
 
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/quests/"+gameId+"/"+questId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/quests/"+gameId+"/"+questId);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		// parse given multipart form data
@@ -579,7 +579,7 @@ public class GamificationQuestService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!questAccess.isGameIdExist(conn,gameId)){
@@ -660,9 +660,9 @@ public class GamificationQuestService extends Service {
 				questAccess.updateQuest(conn,gameId, quest);
 				logger.info("Quest Updated ");
 				objResponse.put("message", "Quest updated " + questId);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+gameId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
@@ -714,7 +714,7 @@ public class GamificationQuestService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE" + "gamification/quests/"+gameId+"/"+questId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "DELETE" + "gamification/quests/"+gameId+"/"+questId);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		JSONObject objResponse = new JSONObject();
@@ -727,7 +727,7 @@ public class GamificationQuestService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!questAccess.isGameIdExist(conn,gameId)){
@@ -749,9 +749,9 @@ public class GamificationQuestService extends Service {
 			questAccess.deleteQuest(conn,gameId, questId);
 			
 			objResponse.put("message", "quest Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+gameId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -799,7 +799,7 @@ public class GamificationQuestService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/quests/"+gameId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/quests/"+gameId);
 		
 		List<QuestModel> qs = null;
 		Connection conn = null;
@@ -860,7 +860,7 @@ public class GamificationQuestService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", questArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37, "Quests fetched" + " : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37,getContext().getMainAgent(), "Quests fetched" + " : " + gameId + " : " + userAgent);
 			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Quests fetched" + " : " + gameId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			

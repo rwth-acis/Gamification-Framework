@@ -184,7 +184,7 @@ public class GamificationLevelService extends Service {
 			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/levels/"+gameId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/levels/"+gameId);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		// parse given multipart form data
@@ -205,7 +205,7 @@ public class GamificationLevelService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -259,9 +259,9 @@ public class GamificationLevelService extends Service {
 				try{
 					levelAccess.addNewLevel(conn,gameId, model);
 					objResponse.put("message", "Level upload success (" + levelnum +")");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 				} catch (SQLException e) {
@@ -337,7 +337,7 @@ public class GamificationLevelService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+gameId+"/"+levelNum);
+		L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/levels/"+gameId+"/"+levelNum);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		LevelModel level = null;
@@ -352,7 +352,7 @@ public class GamificationLevelService extends Service {
 		try {
 			conn = dbm.getConnection();
 			try {
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
 				
 				try {
 					if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -378,9 +378,9 @@ public class GamificationLevelService extends Service {
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			    	
 			    	String levelString = objectMapper.writeValueAsString(level);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+gameId);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
 					return new HttpResponse(levelString, HttpURLConnection.HTTP_OK);
 				}
 				else{
@@ -445,7 +445,7 @@ public class GamificationLevelService extends Service {
 			@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/levels/"+gameId+"/"+levelNum);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/levels/"+gameId+"/"+levelNum);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		
@@ -467,7 +467,7 @@ public class GamificationLevelService extends Service {
 		try {
 			conn = dbm.getConnection();
 			try {
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
 				
 				try {
 					if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -532,9 +532,9 @@ public class GamificationLevelService extends Service {
 					try{
 						levelAccess.updateLevel(conn,gameId, model);
 						objResponse.put("message", "Level updated");
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+gameId);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
 						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -608,7 +608,7 @@ public class GamificationLevelService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/levels/"+gameId+"/"+levelNum);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "DELETE " + "gamification/levels/"+gameId+"/"+levelNum);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		
@@ -622,7 +622,7 @@ public class GamificationLevelService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -645,9 +645,9 @@ public class GamificationLevelService extends Service {
 			
 			levelAccess.deleteLevel(conn,gameId, levelNum);
 			objResponse.put("message", "Level Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+gameId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -697,7 +697,7 @@ public class GamificationLevelService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+gameId);
+		L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/levels/"+gameId);
 
 		
 		List<LevelModel> model = null;
@@ -746,7 +746,7 @@ public class GamificationLevelService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", modelArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, "Levels fetched : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), "Levels fetched : " + gameId + " : " + userAgent);
 			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Levels fetched : " + gameId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			

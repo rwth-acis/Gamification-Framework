@@ -256,7 +256,7 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!managerAccess.isGameIdExist(conn,gameId)){
 				logger.info("Game not found >> ");
@@ -294,7 +294,7 @@ public class GamificationVisualizationService extends Service {
 			// Add Member to Game
 			JSONObject obj = memberAccess.getMemberStatus(conn,gameId, memberId);
 			obj.put("pointUnitName", pointUnitName);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_33, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_33,getContext().getMainAgent(), ""+randomLong);
 			
 			return new HttpResponse(obj.toJSONString(), HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
@@ -352,7 +352,7 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!managerAccess.isGameIdExist(conn,gameId)){
 				logger.info("Game not found >> ");
@@ -377,7 +377,7 @@ public class GamificationVisualizationService extends Service {
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			String response =  objectMapper.writeValueAsString(badges);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39,getContext().getMainAgent(), ""+randomLong);
 			return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			
@@ -442,7 +442,7 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_42, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_42,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!managerAccess.isGameIdExist(conn,gameId)){
 				logger.info("Game not found >> ");
@@ -479,7 +479,7 @@ public class GamificationVisualizationService extends Service {
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			String response =  objectMapper.writeValueAsString(quests);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_43, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_43,getContext().getMainAgent(), ""+randomLong);
 			return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			
@@ -635,7 +635,7 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_40, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_40,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!managerAccess.isGameIdExist(conn,gameId)){
 				logger.info("Game not found >> ");
@@ -660,7 +660,7 @@ public class GamificationVisualizationService extends Service {
 		    	//Set pretty printing of json
 		    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 				String response =  objectMapper.writeValueAsString(ach);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_41, ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_41,getContext().getMainAgent(), ""+randomLong);
 				return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -1122,7 +1122,7 @@ public class GamificationVisualizationService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38,getContext().getMainAgent(), ""+randomLong);
 			if(!managerAccess.isGameIdExist(conn,gameId)){
 				logger.info("Game not found >> ");
 				objResponse.put("message", "Game not found");
@@ -1148,9 +1148,9 @@ public class GamificationVisualizationService extends Service {
 				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationActionService.GamificationActionService@0.1", "triggerActionRMI",
 						new Serializable[] { gameId, memberId, actionId });
 				if (result != null) {
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39, ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_44, ""+gameId);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_45, ""+memberId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_44,getContext().getMainAgent(), ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_45,getContext().getMainAgent(), ""+memberId);
 					
 					return new HttpResponse(result, HttpURLConnection.HTTP_OK);
 				}
@@ -1227,7 +1227,7 @@ public class GamificationVisualizationService extends Service {
 		
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_34, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_34,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!managerAccess.isGameIdExist(conn,gameId)){
 				logger.info("Game not found >> ");
@@ -1275,7 +1275,7 @@ public class GamificationVisualizationService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", arrResult);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_35, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_35,getContext().getMainAgent(), ""+randomLong);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -1334,7 +1334,7 @@ public class GamificationVisualizationService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_36, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_36,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!managerAccess.isGameIdExist(conn,gameId)){
 				logger.info("Game not found >> ");
@@ -1363,7 +1363,7 @@ public class GamificationVisualizationService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", arrResult);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37,getContext().getMainAgent(), ""+randomLong);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {

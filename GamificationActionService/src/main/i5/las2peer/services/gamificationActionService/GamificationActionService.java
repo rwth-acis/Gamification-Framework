@@ -178,7 +178,7 @@ public class GamificationActionService extends Service {
 			@ApiParam(value = "Action detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/actions/"+gameId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/actions/"+gameId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		// parse given multipart form data
@@ -200,7 +200,7 @@ public class GamificationActionService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!actionAccess.isGameIdExist(conn,gameId)){
@@ -256,9 +256,9 @@ public class GamificationActionService extends Service {
 				try{
 					actionAccess.addNewAction(conn,gameId, action);
 					objResponse.put("message", "Action upload success (" + actionid +")");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
 					
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
@@ -337,7 +337,7 @@ public class GamificationActionService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/actions/"+gameId+"/"+actionId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/actions/"+gameId+"/"+actionId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		ActionModel action = null;
@@ -351,7 +351,7 @@ public class GamificationActionService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				
@@ -379,9 +379,9 @@ public class GamificationActionService extends Service {
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			    	
 			    	String actionString = objectMapper.writeValueAsString(action);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+gameId);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
 					return new HttpResponse(actionString, HttpURLConnection.HTTP_OK);
 				}
 				else{
@@ -448,7 +448,7 @@ public class GamificationActionService extends Service {
 									 @ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/actions/"+gameId+"/"+actionId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/actions/"+gameId+"/"+actionId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		// parse given multipart form data
@@ -470,7 +470,7 @@ public class GamificationActionService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
 			
 			Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 			
@@ -538,9 +538,9 @@ public class GamificationActionService extends Service {
 				actionAccess.updateAction(conn,gameId, action);
 				logger.info("action updated >> ");
 				objResponse.put("message", "action updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+gameId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -606,7 +606,7 @@ public class GamificationActionService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/actions/"+gameId+"/"+actionId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "DELETE " + "gamification/actions/"+gameId+"/"+actionId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		JSONObject objResponse = new JSONObject();
@@ -619,7 +619,7 @@ public class GamificationActionService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!actionAccess.isGameIdExist(conn,gameId)){
@@ -641,9 +641,9 @@ public class GamificationActionService extends Service {
 			actionAccess.deleteAction(conn,gameId, actionId);
 			
 			objResponse.put("message", "Action deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+gameId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -691,7 +691,7 @@ public class GamificationActionService extends Service {
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
 	{
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/actions/"+gameId);
+		L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/actions/"+gameId);
 		
 		List<ActionModel> achs = null;
 		Connection conn = null;
@@ -739,7 +739,7 @@ public class GamificationActionService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", actionArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10, "Actions fetched" + " : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10,getContext().getMainAgent(), "Actions fetched" + " : " + gameId + " : " + userAgent);
 			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Actions fetched" + " : " + gameId + " : " + userAgent);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			

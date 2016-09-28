@@ -294,7 +294,7 @@ public class GamificationBadgeService extends Service {
 			@ApiParam(value = "Badge detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/badges/"+gameId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/badges/"+gameId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		// parse given multipart form data
@@ -319,7 +319,7 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!badgeAccess.isGameIdExist(conn,gameId)){
@@ -411,9 +411,9 @@ public class GamificationBadgeService extends Service {
 					try{
 						badgeAccess.addNewBadge(conn,gameId, badge);
 						objResponse.put("message", "Badge upload success (" + badgeid +")");
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+gameId);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
 						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 					} catch (SQLException e) {
@@ -503,7 +503,7 @@ public class GamificationBadgeService extends Service {
 									 @ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/badges/"+gameId+"/"+badgeId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/badges/"+gameId+"/"+badgeId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		// parse given multipart form data
@@ -526,7 +526,7 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!badgeAccess.isGameIdExist(conn,gameId)){
@@ -630,9 +630,9 @@ public class GamificationBadgeService extends Service {
 			try{
 				badgeAccess.updateBadge(conn,gameId, currentBadge);
 				objResponse.put("message", "Badge updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+gameId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -693,7 +693,7 @@ public class GamificationBadgeService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+gameId+"/"+badgeId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/badges/"+gameId+"/"+badgeId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		BadgeModel badge = null;
@@ -707,7 +707,7 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!badgeAccess.isGameIdExist(conn,gameId)){
@@ -732,9 +732,9 @@ public class GamificationBadgeService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String badgeString = objectMapper.writeValueAsString(badge);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+gameId);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(badgeString, HttpURLConnection.HTTP_OK);
 
 		} catch (JsonProcessingException e) {
@@ -780,7 +780,7 @@ public class GamificationBadgeService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/badges/"+gameId+"/"+badgeId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "DELETE " + "gamification/badges/"+gameId+"/"+badgeId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		JSONObject objResponse = new JSONObject();
@@ -793,7 +793,7 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!badgeAccess.isGameIdExist(conn,gameId)){
@@ -823,9 +823,9 @@ public class GamificationBadgeService extends Service {
 
 			}
 			objResponse.put("message", "File Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+gameId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -872,7 +872,7 @@ public class GamificationBadgeService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+gameId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/badges/"+gameId);
 		
 		List<BadgeModel> badges = null;
 		Connection conn = null;
@@ -926,8 +926,8 @@ public class GamificationBadgeService extends Service {
 			objResponse.put("rows", badgeArray);
 			objResponse.put("total", totalNum);
 			logger.info(objResponse.toJSONString());
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, "Badges fetched" + " : " + gameId + " : " + userAgent);
-			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Badges fetched" + " : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), "Badges fetched" + " : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent( Event.AGENT_GET_SUCCESS,getContext().getMainAgent(), "Badges fetched" + " : " + gameId + " : " + userAgent);
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -976,7 +976,7 @@ public class GamificationBadgeService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+gameId+"/"+badgeId+"/img");
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/badges/"+gameId+"/"+badgeId+"/img");
 		
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
@@ -1010,7 +1010,7 @@ public class GamificationBadgeService extends Service {
 			}
 			byte[] filecontent = getBadgeImageMethod(gameId, badgeId);
 
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, "Badge image fetched : " + badgeId + " : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), "Badge image fetched : " + badgeId + " : " + gameId + " : " + userAgent);
 			L2pLogger.logEvent(this, Event.ARTIFACT_RECEIVED, "Badge image fetched : " + badgeId + " : " + gameId + " : " + userAgent);
 			return new HttpResponse(filecontent, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {

@@ -254,7 +254,7 @@ public class GamificationGamifierService extends Service {
 	public HttpResponse updateRepository(
 			@ApiParam(value = "Data in JSON", required = true)@ContentParam byte[] contentB) {
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/gamifier/repo");
+		L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/gamifier/repo");
 		long randomLong = new Random().nextLong(); //To be able to match
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		// take username as default name
@@ -264,7 +264,7 @@ public class GamificationGamifierService extends Service {
 			return unauthorizedMessage();
 		}
 		
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_9, "" + randomLong);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_9,getContext().getMainAgent(), "" + randomLong);
 
 		JSONObject objResponse = new JSONObject();
 		String content = new String(contentB);
@@ -404,9 +404,9 @@ public class GamificationGamifierService extends Service {
 	    }
 	  
 		objResponse.put("message", "Updated");
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10, "" + randomLong);
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_22, "" + gameId);
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_23, "" + name);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10,getContext().getMainAgent(), "" + randomLong);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_22,getContext().getMainAgent(), "" + gameId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_23,getContext().getMainAgent(), "" + name);
 		
 		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 

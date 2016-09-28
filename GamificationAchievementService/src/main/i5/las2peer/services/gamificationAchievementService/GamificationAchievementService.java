@@ -174,7 +174,7 @@ public class GamificationAchievementService extends Service {
 			@ApiParam(value = "Achievement detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/achievements/"+gameId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/achievements/"+gameId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		// parse given multipart form data
@@ -197,7 +197,7 @@ public class GamificationAchievementService extends Service {
 		try {
 			conn = dbm.getConnection();
 			
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!achievementAccess.isGameIdExist(conn,gameId)){
@@ -271,9 +271,9 @@ public class GamificationAchievementService extends Service {
 				try{
 					achievementAccess.addNewAchievement(conn,gameId, achievement);
 					objResponse.put("message", "Achievement upload success (" + achievementid +")");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
 					
 					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
@@ -349,7 +349,7 @@ public class GamificationAchievementService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/achievements/"+gameId+"/"+achievementId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/achievements/"+gameId+"/"+achievementId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		
@@ -364,7 +364,7 @@ public class GamificationAchievementService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				
@@ -396,9 +396,9 @@ public class GamificationAchievementService extends Service {
 		    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 		    	
 		    	String achievementString = objectMapper.writeValueAsString(achievement);
-		    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
-		    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+gameId);
+		    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
+		    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
 				
 				return new HttpResponse(achievementString, HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
@@ -450,7 +450,7 @@ public class GamificationAchievementService extends Service {
 									 @ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/achievements/"+gameId+"/"+achievementId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/achievements/"+gameId+"/"+achievementId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 				
 		
@@ -472,7 +472,7 @@ public class GamificationAchievementService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
 			
 			Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 			
@@ -564,9 +564,9 @@ public class GamificationAchievementService extends Service {
 				}
 				achievementAccess.updateAchievement(conn,gameId, currentAchievement);
 				objResponse.put("message", "Achievement updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+gameId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
 				
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -628,7 +628,7 @@ public class GamificationAchievementService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/achievements/"+gameId+"/"+achievementId);		
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "DELETE " + "gamification/achievements/"+gameId+"/"+achievementId);		
 		long randomLong = new Random().nextLong(); //To be able to match 
 
 		Connection conn = null;
@@ -640,7 +640,7 @@ public class GamificationAchievementService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!achievementAccess.isGameIdExist(conn,gameId)){
@@ -662,9 +662,9 @@ public class GamificationAchievementService extends Service {
 			achievementAccess.deleteAchievement(conn,gameId, achievementId);
 			
 			objResponse.put("message", "Cannot delete achievement. Achievement Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+gameId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -713,7 +713,7 @@ public class GamificationAchievementService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/achievements/"+gameId);		
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/achievements/"+gameId);		
 		
 		List<AchievementModel> achs = null;
 		Connection conn = null;

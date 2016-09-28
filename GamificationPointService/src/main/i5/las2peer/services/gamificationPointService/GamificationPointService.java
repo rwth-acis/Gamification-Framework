@@ -272,7 +272,7 @@ public class GamificationPointService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/points/"+gameId+"/name/"+unitName);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/points/"+gameId+"/name/"+unitName);
 		long randomLong = new Random().nextLong(); //To be able to match
 		
 		
@@ -286,7 +286,7 @@ public class GamificationPointService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!pointAccess.isGameIdExist(conn,gameId)){
 				objResponse.put("message", "Cannot update point unit name. Game not found");
@@ -301,9 +301,9 @@ public class GamificationPointService extends Service {
 					storeConfigurationToSystem(gameId, objRetrieve);
 					logger.info(objRetrieve.toJSONString());
 					objResponse.put("message", "Unit name "+unitName+" is updated");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -359,7 +359,7 @@ public class GamificationPointService extends Service {
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/points/"+gameId+"/name");
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/points/"+gameId+"/name");
 		long randomLong = new Random().nextLong(); //To be able to match
 			
 		
@@ -373,7 +373,7 @@ public class GamificationPointService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!pointAccess.isGameIdExist(conn,gameId)){
 				objResponse.put("message", "Cannot get point unit name. Game not found");
@@ -387,9 +387,9 @@ public class GamificationPointService extends Service {
 				if(pointUnitName==null){
 					objRetrieve.put("pointUnitName", "");
 				}
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+gameId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
 				
 				return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
 		
