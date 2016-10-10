@@ -10,7 +10,7 @@ set BASE=%CD%
 set CLASSPATH="%CD%/lib/*;%CD%/service/*;"
 
 java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupDirectory('etc/startup')^
- startService('i5.las2peer.services.gamificationApplicationService.GamificationApplicationService@0.1','gamificationapplicationpass')^
+ startService('i5.las2peer.services.gamificationGameService.GamificationGameService@0.1','gamificationgamepass')^
  startService('i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1','gamificationquestpass')^
  startService('i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1','gamificationbadgepass')^
  startService('i5.las2peer.services.gamificationPointService.GamificationPointService@0.1','gamificationpointpass')^

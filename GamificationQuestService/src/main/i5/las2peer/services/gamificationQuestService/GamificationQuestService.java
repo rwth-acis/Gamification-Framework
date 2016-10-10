@@ -38,7 +38,6 @@ import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationQuestService.database.DatabaseManager;
-import i5.las2peer.services.gamificationQuestService.database.ActionDAO;
 import i5.las2peer.services.gamificationQuestService.database.QuestDAO;
 import i5.las2peer.services.gamificationQuestService.database.QuestModel;
 import i5.las2peer.services.gamificationQuestService.database.QuestModel.QuestStatus;
@@ -115,7 +114,6 @@ public class GamificationQuestService extends Service {
 	private String jdbcSchema;
 	private DatabaseManager dbm;
 	
-	private ActionDAO actionAccess;
 	private QuestDAO questAccess;
 	
 
@@ -151,23 +149,6 @@ public class GamificationQuestService extends Service {
 			throw new IOException("Key " + key + " is missing in JSON");
 		}
 		return s;
-	}
-
-	/**
-	 * Get an element of JSON object with specified key as string array
-	 * @return list of string value
-	 * @throws IOException IO exception
-	 */
-	private static List<String> stringArrayfromJSON(JSONObject obj, String key) throws IOException {
-		JSONArray arr = (JSONArray)obj.get(key);
-		List<String> ss = new ArrayList<String>();
-		if (arr == null) {
-			throw new IOException("Key " + key + " is missing in JSON");
-		}
-		for(int i = 0; i < arr.size(); i++){
-			ss.add((String) arr.get(i));
-		}
-		return ss;
 	}
 
 	/**
@@ -256,10 +237,25 @@ public class GamificationQuestService extends Service {
 
 	// TODO Basic single CRUD ---------------------------
 	/**
-	 * Post a new quest
+	 * Post a new quest. It consumes JSON data.
+	 * Name attribute for JSON data : 
+	 * <ul>
+	 * 	<li>questid - Quest ID - String (20 chars)
+	 *  <li>questname - Quest name - String (20 chars)
+	 *  <li>queststatus - Quest Status - COMPLETED, HIDDEN, or REVEALED
+	 *  <li>questachievementid - Achievement name obtained Gamification Achievement Service - String (20 chars)
+	 *  <li>questquestflag - Quest flag dependency boolean - Boolean
+	 *  <li>questpointflag - Point flag dependency boolean - String (20 chars)
+	 *  <li>questidcompleted - Completed Quest ID if the quest flag dependency is true - String (20 chars)
+	 *  <li>questpointvalue - Point value if the point flag dependency boolean is true - Integer
+	 *  <li>questactionids - Array of object {action: , time: }
+	 *  <li>questdescription - Quest Description - String (50 chars)
+	 *  <li>questnotificationcheck - Quest Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>questnotificationmessage - Quest Notification Message - String
+	 * </ul>
 	 * @param gameId gameId
 	 * @param contentB content JSON
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@POST
 	@Path("/{gameId}")
@@ -520,11 +516,26 @@ public class GamificationQuestService extends Service {
 	
 
 	/**
-	 * Update a quest
+	 * Update a quest.
+	 * Name attribute for JSON data : 
+	 * <ul>
+	 * 	<li>questid - Quest ID - String (20 chars)
+	 *  <li>questname - Quest name - String (20 chars)
+	 *  <li>queststatus - Quest Status - COMPLETED, HIDDEN, or REVEALED
+	 *  <li>questachievementid - Achievement name obtained Gamification Achievement Service - String (20 chars)
+	 *  <li>questquestflag - Quest flag dependency boolean - Boolean
+	 *  <li>questpointflag - Point flag dependency boolean - String (20 chars)
+	 *  <li>questidcompleted - Completed Quest ID if the quest flag dependency is true - String (20 chars)
+	 *  <li>questpointvalue - Point value if the point flag dependency boolean is true - Integer
+	 *  <li>questactionids - Array of object {action: , time: }
+	 *  <li>questdescription - Quest Description - String (50 chars)
+	 *  <li>questnotificationcheck - Quest Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>questnotificationmessage - Quest Notification Message - String
+	 * </ul>
 	 * @param gameId gameId
 	 * @param questId questId
-	 * @param contentB data
-	 * @return HttpResponse with the returnString
+	 * @param contentB JSON data
+	 * @return HttpResponse returned as JSON object
 	 */
 	@PUT
 	@Path("/{gameId}/{questId}")
@@ -697,7 +708,7 @@ public class GamificationQuestService extends Service {
 	 * Delete a quest data with specified ID
 	 * @param gameId gameId
 	 * @param questId questId
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@DELETE
 	@Path("/{gameId}/{questId}")
@@ -773,11 +784,11 @@ public class GamificationQuestService extends Service {
 	
 	/**
 	 * Get a list of quests from database
-	 * @param gameId gameId
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param currentPage current cursor page
-	 * @param windowSize size of fetched data
+	 * @param windowSize size of fetched data (use -1 to fetch all data)
 	 * @param searchPhrase search word
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{gameId}")
@@ -800,7 +811,8 @@ public class GamificationQuestService extends Service {
 		
 		// Request log
 		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/quests/"+gameId);
-		
+		long randomLong = new Random().nextLong(); //To be able to match 
+
 		List<QuestModel> qs = null;
 		Connection conn = null;
 
@@ -811,8 +823,9 @@ public class GamificationQuestService extends Service {
 			return unauthorizedMessage();
 		}
 		try {
-			conn = dbm.getConnection();
-			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Levels");
+			conn = dbm.getConnection();			
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,getContext().getMainAgent(), ""+randomLong);
+
 			
 			try {
 				if(!questAccess.isGameIdExist(conn,gameId)){
@@ -860,8 +873,12 @@ public class GamificationQuestService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", questArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37,getContext().getMainAgent(), "Quests fetched" + " : " + gameId + " : " + userAgent);
-			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Quests fetched" + " : " + gameId + " : " + userAgent);
+
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
+
+			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {

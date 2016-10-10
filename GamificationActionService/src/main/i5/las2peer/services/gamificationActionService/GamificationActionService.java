@@ -152,10 +152,19 @@ public class GamificationActionService extends Service {
 
 	// TODO Basic single CRUD ---------------------------
 	/**
-	 * Post a new action
-	 * @param gameId gameId
-	 * @param formData form data
-	 * @param contentType content type
+	 * Post a new action. 
+	 * Name attribute for form data : 
+	 * <ul>
+	 *  <li>actionid - Action ID - String (20 chars)
+	 *  <li>actionname - Action name - String (20 chars)
+	 *  <li>actiondesc - Action Description - String (50 chars)
+	 *  <li>actionpointvalue - Point Value Action - Integer
+	 *  <li>actionnotificationcheck - Action Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>actionnotificationmessage - Action Notification Message - String
+	 * </ul>
+	 * @param gameId Game ID obtained from Gamification Game Service
+	 * @param formData Form data with multipart/form-data type
+	 * @param contentType Content type (implicitly sent in header)
 	 * @return HttpResponse returned as JSON object
 	 */
 	@POST
@@ -316,8 +325,9 @@ public class GamificationActionService extends Service {
 	/**
 	 * Get an action data with specific ID from database
 	 * @param gameId gameId
-	 * @param actionId action id
-	 * @return HttpResponse returned as JSON object
+	 * @param actionId Action ID
+	 * @return HttpResponse returned Action Model {@link ActionModel} as JSON object
+	 * @see ActionModel
 	 */
 	@GET
 	@Path("/{gameId}/{actionId}")
@@ -423,11 +433,19 @@ public class GamificationActionService extends Service {
 	
 
 	/**
-	 * Update an action
-	 * @param gameId gameId
-	 * @param actionId actionId
-	 * @param formData form data
-	 * @param contentType content type
+	 * Update an action.
+	 * <ul>
+	 *  <li>actionid - Action ID - String (20 chars)
+	 *  <li>actionname - Action name - String (20 chars)
+	 *  <li>actiondesc - Action Description - String (50 chars)
+	 *  <li>actionpointvalue - Point Value Action - Integer
+	 *  <li>actionnotificationcheck - Action Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>actionnotificationmessage - Action Notification Message - String
+	 * </ul>
+	 * @param gameId Game ID obtained from Gamification Game Service
+	 * @param actionId Action ID to be updated
+	 * @param formData Form data with multipart/form-data type
+	 * @param contentType Content type (implicitly sent in header)
 	 * @return HttpResponse returned as JSON object
 	 */
 	@PUT
@@ -587,8 +605,8 @@ public class GamificationActionService extends Service {
 
 	/**
 	 * Delete an action data with specified ID
-	 * @param gameId gameId
-	 * @param actionId actionId
+	 * @param gameId Game ID obtained from Gamification Game Service
+	 * @param actionId Action ID to be deleted
 	 * @return HttpResponse returned as JSON object
 	 */
 	@DELETE
@@ -665,10 +683,10 @@ public class GamificationActionService extends Service {
 	
 	// TODO Batch Processing ----------------------------
 	/**
-	 * Get a list of actions from database
-	 * @param gameId gameId
+	 * Get a list of actions from database, support the features to do pagination and search
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param currentPage current cursor page
-	 * @param windowSize size of fetched data
+	 * @param windowSize size of fetched data (use -1 to fetch all data)
 	 * @param searchPhrase search word
 	 * @return HttpResponse returned as JSON object
 	 */
@@ -692,6 +710,7 @@ public class GamificationActionService extends Service {
 	{
 		// Request log
 		L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/actions/"+gameId);
+		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		List<ActionModel> achs = null;
 		Connection conn = null;
@@ -704,7 +723,7 @@ public class GamificationActionService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Actions");
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!actionAccess.isGameIdExist(conn,gameId)){
@@ -739,8 +758,9 @@ public class GamificationActionService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", actionArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10,getContext().getMainAgent(), "Actions fetched" + " : " + gameId + " : " + userAgent);
-			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Actions fetched" + " : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {
@@ -818,7 +838,6 @@ public class GamificationActionService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			JSONArray arr = new JSONArray();
 			
 			int offset = 0;
 			int totalNum = actionAccess.getNumberOfActions(conn,gameId);

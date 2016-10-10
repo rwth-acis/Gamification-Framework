@@ -1,33 +1,24 @@
 package i5.las2peer.services.gamificationGameService;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -68,11 +59,6 @@ import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import net.minidev.json.parser.ParseException;
-
-import java.util.Scanner;
-import java.util.Vector;
-
 /**
  * Gamification Game Service
  * 
@@ -170,19 +156,6 @@ public class GamificationGameService extends Service {
 		
 		return false;
 	}
-
-	/**
-	 * Get an element of JSON object with specified key as string
-	 * @return string value
-	 * @throws IOException IO exception
-	 */
-	private static String stringfromJSON(JSONObject obj, String key) throws IOException {
-		String s = (String) obj.get(key);
-		if (s == null) {
-			throw new IOException("Key " + key + " is missing in JSON");
-		}
-		return s;
-	}
 	
 	/**
 	 * Function to return http unauthorized message
@@ -204,10 +177,16 @@ public class GamificationGameService extends Service {
 	// TODO Basic single CRUD -------------------------------------
 	
 	/**
-	 * Create a new game
+	 * Create a new game. 
+	 * Name attribute for form data : 
+	 * <ul>
+	 * 	<li>gameid - Game ID - String (20 chars)
+	 *  <li>commtype - Community Type - String (20 chars)
+	 *  <li>gamedesc - Game Description - String (50 chars)
+	 * </ul>
 	 * 
 	 * @param contentType form content type
-	 * @param formData form data
+	 * @param formData Form data with multipart/form-data type
 	 * @return Game data in JSON
 	 */
 	@POST
@@ -328,9 +307,9 @@ public class GamificationGameService extends Service {
 	}
 
 	/**
-	 * Get an game data with specified ID
-	 * @param gameId gameId
-	 * @return Game data in JSON
+	 * Get a game data with specified ID
+	 * @param gameId Game ID
+	 * @return Game model {@link GameModel} data in JSON
 	 */
 	@GET
 	@Path("/data/{gameId}")
@@ -396,8 +375,8 @@ public class GamificationGameService extends Service {
 	}
 	
 	/**
-	 * Delete an game data with specified ID
-	 * @param gameId gameId
+	 * Delete a game data with specified ID
+	 * @param gameId Game ID
 	 * @return HttpResponse with the returnString
 	 */
 	@DELETE

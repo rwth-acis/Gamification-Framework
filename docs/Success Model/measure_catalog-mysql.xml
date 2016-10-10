@@ -119,26 +119,26 @@
 		</visualization>
 	</measure>
 
-	<measure name="Average Time To Create an Application">
+	<measure name="Average Time To Create a Game">
 		<query name="AverageTime">
-			SELECT AVG(timeToCreateApp.difference) AS AverageTime FROM
+			SELECT AVG(timeToCreateGame.difference) AS AverageTime FROM
 			(SELECT (m2.TIME_STAMP - m.TIME_STAMP) AS difference FROM MESSAGE m, MESSAGE m2
 			WHERE m.EVENT = 'SERVICE_CUSTOM_MESSAGE_1' AND m2.EVENT = 'SERVICE_CUSTOM_MESSAGE_2'
 			AND m.REMARKS=m2.REMARKS AND
-			m.SOURCE_AGENT = '$SERVICE$') timeToCreateApp
+			m.SOURCE_AGENT = '$SERVICE$') timeToCreateGame
 		</query>
 		<visualization type="KPI">
 			<operand name="AverageTime" index="0"/>
 		</visualization>
 	</measure>
 
-	<measure name="Average Time To Delete an Application">
+	<measure name="Average Time To Delete a Game">
 		<query name="AverageTime">
-			SELECT AVG(timeToDeleteApp.difference) AS AverageTime FROM
+			SELECT AVG(timeToDeleteGame.difference) AS AverageTime FROM
 			(SELECT (m2.TIME_STAMP - m.TIME_STAMP) AS difference FROM MESSAGE m, MESSAGE m2
 			WHERE m.EVENT = 'SERVICE_CUSTOM_MESSAGE_12' AND m2.EVENT = 'SERVICE_CUSTOM_MESSAGE_13'
 			AND m.REMARKS=m2.REMARKS AND
-			m.SOURCE_AGENT = '$SERVICE$') timeToDeleteApp
+			m.SOURCE_AGENT = '$SERVICE$') timeToDeleteGame
 		</query>
 		<visualization type="KPI">
 			<operand name="AverageTime" index="0"/>
@@ -158,46 +158,46 @@
 		</visualization>
 	</measure>
 
-	<measure name="Number of Application Created Over Time">
-		<query name="CreatedApplication">
-			SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(*) AS 'Created Application' FROM MESSAGE
+	<measure name="Number of Game Created Over Time">
+		<query name="CreatedGame">
+			SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(*) AS 'Created Game' FROM MESSAGE
 			WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_2' AND SOURCE_AGENT = '$SERVICE$'
 			GROUP BY Time;
 		</query>
 		<visualization type="Chart">
 			<chartType>LineChart</chartType>
-			<nodeId>CreatedApplicationChart</nodeId>
-			<title>Created Application Over Time</title>
+			<nodeId>CreatedGameChart</nodeId>
+			<title>Created Game Over Time</title>
 			<height>300</height>
 			<width>100%</width>
 		</visualization>
 	</measure>
 
-	<measure name="Number of Member Registered To Application Over Time">
-		<query name="MemberRegisteredToApp">
-			SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(*) AS 'Member Registered To App' FROM MESSAGE
+	<measure name="Number of Member Registered To Game Over Time">
+		<query name="MemberRegisteredToGame">
+			SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(*) AS 'Member Registered To Game' FROM MESSAGE
 			WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_3' AND SOURCE_AGENT = '$SERVICE$'
 			GROUP BY Time;
 		</query>
 		<visualization type="Chart">
 			<chartType>LineChart</chartType>
-			<nodeId>MemberRegisteredToAppChart</nodeId>
-			<title>Member Registered To Application Over Time</title>
+			<nodeId>MemberRegisteredToGameChart</nodeId>
+			<title>Member Registered To Game Over Time</title>
 			<height>300</height>
 			<width>100%</width>
 		</visualization>
 	</measure>
 
-	<measure name="Number of Member Removed From Application Over Time">
-		<query name="MemberRemovedFromApp">
-			SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(*) AS 'Member Removed From App' FROM MESSAGE
+	<measure name="Number of Member Removed From Game Over Time">
+		<query name="MemberRemovedFromGame">
+			SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(*) AS 'Member Removed From Game' FROM MESSAGE
 			WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_5' AND SOURCE_AGENT = '$SERVICE$'
 			GROUP BY Time;
 		</query>
 		<visualization type="Chart">
 			<chartType>LineChart</chartType>
-			<nodeId>MemberRemovedFromAppChart</nodeId>
-			<title>Member Removed From Application Over Time</title>
+			<nodeId>MemberRemovedFromGameChart</nodeId>
+			<title>Member Removed From Game Over Time</title>
 			<height>300</height>
 			<width>100%</width>
 		</visualization>
@@ -218,69 +218,69 @@
 		</visualization>
 	</measure>
 
-	<measure name="Average Application Created per Member">
+	<measure name="Average Game Created per Member">
 		<query name="TotalMembers">
 			SELECT COUNT(*) AS MemberCount FROM
 			(SELECT REMARKS AS AllUsers FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_7' AND SOURCE_AGENT = '$SERVICE$'
 			GROUP BY REMARKS) allUsers
 		</query>
-		<query name="TotalApplicationCreated">
+		<query name="TotalGameCreated">
 			SELECT COUNT(*) FROM MESSAGE WHERE
 			EVENT = 'SERVICE_CUSTOM_MESSAGE_2'
 			AND SOURCE_AGENT = '$SERVICE$'
 		</query>
 		<visualization type="KPI">
-			<operand name="TotalApplicationCreated" index="0"/>
+			<operand name="TotalGameCreated" index="0"/>
 			<operator name="/" index="1"/>
 			<operand name="TotalMembers" index="2"/>
 		</visualization>
 	</measure>
 
-	<measure name="Average Member Registered To Application per Member">
+	<measure name="Average Member Registered To Game per Member">
 		<query name="TotalMembers">
 			SELECT COUNT(*) AS MemberCount FROM
 			(SELECT REMARKS AS AllUsers FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_3' AND SOURCE_AGENT = '$SERVICE$'
 			GROUP BY REMARKS) allUsers
 		</query>
-		<query name="TotalMemberRegisteredToApp">
+		<query name="TotalMemberRegisteredToGame">
 			SELECT COUNT(*) FROM MESSAGE WHERE
 			EVENT = 'SERVICE_CUSTOM_MESSAGE_3'
 			AND SOURCE_AGENT = '$SERVICE$'
 		</query>
 		<visualization type="KPI">
-			<operand name="TotalMemberRegisteredToApp" index="0"/>
+			<operand name="TotalMemberRegisteredToGame" index="0"/>
 			<operator name="/" index="1"/>
 			<operand name="TotalMembers" index="2"/>
 		</visualization>
 	</measure>
 
-	<measure name="Average Member Registered To Application per Application">
-		<query name="TotalApplications">
-			SELECT COUNT(*) AS AppCount FROM
-			(SELECT REMARKS AS AllApps FROM MESSAGE
+	<measure name="Average Member Registered To Game per Game">
+		<query name="TotalGames">
+			SELECT COUNT(*) AS GameCount FROM
+			(SELECT REMARKS AS AllGames FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_4' AND SOURCE_AGENT = '$SERVICE$'
-			GROUP BY REMARKS) allApps
+			GROUP BY REMARKS) allGames
 		</query>
-		<query name="TotalMemberRegisteredToApp">
+		<query name="TotalMemberRegisteredToGame">
 			SELECT COUNT(*) FROM MESSAGE WHERE
 			EVENT = 'SERVICE_CUSTOM_MESSAGE_4'
 			AND SOURCE_AGENT = '$SERVICE$'
 		</query>
 		<visualization type="KPI">
-			<operand name="TotalMemberRegisteredToApp" index="0"/>
+			<operand name="TotalMemberRegisteredToGame" index="0"/>
 			<operator name="/" index="1"/>
-			<operand name="TotalApplications" index="2"/>
+			<operand name="TotalGames" index="2"/>
 		</visualization>
 	</measure>
 
-	<measure name="Average Repository Updated per Application">
-		<query name="TotalApplications">
-			SELECT COUNT(*) AS AppCount FROM
-			(SELECT REMARKS AS AllApps FROM MESSAGE
+	<measure name="Average Repository Updated per Game">
+		<query name="TotalGames">
+			SELECT COUNT(*) AS GameCount FROM
+			(SELECT REMARKS AS AllGames FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_22' AND SOURCE_AGENT = '$SERVICE$'
-			GROUP BY REMARKS) allApps
+			GROUP BY REMARKS) allGames
 		</query>
 		<query name="TotalRepositoryUpdated">
 			SELECT COUNT(*) FROM MESSAGE WHERE
@@ -290,7 +290,7 @@
 		<visualization type="KPI">
 			<operand name="TotalRepositoryUpdated" index="0"/>
 			<operator name="/" index="1"/>
-			<operand name="TotalApplications" index="2"/>
+			<operand name="TotalGames" index="2"/>
 		</visualization>
 	</measure>
 
@@ -367,6 +367,18 @@
 			<operand name="AverageTime" index="0"/>
 		</visualization>
 	</measure>
+	<measure name="Average Time To Get Game Elements">
+		<query name="AverageTime">
+			SELECT AVG(timeToGetGameElmts.difference) AS AverageTime FROM
+			(SELECT (m2.TIME_STAMP - m.TIME_STAMP) AS difference FROM MESSAGE m, MESSAGE m2
+			WHERE m.EVENT = 'SERVICE_CUSTOM_MESSAGE_46' AND m2.EVENT = 'SERVICE_CUSTOM_MESSAGE_47'
+			AND m.REMARKS=m2.REMARKS AND
+			m.SOURCE_AGENT = '$SERVICE$') timeToGetGameElmts
+		</query>
+		<visualization type="KPI">
+			<operand name="AverageTime" index="0"/>
+		</visualization>
+	</measure>
 	<measure name="Average Time To Update a Game Element">
 		<query name="AverageTime">
 			SELECT AVG(timeToUpdateGameElmt.difference) AS AverageTime FROM
@@ -422,6 +434,21 @@
 		</visualization>
 	</measure>
 
+	<measure name="Number of Game Elements Fetched Over Time">
+		<query name="GameElementFetched">
+			SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(*) AS 'Game Elements Fetched' FROM MESSAGE
+			WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_47' AND SOURCE_AGENT = '$SERVICE$'
+			GROUP BY Time;
+		</query>
+		<visualization type="Chart">
+			<chartType>LineChart</chartType>
+			<nodeId>GameElementFetchedChart</nodeId>
+			<title>Game Element Fetched Over Time</title>
+			<height>300</height>
+			<width>100%</width>
+		</visualization>
+	</measure>
+
 	<measure name="Number of a Game Element Updated Over Time">
 		<query name="GameElementUpdated">
 			SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(*) AS 'Game Element Updated' FROM MESSAGE
@@ -452,12 +479,12 @@
 		</visualization>
 	</measure>
 
-	<measure name="Average Game Element Created per Application">
-		<query name="TotalApplications">
-			SELECT COUNT(*) AS AppCount FROM
-			(SELECT REMARKS AS AllApps FROM MESSAGE
+	<measure name="Average Game Element Created per Game">
+		<query name="TotalGames">
+			SELECT COUNT(*) AS GameCount FROM
+			(SELECT REMARKS AS AllGames FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_25' AND SOURCE_AGENT = '$SERVICE$'
-			GROUP BY REMARKS) allApps
+			GROUP BY REMARKS) allGames
 		</query>
 		<query name="TotalGameElementCreated">
 			SELECT COUNT(*) FROM MESSAGE WHERE
@@ -467,16 +494,16 @@
 		<visualization type="KPI">
 			<operand name="TotalGameElementCreated" index="0"/>
 			<operator name="/" index="1"/>
-			<operand name="TotalApplications" index="2"/>
+			<operand name="TotalGames" index="2"/>
 		</visualization>
 	</measure>
 
-	<measure name="Average Game Element Fetched per Application">
-		<query name="TotalApplications">
-			SELECT COUNT(*) AS AppCount FROM
-			(SELECT REMARKS AS AllApps FROM MESSAGE
+	<measure name="Average Game Element Fetched per Game">
+		<query name="TotalGames">
+			SELECT COUNT(*) AS GameCount FROM
+			(SELECT REMARKS AS AllGames FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_27' AND SOURCE_AGENT = '$SERVICE$'
-			GROUP BY REMARKS) allApps
+			GROUP BY REMARKS) allGames
 		</query>
 		<query name="TotalGameElementFetched">
 			SELECT COUNT(*) FROM MESSAGE WHERE
@@ -486,16 +513,35 @@
 		<visualization type="KPI">
 			<operand name="TotalGameElementFetched" index="0"/>
 			<operator name="/" index="1"/>
-			<operand name="TotalApplications" index="2"/>
+			<operand name="TotalGames" index="2"/>
 		</visualization>
 	</measure>
 
-	<measure name="Average Game Element Updated per Application">
-		<query name="TotalApplications">
-			SELECT COUNT(*) AS AppCount FROM
-			(SELECT REMARKS AS AllApps FROM MESSAGE
+	<measure name="Average Game Elements Fetched per Game">
+		<query name="TotalGames">
+			SELECT COUNT(*) AS GameCount FROM
+			(SELECT REMARKS AS AllGames FROM MESSAGE
+			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_49' AND SOURCE_AGENT = '$SERVICE$'
+			GROUP BY REMARKS) allGames
+		</query>
+		<query name="TotalGameElementsFetched">
+			SELECT COUNT(*) FROM MESSAGE WHERE
+			EVENT = 'SERVICE_CUSTOM_MESSAGE_49'
+			AND SOURCE_AGENT = '$SERVICE$'
+		</query>
+		<visualization type="KPI">
+			<operand name="TotalGameElementsFetched" index="0"/>
+			<operator name="/" index="1"/>
+			<operand name="TotalGames" index="2"/>
+		</visualization>
+	</measure>
+
+	<measure name="Average Game Element Updated per Game">
+		<query name="TotalGames">
+			SELECT COUNT(*) AS GameCount FROM
+			(SELECT REMARKS AS AllGames FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_29' AND SOURCE_AGENT = '$SERVICE$'
-			GROUP BY REMARKS) allApps
+			GROUP BY REMARKS) allGames
 		</query>
 		<query name="TotalGameElementUpdated">
 			SELECT COUNT(*) FROM MESSAGE WHERE
@@ -505,16 +551,16 @@
 		<visualization type="KPI">
 			<operand name="TotalGameElementUpdated" index="0"/>
 			<operator name="/" index="1"/>
-			<operand name="TotalApplications" index="2"/>
+			<operand name="TotalGames" index="2"/>
 		</visualization>
 	</measure>
 
-	<measure name="Average Game Element Deleted per Application">
-		<query name="TotalApplications">
-			SELECT COUNT(*) AS AppCount FROM
-			(SELECT REMARKS AS AllApps FROM MESSAGE
+	<measure name="Average Game Element Deleted per Game">
+		<query name="TotalGames">
+			SELECT COUNT(*) AS GameCount FROM
+			(SELECT REMARKS AS AllGames FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_31' AND SOURCE_AGENT = '$SERVICE$'
-			GROUP BY REMARKS) allApps
+			GROUP BY REMARKS) allGames
 		</query>
 		<query name="TotalGameElementDeleted">
 			SELECT COUNT(*) FROM MESSAGE WHERE
@@ -524,7 +570,7 @@
 		<visualization type="KPI">
 			<operand name="TotalGameElementDeleted" index="0"/>
 			<operator name="/" index="1"/>
-			<operand name="TotalApplications" index="2"/>
+			<operand name="TotalGames" index="2"/>
 		</visualization>
 	</measure>
 
@@ -561,6 +607,25 @@
 		</query>
 		<visualization type="KPI">
 			<operand name="TotalGameElementFetched" index="0"/>
+			<operator name="/" index="1"/>
+			<operand name="TotalMembers" index="2"/>
+		</visualization>
+	</measure>
+
+	<measure name="Average Game Elements Fetched per Member">
+		<query name="TotalMembers">
+			SELECT COUNT(*) AS MemberCount FROM
+			(SELECT REMARKS AS AllMembers FROM MESSAGE
+			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_48' AND SOURCE_AGENT = '$SERVICE$'
+			GROUP BY REMARKS) allMembers
+		</query>
+		<query name="TotalGameElementsFetched">
+			SELECT COUNT(*) FROM MESSAGE WHERE
+			EVENT = 'SERVICE_CUSTOM_MESSAGE_48'
+			AND SOURCE_AGENT = '$SERVICE$'
+		</query>
+		<visualization type="KPI">
+			<operand name="TotalGameElementsFetched" index="0"/>
 			<operator name="/" index="1"/>
 			<operand name="TotalMembers" index="2"/>
 		</visualization>
@@ -619,7 +684,7 @@
 		<query name="AverageTime">
 			SELECT AVG(timeToFetchBadges.difference) AS AverageTime FROM
 			(SELECT (m2.TIME_STAMP - m.TIME_STAMP) AS difference FROM MESSAGE m, MESSAGE m2
-			WHERE m.EVENT = 'SERVICE_CUSTOM_MESSAGE_32' AND m2.EVENT = 'SERVICE_CUSTOM_MESSAGE_33'
+			WHERE m.EVENT = 'SERVICE_CUSTOM_MESSAGE_38' AND m2.EVENT = 'SERVICE_CUSTOM_MESSAGE_39'
 			AND m.REMARKS=m2.REMARKS AND
 			m.SOURCE_AGENT = '$SERVICE$') timeToFetchBadges
 		</query>
@@ -686,12 +751,12 @@
 		</visualization>
 	</measure>
 
-	<measure name="Average Action Triggered per Application">
-		<query name="TotalApplications">
-			SELECT COUNT(*) AS AppCount FROM
-			(SELECT REMARKS AS AllApps FROM MESSAGE
+	<measure name="Average Action Triggered per Game">
+		<query name="TotalGames">
+			SELECT COUNT(*) AS GameCount FROM
+			(SELECT REMARKS AS AllGames FROM MESSAGE
 			WHERE EVENT =  'SERVICE_CUSTOM_MESSAGE_44' AND SOURCE_AGENT = '$SERVICE$'
-			GROUP BY REMARKS) allApps
+			GROUP BY REMARKS) allGames
 		</query>
 		<query name="TotalActionTriggered">
 			SELECT COUNT(*) FROM MESSAGE WHERE
@@ -701,7 +766,7 @@
 		<visualization type="KPI">
 			<operand name="TotalActionTriggered" index="0"/>
 			<operator name="/" index="1"/>
-			<operand name="TotalApplications" index="2"/>
+			<operand name="TotalGames" index="2"/>
 		</visualization>
 	</measure>
 </Catalog>

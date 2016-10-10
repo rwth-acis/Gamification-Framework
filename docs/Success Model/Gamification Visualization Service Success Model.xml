@@ -17,7 +17,7 @@
 		</factor>
 		<factor name="Quality">
 			<measure name="Average Action Triggered per Member"/>
-			<measure name="Average Action Triggered per Application"/>
+			<measure name="Average Action Triggered per Game"/>
 		</factor>
 	</dimension>
 	<dimension name="User Satisfaction">

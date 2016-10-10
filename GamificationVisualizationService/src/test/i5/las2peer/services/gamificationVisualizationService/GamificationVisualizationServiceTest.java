@@ -4,29 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.PrintStream;
-import java.io.Serializable;
-import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.util.Properties;
-
-import javax.imageio.ImageIO;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -35,13 +14,11 @@ import org.junit.runners.MethodSorters;
 
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.ServiceNameVersion;
-import i5.las2peer.restMapper.data.Pair;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationAchievementService.GamificationAchievementService;
 import i5.las2peer.services.gamificationActionService.GamificationActionService;
 import i5.las2peer.services.gamificationBadgeService.GamificationBadgeService;
-import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
 import i5.las2peer.services.gamificationLevelService.GamificationLevelService;
 import i5.las2peer.services.gamificationPointService.GamificationPointService;
 import i5.las2peer.services.gamificationQuestService.GamificationQuestService;
@@ -50,9 +27,7 @@ import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
 import i5.las2peer.webConnector.client.MiniClient;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.
@@ -92,12 +67,6 @@ public class GamificationVisualizationServiceTest {
 	
 	private static final String mainPath = "visualization/";
 	
-	private static String jdbcDriverClassName;
-	private static String jdbcLogin;
-	private static String jdbcPass;
-	private static String jdbcHost;
-	private static int jdbcPort;
-	private static String jdbcSchema;
 
 	
 	// to fetch data per batch

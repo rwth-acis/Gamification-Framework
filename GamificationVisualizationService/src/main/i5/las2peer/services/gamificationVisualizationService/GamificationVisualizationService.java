@@ -1384,6 +1384,12 @@ public class GamificationVisualizationService extends Service {
 	    }
 	}
 	
+	/**
+	 * Get notification of the members after action has been triggered
+	 * @param gameId gameId
+	 * @param memberId member id
+	 * @return HttpResponse Returned as JSON object
+	 */
 	@GET
 	@Path("/notifications/{gameId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)

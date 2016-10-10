@@ -158,11 +158,19 @@ public class GamificationLevelService extends Service {
 	// TODO Basic Single CRUD
 	
 	/**
-	 * Post a new level
-	 * @param gameId gameId
-	 * @param formData form data
-	 * @param contentType content type
-	 * @return HttpResponse with the returnString
+	 * Post a new level.
+	 * Name attribute for form data : 
+	 * <ul>
+	 * 	<li>levelnum - Level Number - String (20 chars)
+	 *  <li>levelname - Level name - String (20 chars)
+	 *  <li>levelpointvalue - Point Value Level - Integer
+	 *  <li>levelnotificationcheck - Level Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>levelnotificationmessage - Level Notification Message - String
+	 * </ul>
+	 * @param gameId Game ID obtained from Gamification Game Service
+	 * @param formData Form data with multipart/form-data type
+	 * @param contentType Content type (implicitly sent in header)
+	 * @return HttpResponse returned as JSON object
 	 */
 	@POST
 	@Path("/{gameId}")
@@ -420,12 +428,20 @@ public class GamificationLevelService extends Service {
 	}
 
 	/**
-	 * Update a level
-	 * @param gameId gameId
+	 * Update a level.
+	 * Name attribute for form data : 
+	 * <ul>
+	 * 	<li>levelnum - Level Number - String (20 chars)
+	 *  <li>levelname - Level name - String (20 chars)
+	 *  <li>levelpointvalue - Point Value Level - Integer
+	 *  <li>levelnotificationcheck - Level Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>levelnotificationmessage - Level Notification Message - String
+	 * </ul>
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param levelNum levelNum
-	 * @param formData form data
-	 * @param contentType content type
-	 * @return HttpResponse with the returnString
+	 * @param formData Form data with multipart/form-data type
+	 * @param contentType Content type (implicitly sent in header)
+	 * @return HttpResponse returned as JSON object
 	 */
 	@PUT
 	@Path("/{gameId}/{levelNum}")
@@ -590,7 +606,7 @@ public class GamificationLevelService extends Service {
 	 * Delete a level data with specified ID
 	 * @param gameId gameId
 	 * @param levelNum levelNum
-	 * @return HttpResponse with the returnString
+	 * @return HttpResponse returned as JSON object
 	 */
 	@DELETE
 	@Path("/{gameId}/{levelNum}")
@@ -671,11 +687,11 @@ public class GamificationLevelService extends Service {
 	// TODO Batch Processing
 	/**
 	 * Get a list of levels from database
-	 * @param gameId gameId
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param currentPage current cursor page
-	 * @param windowSize size of fetched data
+	 * @param windowSize size of fetched data (use -1 to fetch all data)
 	 * @param searchPhrase search word
-	 * @return HttpResponse Returned as JSON object
+	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
 	@Path("/{gameId}")
@@ -698,6 +714,7 @@ public class GamificationLevelService extends Service {
 		
 		// Request log
 		L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/levels/"+gameId);
+		long randomLong = new Random().nextLong(); //To be able to match 
 
 		
 		List<LevelModel> model = null;
@@ -711,7 +728,7 @@ public class GamificationLevelService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Levels");
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -746,8 +763,11 @@ public class GamificationLevelService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", modelArray);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), "Levels fetched : " + gameId + " : " + userAgent);
-			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Levels fetched : " + gameId + " : " + userAgent);
+
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
+			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			
 		} catch (SQLException e) {

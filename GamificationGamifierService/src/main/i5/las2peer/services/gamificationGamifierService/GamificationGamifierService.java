@@ -1,32 +1,19 @@
 package i5.las2peer.services.gamificationGamifierService;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 
-import javax.imageio.ImageIO;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.HttpHeaders;
 
-import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
@@ -34,12 +21,7 @@ import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.imgscalr.Scalr;
-import org.imgscalr.Scalr.Mode;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import i5.las2peer.api.Service;
 import i5.las2peer.execution.L2pServiceException;
@@ -64,12 +46,10 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
 import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 import net.minidev.json.parser.ParseException;
@@ -89,7 +69,7 @@ import net.minidev.json.parser.ParseException;
  * 
  */
 // TODO Adjust the following configuration
-@Path("/gamification/gamifier")
+@Path("/gamification")
 @Version("0.1") // this annotation is used by the XML mapper
 @Api
 @SwaggerDefinition(
@@ -130,26 +110,6 @@ public class GamificationGamifierService extends Service {
 		setFieldValues();
 	}
 
-	/**
-	 * Initialize database connection
-	 * @return true if database is connected
-	 */
-//	private boolean initializeDBConnection() {
-//
-//		this.DBManager = new SQLDatabase(this.jdbcDriverClassName, this.jdbcLogin, this.jdbcPass, this.jdbcSchema, this.jdbcHost, this.jdbcPort);
-//		logger.info(jdbcDriverClassName + " " + jdbcLogin);
-//		try {
-//				this.DBManager.connect();
-//				this.badgeAccess = new BadgeDAO(this.DBManager.getConnection());
-//				logger.info("Monitoring: Database connected!");
-//				return true;
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				logger.info("Monitoring: Could not connect to database!. " + e.getMessage());
-//				return false;
-//			}
-//	}
-
 
 	/**
 	 * Get an element of JSON object with specified key as string
@@ -177,34 +137,26 @@ public class GamificationGamifierService extends Service {
 	
 	// Get action information 
 	/**
-	 * Get action data from database
+	 * Get action data from database via Gamification Action Service
 	 * @param gameId gameId
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
 	@Path("/actions/{gameId}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "getActions",
+			notes = "Function to get actions from the game.")
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Fetch the actions"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	public HttpResponse getActions(
-			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId)
-	{
+	public HttpResponse getActions(@ApiParam(value = "Game ID")@PathParam("gameId") String gameId){
 		JSONObject objResponse = new JSONObject();
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
 			return unauthorizedMessage();
 		}
-		String memberId = name;
-//		try {		
-//				if(!initializeDBConnection()){
-//				logger.info("Cannot connect to database >> ");
-//				objResponse.put("message", "Cannot connect to database");
-//				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-//				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//			}
 
 			// RMI call with parameters
 			try {
@@ -229,21 +181,25 @@ public class GamificationGamifierService extends Service {
 
 			}
 
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			objResponse.put("message", "DB Error. " + e.getMessage());
-//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-//
-//		}
 	}	
 	
-	
+	/**
+	 * Update repository. It consumes JSON data.
+	 * Element of consumed JSON object: 
+	 * <ul>
+	 * 	<li>originRepositoryName - The name of origin application repository
+	 *  <li>newRepositoryName - The new repository name of gamified version
+	 *  <li>gameId - Game ID
+	 *  <li>aopScript - Aspect-Oriented Programming script part that is going to be added in Gamifier.js
+	 * </ul>
+	 * @param contentB Content Byte JSON
+	 * @return HttpResponse Returned as JSON object
+	 */
 	@POST
 	@Path("/repo")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "memberLoginValidation",
-			notes = "Simple function to validate a member login.")
+	@ApiOperation(value = "updateRepository",
+			notes = "Simple function to update repository.")
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is registered"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
@@ -274,17 +230,11 @@ public class GamificationGamifierService extends Service {
 			L2pLogger.logEvent(this, Event.AGENT_UPLOAD_FAILED, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
-			
-//		if(!initializeDBConnection()){
-//			objResponse.put("message", "Cannot connect to database");
-//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//		}
+		
 		
 		JSONObject obj;
 		String originRepositoryName;
 		String newRepositoryName;
-		String fileContent;
 		String gameId;
 		String epURL;
 		String aopScript;

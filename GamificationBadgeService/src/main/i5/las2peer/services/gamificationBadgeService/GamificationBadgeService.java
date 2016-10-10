@@ -268,10 +268,19 @@ public class GamificationBadgeService extends Service {
 	// TODO Basic single CRUD ---------------------------------
 	
 	/**
-	 * Post a new badge
-	 * @param gameId game id
-	 * @param formData form data
-	 * @param contentType content type
+	 * Post a new badge.
+	 * Name attribute for form data : 
+	 * <ul>
+	 * 	<li>badgeid - Badge ID - String (20 chars)
+	 *  <li>badgeimageinput - Badge Image - Image byte
+	 * 	<li>badgename - Badge Name - String (20 chars)
+	 *  <li>badgedesc - Badge Description - String (50 chars)
+	 *  <li>badgenotificationcheck - Badge Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>badgenotificationmessage - Badnge Notification - String
+	 * </ul>
+	 * @param gameId Game ID obtained from Gamification Game Service
+	 * @param formData Form data with multipart/form-data type
+	 * @param contentType Content type (implicitly sent in header)
 	 * @return HttpResponse returned as JSON object
 	 */
 	@POST
@@ -306,7 +315,6 @@ public class GamificationBadgeService extends Service {
 		// Badge ID for the filesystem is appended with game id to make sure it is unique
 		String badgename = null;
 		String badgedescription = null;
-		String badgeImageURI = null;
 		boolean badgeusenotification = false;
 		String badgenotificationmessage = null;
 		Connection conn = null;
@@ -478,11 +486,20 @@ public class GamificationBadgeService extends Service {
 	
 	
 	/**
-	 * Update a badge
-	 * @param gameId game id
+	 * Update a badge.
+	 * Name attribute for form data : 
+	 * <ul>
+	 * 	<li>badgeid - Badge ID - String (20 chars)
+	 *  <li>badgeimageinput - Badge Image - Image byte
+	 * 	<li>badgename - Badge Name - String (20 chars)
+	 *  <li>badgedesc - Badge Description - String (50 chars)
+	 *  <li>badgenotificationcheck - Badge Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>badgenotificationmessage - Badge Notification Message - String
+	 * </ul>
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
-	 * @param formData form data
-	 * @param contentType content type
+	 * @param formData Form data with multipart/form-data type
+	 * @param contentType Content type (implicitly sent in header)
 	 * @return HttpResponse returned as JSON object
 	 */
 	@PUT
@@ -670,7 +687,7 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Get a badge data with specific ID from database
-	 * @param gameId gameId
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
 	 * @return HttpResponse returned as JSON object
 	 */
@@ -761,7 +778,7 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Delete a badge data with specified ID
-	 * @param gameId game id
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
 	 * @return HttpResponse returned as JSON object
 	 */
@@ -842,9 +859,9 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Get a list of badges from database
-	 * @param gameId game id
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param currentPage current cursor page
-	 * @param windowSize size of fetched data
+	 * @param windowSize size of fetched data (use -1 to fetch all data)
 	 * @param searchPhrase search word
 	 * @return HttpResponse returned as JSON object
 	 */
@@ -873,6 +890,7 @@ public class GamificationBadgeService extends Service {
 		
 		// Request log
 		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/badges/"+gameId);
+		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		List<BadgeModel> badges = null;
 		Connection conn = null;
@@ -885,7 +903,7 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Badges");
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
 				if(!badgeAccess.isGameIdExist(conn,gameId)){
@@ -926,8 +944,11 @@ public class GamificationBadgeService extends Service {
 			objResponse.put("rows", badgeArray);
 			objResponse.put("total", totalNum);
 			logger.info(objResponse.toJSONString());
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), "Badges fetched" + " : " + gameId + " : " + userAgent);
-			L2pLogger.logEvent( Event.AGENT_GET_SUCCESS,getContext().getMainAgent(), "Badges fetched" + " : " + gameId + " : " + userAgent);
+
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
+
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -958,7 +979,7 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Fetch a badge image with specified ID
-	 * @param gameId game id
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
 	 * @return HttpResponse and return the image
 	 */
@@ -1032,7 +1053,7 @@ public class GamificationBadgeService extends Service {
 	//RMI
 	/**
 	 * RMI function to get the badge image
-	 * @param gameId game id
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
 	 * @return badge image as byte array
 	 */

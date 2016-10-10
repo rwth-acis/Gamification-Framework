@@ -42,7 +42,7 @@ public class AchievementDAO {
 	 * @param gameId game id
 	 * @param conn database connection
 	 * @return list of achievements
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
 	public List<AchievementModel> getAllAchievements(Connection conn,String gameId) throws SQLException{
 
@@ -64,7 +64,7 @@ public class AchievementDAO {
 	 * @param conn database connection
 	 * @param achievement_id achievement id
 	 * @return true if the achievement is already exist
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
 	public boolean isAchievementIdExist(Connection conn,String gameId, String achievement_id) throws SQLException {
 		stmt = conn.prepareStatement("SELECT achievement_id FROM "+gameId+".achievement WHERE achievement_id=?");
@@ -89,8 +89,8 @@ public class AchievementDAO {
 	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement_id achievement id
-	 * @return AchievementModel
-	 * @throws SQLException sql exception
+	 * @return {@link AchievementModel}
+	 * @throws SQLException SQL exception
 	 */
 	public AchievementModel getAchievementWithId(Connection conn,String gameId, String achievement_id) throws SQLException {
 		
@@ -109,7 +109,7 @@ public class AchievementDAO {
 	 * @param gameId game id
 	 * @param conn database connection
 	 * @return total number of achievement
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
 	public int getNumberOfAchievements(Connection conn,String gameId) throws SQLException {
 		// TODO Auto-generated method stub
@@ -133,7 +133,7 @@ public class AchievementDAO {
 	 * @param window_size number of fetched data
 	 * @param searchPhrase search phrase
 	 * @return list of achievements
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
 	public List<AchievementModel> getAchievementsWithOffsetAndSearchPhrase(Connection conn,String gameId, int offset, int window_size, String searchPhrase) throws SQLException {
 		List<AchievementModel> achs= new ArrayList<AchievementModel>();
@@ -153,7 +153,7 @@ public class AchievementDAO {
 	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement model to be updated
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
 	public void updateAchievement(Connection conn,String gameId, AchievementModel achievement) throws SQLException {
 		// check whether the badgeid exist or not
@@ -175,7 +175,7 @@ public class AchievementDAO {
 	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement_id achievement id
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
 	public void deleteAchievement(Connection conn,String gameId, String achievement_id) throws SQLException {
 		// TODO Auto-generated method stub
@@ -190,7 +190,7 @@ public class AchievementDAO {
 	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement achievement model
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
 	public void addNewAchievement(Connection conn,String gameId, AchievementModel achievement) throws SQLException {
 		// TODO Auto-generated method stub

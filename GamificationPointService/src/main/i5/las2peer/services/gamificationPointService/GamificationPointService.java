@@ -249,7 +249,6 @@ public class GamificationPointService extends Service {
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// POINT PART --------------------------------------
 	// //////////////////////////////////////////////////////////////////////////////////////
-	// TODO
 	/**
 	 * Change point unit name
 	 * @param gameId gameId
@@ -286,7 +285,7 @@ public class GamificationPointService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
 			
 			if(!pointAccess.isGameIdExist(conn,gameId)){
 				objResponse.put("message", "Cannot update point unit name. Game not found");
@@ -301,9 +300,9 @@ public class GamificationPointService extends Service {
 					storeConfigurationToSystem(gameId, objRetrieve);
 					logger.info(objRetrieve.toJSONString());
 					objResponse.put("message", "Unit name "+unitName+" is updated");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 				} catch (IOException e) {
 					e.printStackTrace();
