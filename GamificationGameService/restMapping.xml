@@ -1,14 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<service consumes="*" name="i5.las2peer.services.gamificationGamifierService.GamificationGamifierService" path="gamification" produces="text/plain" version="0.1">
+<service consumes="*" name="i5.las2peer.services.gamificationBadgeService.GamificationBadgeService" path="gamification/badges" produces="text/plain" version="0.1">
   <methods>
-    <method httpMethod="get" name="getActions" path="actions/{gameId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="post" name="createNewBadge" path="{gameId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="header" index="1" name="Content-Type" type="java.lang.String"/>
+        <parameter annotation="content" index="2" name="" type="[B"/>
       </parameters>
     </method>
-    <method httpMethod="post" name="updateRepository" path="repo" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="put" name="updateBadge" path="{gameId}/{badgeId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
-        <parameter annotation="content" index="0" name="" type="[B"/>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="badgeId" type="java.lang.String"/>
+        <parameter annotation="header" index="2" name="Content-Type" type="java.lang.String"/>
+        <parameter annotation="content" index="3" name="" type="[B"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getBadgeWithId" path="{gameId}/{badgeId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="badgeId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="delete" name="deleteBadge" path="{gameId}/{badgeId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="badgeId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getBadgeList" path="{gameId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="query" index="1" name="current" type="int"/>
+        <parameter annotation="query" index="2" name="rowCount" type="int"/>
+        <parameter annotation="query" index="3" name="searchPhrase" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getBadgeImage" path="{gameId}/{badgeId}/img" produces="application/octet-stream" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="badgeId" type="java.lang.String"/>
       </parameters>
     </method>
   </methods>
