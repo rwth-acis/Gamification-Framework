@@ -17,19 +17,19 @@ public class AchievementDAO {
 	}
 	
 	/**
-	 * Check whether the application id is already exist
+	 * Check whether the game id is already exist
 	 * 
-	 * @param app_id application id
+	 * @param game_id game id
 	 * @param conn database connection
-	 * @return true app_id is already exist
+	 * @return true game_id is already exist
 	 * @throws SQLException SQL Exception
 	 */
-	public boolean isAppIdExist(Connection conn, String app_id) throws SQLException  {
-			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
-			stmt.setString(1, app_id);
+	public boolean isGameIdExist(Connection conn, String game_id) throws SQLException  {
+			stmt = conn.prepareStatement("SELECT game_id FROM manager.game_info WHERE game_id=?");
+			stmt.setString(1, game_id);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()){
-				//if(rs.getString("app_id").equals(app_id)){
+				//if(rs.getString("game_id").equals(game_id)){
 					return true;
 				//}
 			}
@@ -39,15 +39,15 @@ public class AchievementDAO {
 	/**
 	 * Get all achievements in the database
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @return list of achievements
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
-	public List<AchievementModel> getAllAchievements(Connection conn,String appId) throws SQLException{
+	public List<AchievementModel> getAllAchievements(Connection conn,String gameId) throws SQLException{
 
 		List<AchievementModel> achs = new ArrayList<AchievementModel>();
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".achievement");
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".achievement");
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			AchievementModel bmodel = new AchievementModel(rs.getString("achievement_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getString("badge_id"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
@@ -60,14 +60,14 @@ public class AchievementDAO {
 	/**
 	 * Check whether an achievement with achievement id is already exist
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement_id achievement id
 	 * @return true if the achievement is already exist
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
-	public boolean isAchievementIdExist(Connection conn,String appId, String achievement_id) throws SQLException {
-		stmt = conn.prepareStatement("SELECT achievement_id FROM "+appId+".achievement WHERE achievement_id=?");
+	public boolean isAchievementIdExist(Connection conn,String gameId, String achievement_id) throws SQLException {
+		stmt = conn.prepareStatement("SELECT achievement_id FROM "+gameId+".achievement WHERE achievement_id=?");
 		stmt.setString(1, achievement_id);
 		try {
 			ResultSet rs = stmt.executeQuery();
@@ -86,15 +86,15 @@ public class AchievementDAO {
 	/**
 	 * Get an achievement with specific id
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement_id achievement id
-	 * @return AchievementModel
-	 * @throws SQLException sql exception
+	 * @return {@link AchievementModel}
+	 * @throws SQLException SQL exception
 	 */
-	public AchievementModel getAchievementWithId(Connection conn,String appId, String achievement_id) throws SQLException {
+	public AchievementModel getAchievementWithId(Connection conn,String gameId, String achievement_id) throws SQLException {
 		
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".achievement WHERE achievement_id = ?");
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".achievement WHERE achievement_id = ?");
 		stmt.setString(1, achievement_id);
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()){
@@ -106,15 +106,15 @@ public class AchievementDAO {
 	/**
 	 * Get total number of achievement
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @return total number of achievement
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
-	public int getNumberOfAchievements(Connection conn,String appId) throws SQLException {
+	public int getNumberOfAchievements(Connection conn,String gameId) throws SQLException {
 		// TODO Auto-generated method stub
 
-			stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".achievement");
+			stmt = conn.prepareStatement("SELECT count(*) FROM "+gameId+".achievement");
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()){
 				return rs.getInt(1);
@@ -127,18 +127,18 @@ public class AchievementDAO {
 	/**
 	 * Get achievements with search parameter
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param offset offset
 	 * @param window_size number of fetched data
 	 * @param searchPhrase search phrase
 	 * @return list of achievements
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
-	public List<AchievementModel> getAchievementsWithOffsetAndSearchPhrase(Connection conn,String appId, int offset, int window_size, String searchPhrase) throws SQLException {
+	public List<AchievementModel> getAchievementsWithOffsetAndSearchPhrase(Connection conn,String gameId, int offset, int window_size, String searchPhrase) throws SQLException {
 		List<AchievementModel> achs= new ArrayList<AchievementModel>();
 		String pattern = "%"+searchPhrase+"%";
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".achievement WHERE achievement_id LIKE '"+pattern+"' ORDER BY achievement_id LIMIT "+window_size+" OFFSET "+offset);
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".achievement WHERE achievement_id LIKE '"+pattern+"' ORDER BY achievement_id LIMIT "+window_size+" OFFSET "+offset);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			AchievementModel a = new AchievementModel(rs.getString("achievement_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getString("badge_id"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
@@ -150,15 +150,15 @@ public class AchievementDAO {
 	/**
 	 * Update an achievement information
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement model to be updated
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
-	public void updateAchievement(Connection conn,String appId, AchievementModel achievement) throws SQLException {
+	public void updateAchievement(Connection conn,String gameId, AchievementModel achievement) throws SQLException {
 		// check whether the badgeid exist or not
 
-		stmt = conn.prepareStatement("UPDATE "+appId+".achievement SET name = ?, description = ?, point_value = ?, badge_id = ?, use_notification = ?, notif_message = ? WHERE achievement_id = ?");
+		stmt = conn.prepareStatement("UPDATE "+gameId+".achievement SET name = ?, description = ?, point_value = ?, badge_id = ?, use_notification = ?, notif_message = ? WHERE achievement_id = ?");
 		stmt.setString(1, achievement.getName());
 		stmt.setString(2, achievement.getDescription());
 		stmt.setInt(3, achievement.getPointValue());
@@ -172,14 +172,14 @@ public class AchievementDAO {
 	/**
 	 * Delete a specific achievement
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement_id achievement id
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
-	public void deleteAchievement(Connection conn,String appId, String achievement_id) throws SQLException {
+	public void deleteAchievement(Connection conn,String gameId, String achievement_id) throws SQLException {
 		// TODO Auto-generated method stub
-			stmt = conn.prepareStatement("DELETE FROM "+appId+".achievement WHERE achievement_id = ?");
+			stmt = conn.prepareStatement("DELETE FROM "+gameId+".achievement WHERE achievement_id = ?");
 			stmt.setString(1, achievement_id);
 			stmt.executeUpdate();
 	}
@@ -187,15 +187,15 @@ public class AchievementDAO {
 	/**
 	 * Add a new achievement
 	 * 
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param conn database connection
 	 * @param achievement achievement model
-	 * @throws SQLException sql exception
+	 * @throws SQLException SQL exception
 	 */
-	public void addNewAchievement(Connection conn,String appId, AchievementModel achievement) throws SQLException {
+	public void addNewAchievement(Connection conn,String gameId, AchievementModel achievement) throws SQLException {
 		// TODO Auto-generated method stub
 
-			stmt = conn.prepareStatement("INSERT INTO "+appId+".achievement (achievement_id, name, description, point_value, badge_id, use_notification, notif_message) VALUES (?, ?, ?, ?, ?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT INTO "+gameId+".achievement (achievement_id, name, description, point_value, badge_id, use_notification, notif_message) VALUES (?, ?, ?, ?, ?, ?, ?)");
 			stmt.setString(1, achievement.getId());
 			stmt.setString(2, achievement.getName());
 			stmt.setString(3, achievement.getDescription());

@@ -55,7 +55,7 @@ public class GamificationBadgeServiceTest {
 	// during testing, the specified service version does not matter
 	private static final ServiceNameVersion testGamificationBadgeService = new ServiceNameVersion(GamificationBadgeService.class.getCanonicalName(),"0.1");
 
-	private static String appId = "test";
+	private static String gameId = "test";
 	private static String badgeId = "badge_test_id";
 	private static final String mainPath = "gamification/badges/";
 	
@@ -203,7 +203,7 @@ public class GamificationBadgeServiceTest {
 			
 			formData.writeTo(out);
 
-			ClientResponse result = c1.sendRequest("POST", mainPath + "" + appId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*",new Pair[]{});
+			ClientResponse result = c1.sendRequest("POST", mainPath + "" + gameId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*",new Pair[]{});
 			
 			System.out.println(result.getResponse());
 			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
@@ -252,7 +252,7 @@ public class GamificationBadgeServiceTest {
 			
 			formData.writeTo(out);
 
-			ClientResponse result = c1.sendRequest("PUT", mainPath + "" + appId +"/" + badgeId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*",new Pair[]{});
+			ClientResponse result = c1.sendRequest("PUT", mainPath + "" + gameId +"/" + badgeId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*",new Pair[]{});
 			
 			System.out.println(result.getResponse());
 			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
@@ -272,7 +272,7 @@ public class GamificationBadgeServiceTest {
 		System.out.println("Test --- Get Badge With Id");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET",  mainPath + "" + appId + "/" + badgeId, "");
+			ClientResponse result = c1.sendRequest("GET",  mainPath + "" + gameId + "/" + badgeId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -297,7 +297,7 @@ public class GamificationBadgeServiceTest {
 			obj.put("current", 1);
 			obj.put("rowCount", 10);
 			obj.put("searchPhrase", "");
-			ClientResponse result = c1.sendRequest("GET", mainPath + "" + appId + "?current=1&rowCount=10&searchPhrase=", "");
+			ClientResponse result = c1.sendRequest("GET", mainPath + "" + gameId + "?current=1&rowCount=10&searchPhrase=", "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -319,7 +319,7 @@ public class GamificationBadgeServiceTest {
 		System.out.println("Test --- Get Badge Image");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET", mainPath + "" + appId + "/" + badgeId + "/img", "");
+			ClientResponse result = c1.sendRequest("GET", mainPath + "" + gameId + "/" + badgeId + "/img", "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -337,7 +337,7 @@ public class GamificationBadgeServiceTest {
 		System.out.println("Test --- Delete Badge");
 		try
 		{
-			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "" + appId + "/" + badgeId, "");
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "" + gameId + "/" + badgeId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -355,7 +355,7 @@ public class GamificationBadgeServiceTest {
 	 * Important for development.
 	 */
 	@Test
-	public void testDebugMapping()
+	public void testDebugMapgameg()
 	{
 		GamificationBadgeService cl = new GamificationBadgeService();
 		assertTrue(cl.debugMapping());

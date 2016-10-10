@@ -4,25 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
-import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
 
-import javax.imageio.ImageIO;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -31,7 +16,6 @@ import org.junit.runners.MethodSorters;
 
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.ServiceNameVersion;
-import i5.las2peer.restMapper.data.Pair;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationPointService.GamificationPointService;
@@ -39,9 +23,7 @@ import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
 import i5.las2peer.webConnector.client.MiniClient;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.
@@ -65,7 +47,7 @@ public class GamificationPointServiceTest {
 	// during testing, the specified service version does not matter
 	private static final ServiceNameVersion testGamificationPointService = new ServiceNameVersion(GamificationPointService.class.getCanonicalName(),"0.1");
 
-	private static String appId = "test";
+	private static String gameId = "test";
 	private static final String mainPath = "gamification/points/";
 	
 	// to fetch data per batch
@@ -193,7 +175,7 @@ public class GamificationPointServiceTest {
 		try
 		{
 			String memberId = user1.getLoginName();
-			ClientResponse result = c1.sendRequest("PUT", mainPath + ""+appId+"/name/"+unitName, ""); // testInput is
+			ClientResponse result = c1.sendRequest("PUT", mainPath + ""+gameId+"/name/"+unitName, ""); // testInput is
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -208,7 +190,7 @@ public class GamificationPointServiceTest {
 		System.out.println("Test --- Get Unit Name");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET", mainPath + ""+appId+"/name", ""); // testInput is
+			ClientResponse result = c1.sendRequest("GET", mainPath + ""+gameId+"/name", ""); // testInput is
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 //			JSONParser parse = new JSONParser(JSONParser.ACCEPT_NON_QUOTE|JSONParser.ACCEPT_SIMPLE_QUOTE);

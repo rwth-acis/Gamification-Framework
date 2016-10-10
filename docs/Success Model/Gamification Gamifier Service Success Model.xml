@@ -13,7 +13,7 @@
 			<measure name="Number of Repository Updated Over Time"/>
 		</factor>
 		<factor name="Quality">
-			<measure name="Average Repository Updated per Application"/>
+			<measure name="Average Repository Updated per Game"/>
 		</factor>
 	</dimension>
 	<dimension name="User Satisfaction">

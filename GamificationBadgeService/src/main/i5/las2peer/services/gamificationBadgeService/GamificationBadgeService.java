@@ -89,8 +89,8 @@ import net.minidev.json.JSONValue;
 @Api( value = "/gamification/badges", authorizations = {
 		@Authorization(value = "badges_auth",
 		scopes = {
-			@AuthorizationScope(scope = "write:badges", description = "modify badges in your application"),
-			@AuthorizationScope(scope = "read:badges", description = "read your badges in app")
+			@AuthorizationScope(scope = "write:badges", description = "modify badges in your game"),
+			@AuthorizationScope(scope = "read:badges", description = "read your badges in game")
 				  })
 }, tags = "badges")
 @SwaggerDefinition(
@@ -146,15 +146,15 @@ public class GamificationBadgeService extends Service {
 
 //	/**
 //	 * Function to store configuration
-//	 * @param appId appId
+//	 * @param gameId gameId
 //	 * @return true if the directory is deleted
 //	 */
-//	private boolean cleanStorage(String appId){
+//	private boolean cleanStorage(String gameId){
 //			// RMI call without parameters
-//		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
+//		File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
 //		
 //		try {
-//			recursiveDelete(appFolder);
+//			recursiveDelete(gameFolder);
 //			return true;
 //		} catch (IOException e) {
 //			e.printStackTrace();
@@ -165,39 +165,39 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Function to delete a folder in the file system
-	 * @param appFolder folder path
+	 * @param gameFolder folder path
 	 * @throws IOException IO exception
 	 */
-	private void recursiveDelete(File appFolder) throws IOException{
-		if(appFolder.isDirectory()){
+	private void recursiveDelete(File gameFolder) throws IOException{
+		if(gameFolder.isDirectory()){
     		//directory is empty, then delete it
-    		if(appFolder.list().length==0){
-    			appFolder.delete();
+    		if(gameFolder.list().length==0){
+    			gameFolder.delete();
     		   System.out.println("Directory is deleted : " 
-                                                 + appFolder.getAbsolutePath());
+                                                 + gameFolder.getAbsolutePath());
     		}else{
     			
     		   //list all the directory contents
-        	   String files[] = appFolder.list();
+        	   String files[] = gameFolder.list();
      
         	   for (String temp : files) {
         	      //construct the file structure
-        	      File fileDelete = new File(appFolder, temp);
+        	      File fileDelete = new File(gameFolder, temp);
         		 
         	      //recursive delete
         	      recursiveDelete(fileDelete);
         	   }
         		
         	   //check the directory again, if empty then delete it
-        	   if(appFolder.list().length==0){
-        		   appFolder.delete();
-        	     System.out.println("Directory is deleted : " + appFolder.getAbsolutePath());
+        	   if(gameFolder.list().length==0){
+        		   gameFolder.delete();
+        	     System.out.println("Directory is deleted : " + gameFolder.getAbsolutePath());
         	   }
     		}
     	}else{
     		//if file, then delete it
-    		appFolder.delete();
-    		System.out.println("File is deleted : " + appFolder.getAbsolutePath());
+    		gameFolder.delete();
+    		System.out.println("File is deleted : " + gameFolder.getAbsolutePath());
     	}
 	}
 	
@@ -224,7 +224,7 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Function to store badge image in storage
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param badgeId badge id
 	 * @param filename file name
 	 * @param filecontent file data
@@ -233,18 +233,18 @@ public class GamificationBadgeService extends Service {
 	 * @return HttpResponse with the return image
 	 * @throws IOException 
 	 */
-	private void storeBadgeDataToSystem(String appId, String badgeid, String filename, byte[] filecontent, String mimeType, String description) throws AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException, IOException{
+	private void storeBadgeDataToSystem(String gameId, String badgeid, String filename, byte[] filecontent, String mimeType, String description) throws AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException, IOException{
 			// RMI call without parameters
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
-		if(!appFolder.exists()){
-			if(appFolder.mkdir()){
-				System.out.println("New directory "+ appId +" is created!");
+		File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
+		if(!gameFolder.exists()){
+			if(gameFolder.mkdir()){
+				System.out.println("New directory "+ gameId +" is created!");
 			}
 			else{
 				System.out.println("Failed to create directory");
 			}
 		}
-		LocalFileManager.writeByteArrayToFile(LocalFileManager.getBasedir()+"/"+appId+"/"+badgeid, filecontent);
+		LocalFileManager.writeByteArrayToFile(LocalFileManager.getBasedir()+"/"+gameId+"/"+badgeid, filecontent);
 
 	}
 	
@@ -268,14 +268,23 @@ public class GamificationBadgeService extends Service {
 	// TODO Basic single CRUD ---------------------------------
 	
 	/**
-	 * Post a new badge
-	 * @param appId application id
-	 * @param formData form data
-	 * @param contentType content type
+	 * Post a new badge.
+	 * Name attribute for form data : 
+	 * <ul>
+	 * 	<li>badgeid - Badge ID - String (20 chars)
+	 *  <li>badgeimageinput - Badge Image - Image byte
+	 * 	<li>badgename - Badge Name - String (20 chars)
+	 *  <li>badgedesc - Badge Description - String (50 chars)
+	 *  <li>badgenotificationcheck - Badge Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>badgenotificationmessage - Badnge Notification - String
+	 * </ul>
+	 * @param gameId Game ID obtained from Gamification Game Service
+	 * @param formData Form data with multipart/form-data type
+	 * @param contentType Content type (implicitly sent in header)
 	 * @return HttpResponse returned as JSON object
 	 */
 	@POST
-	@Path("/{appId}")
+	@Path("/{gameId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "{\"status\": 3, \"message\": \"Badge upload success ( (badgeid) )\"}"),
@@ -289,12 +298,12 @@ public class GamificationBadgeService extends Service {
 	@ApiOperation(value = "createNewBadge",
 				 notes = "A method to store a new badge with details (badge ID, badge name, badge description, and badge image")
 	public HttpResponse createNewBadge(
-			@ApiParam(value = "Application ID to store a new badge", required = true) @PathParam("appId") String appId,
+			@ApiParam(value = "Game ID to store a new badge", required = true) @PathParam("gameId") String gameId,
 			@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 			@ApiParam(value = "Badge detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/badges/"+appId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/badges/"+gameId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		// parse given multipart form data
@@ -303,10 +312,9 @@ public class GamificationBadgeService extends Service {
 		byte[] filecontent = null;
 		String mimeType = null;
 		String badgeid = null;
-		// Badge ID for the filesystem is appended with app id to make sure it is unique
+		// Badge ID for the filesystem is appended with game id to make sure it is unique
 		String badgename = null;
 		String badgedescription = null;
-		String badgeImageURI = null;
 		boolean badgeusenotification = false;
 		String badgenotificationmessage = null;
 		Connection conn = null;
@@ -319,19 +327,19 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
-				if(!badgeAccess.isAppIdExist(conn,appId)){
-					logger.info("App not found >> ");
-					objResponse.put("message", "Cannot create badge. App not found");
+				if(!badgeAccess.isGameIdExist(conn,gameId)){
+					logger.info("Game not found >> ");
+					objResponse.put("message", "Cannot create badge. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot create badge. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				logger.info("Cannot check whether game ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot create badge. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
@@ -342,7 +350,7 @@ public class GamificationBadgeService extends Service {
 				// these data belong to the (optional) file id text input form element
 				badgeid = partBadgeID.getContent();
 				
-				if(badgeAccess.isBadgeIdExist(conn,appId, badgeid)){
+				if(badgeAccess.isBadgeIdExist(conn,gameId, badgeid)){
 					// Badge id already exist
 					logger.info("Failed to add the badge. Badge ID already exist!");
 					objResponse.put("message", "Cannot create badge. Failed to add the badge. Badge ID already exist!.");
@@ -405,15 +413,15 @@ public class GamificationBadgeService extends Service {
 				
 				try {
 
-					storeBadgeDataToSystem(appId, badgeid, filename, filecontent,mimeType , badgedescription);
+					storeBadgeDataToSystem(gameId, badgeid, filename, filecontent,mimeType , badgedescription);
 					BadgeModel badge = new BadgeModel(badgeid, badgename, badgedescription, badgeusenotification, badgenotificationmessage);
 					
 					try{
-						badgeAccess.addNewBadge(conn,appId, badge);
+						badgeAccess.addNewBadge(conn,gameId, badge);
 						objResponse.put("message", "Badge upload success (" + badgeid +")");
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, ""+name);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, ""+appId);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
 						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 					} catch (SQLException e) {
@@ -478,15 +486,24 @@ public class GamificationBadgeService extends Service {
 	
 	
 	/**
-	 * Update a badge
-	 * @param appId application id
+	 * Update a badge.
+	 * Name attribute for form data : 
+	 * <ul>
+	 * 	<li>badgeid - Badge ID - String (20 chars)
+	 *  <li>badgeimageinput - Badge Image - Image byte
+	 * 	<li>badgename - Badge Name - String (20 chars)
+	 *  <li>badgedesc - Badge Description - String (50 chars)
+	 *  <li>badgenotificationcheck - Badge Notification Boolean - Boolean - Option whether use notification or not
+	 *  <li>badgenotificationmessage - Badge Notification Message - String
+	 * </ul>
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
-	 * @param formData form data
-	 * @param contentType content type
+	 * @param formData Form data with multipart/form-data type
+	 * @param contentType Content type (implicitly sent in header)
 	 * @return HttpResponse returned as JSON object
 	 */
 	@PUT
-	@Path("/{appId}/{badgeId}")
+	@Path("/{gameId}/{badgeId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Badge Updated"),
@@ -497,13 +514,13 @@ public class GamificationBadgeService extends Service {
 	@ApiOperation(value = "Update a badge",
 				 notes = "A method to update a badge with details (badge ID, badge name, badge description, and badge image")
 	public HttpResponse updateBadge(
-			@ApiParam(value = "Application ID to store a new badge", required = true) @PathParam("appId") String appId,
+			@ApiParam(value = "Game ID to store a new badge", required = true) @PathParam("gameId") String gameId,
 				@PathParam("badgeId") String badgeId,
 			@ApiParam(value = "Badge detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 									 @ContentParam byte[] formData)  {
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/badges/"+appId+"/"+badgeId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/badges/"+gameId+"/"+badgeId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		// parse given multipart form data
@@ -511,7 +528,7 @@ public class GamificationBadgeService extends Service {
 		String filename = null;
 		byte[] filecontent = null;
 		String mimeType = null;
-		// Badge ID for the filesystem is appended with app id to make sure it is unique
+		// Badge ID for the filesystem is appended with game id to make sure it is unique
 		String badgename = null;
 		String badgedescription = null;
 		//boolean badgeusenotification = false;
@@ -526,17 +543,17 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
-				if(!badgeAccess.isAppIdExist(conn,appId)){
-					objResponse.put("message", "Cannot update badge. App not found");
+				if(!badgeAccess.isGameIdExist(conn,gameId)){
+					objResponse.put("message", "Cannot update badge. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				objResponse.put("message", "Cannot update badge. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				objResponse.put("message", "Cannot update badge. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
@@ -547,7 +564,7 @@ public class GamificationBadgeService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			BadgeModel currentBadge = badgeAccess.getBadgeWithId(conn,appId, badgeId);
+			BadgeModel currentBadge = badgeAccess.getBadgeWithId(conn,gameId, badgeId);
 			if(currentBadge == null){
 				// currentBadge is null
 				objResponse.put("message", "Cannot update badge. Badge not found");
@@ -590,7 +607,7 @@ public class GamificationBadgeService extends Service {
 								filecontent = resizeImage(filecontentbefore);
 							}
 							//filecontent = resizeImage(filecontentbefore);
-							storeBadgeDataToSystem(appId, badgeId, filename, filecontent,mimeType , badgedescription);
+							storeBadgeDataToSystem(gameId, badgeId, filename, filecontent,mimeType , badgedescription);
 							logger.info("upload request (" + filename + ") of mime type '" + mimeType + "' with content length "
 									+ filecontent.length);
 							
@@ -628,11 +645,11 @@ public class GamificationBadgeService extends Service {
 			}
 			
 			try{
-				badgeAccess.updateBadge(conn,appId, currentBadge);
+				badgeAccess.updateBadge(conn,gameId, currentBadge);
 				objResponse.put("message", "Badge updated");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28, ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29, ""+appId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -670,30 +687,30 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Get a badge data with specific ID from database
-	 * @param appId applicationId
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
 	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
-	@Path("/{appId}/{badgeId}")
+	@Path("/{gameId}/{badgeId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a badges"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find point for specific App ID and badge ID", 
+	@ApiOperation(value = "Find point for specific Game ID and badge ID", 
 				  notes = "Returns a badge",
 				  response = BadgeModel.class,
 				  responseContainer = "List",
 				  authorizations = @Authorization(value = "api_key")
 				  )
 	public HttpResponse getBadgeWithId(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Badge ID")@PathParam("badgeId") String badgeId)
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+appId+"/"+badgeId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/badges/"+gameId+"/"+badgeId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		BadgeModel badge = null;
@@ -707,21 +724,21 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
-				if(!badgeAccess.isAppIdExist(conn,appId)){
-					objResponse.put("message", "Cannot get badge. App not found");
+				if(!badgeAccess.isGameIdExist(conn,gameId)){
+					objResponse.put("message", "Cannot get badge. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				objResponse.put("message", "Cannot get badge. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				objResponse.put("message", "Cannot get badge. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
-			badge = badgeAccess.getBadgeWithId(conn,appId, badgeId);
+			badge = badgeAccess.getBadgeWithId(conn,gameId, badgeId);
 			if(badge == null){
 				objResponse.put("message", "Cannot get badge. Badge model is null.");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -732,9 +749,9 @@ public class GamificationBadgeService extends Service {
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	    	
 	    	String badgeString = objectMapper.writeValueAsString(badge);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong);
-	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27, ""+appId);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
+	    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(badgeString, HttpURLConnection.HTTP_OK);
 
 		} catch (JsonProcessingException e) {
@@ -761,12 +778,12 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Delete a badge data with specified ID
-	 * @param appId application id
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
 	 * @return HttpResponse returned as JSON object
 	 */
 	@DELETE
-	@Path("/{appId}/{badgeId}")
+	@Path("/{gameId}/{badgeId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Badge Delete Success"),
@@ -775,12 +792,12 @@ public class GamificationBadgeService extends Service {
 	})
 	@ApiOperation(value = "",
 				  notes = "delete a badge")
-	public HttpResponse deleteBadge(@PathParam("appId") String appId,
+	public HttpResponse deleteBadge(@PathParam("gameId") String gameId,
 								 @PathParam("badgeId") String badgeId)
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/badges/"+appId+"/"+badgeId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "DELETE " + "gamification/badges/"+gameId+"/"+badgeId);
 		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		JSONObject objResponse = new JSONObject();
@@ -793,28 +810,28 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
-				if(!badgeAccess.isAppIdExist(conn,appId)){
-					objResponse.put("message", "Cannot delete badge. App not found");
+				if(!badgeAccess.isGameIdExist(conn,gameId)){
+					objResponse.put("message", "Cannot delete badge. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				objResponse.put("message", "Cannot delete badge. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				objResponse.put("message", "Cannot delete badge. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
-			if(!badgeAccess.isBadgeIdExist(conn,appId, badgeId)){
+			if(!badgeAccess.isBadgeIdExist(conn,gameId, badgeId)){
 				logger.info("Badge not found >> ");
 				objResponse.put("message", "Cannot delete badge. Badge not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			badgeAccess.deleteBadge(conn,appId, badgeId);
-			if(!LocalFileManager.deleteFile(LocalFileManager.getBasedir()+"/"+appId+"/"+badgeId)){
+			badgeAccess.deleteBadge(conn,gameId, badgeId);
+			if(!LocalFileManager.deleteFile(LocalFileManager.getBasedir()+"/"+gameId+"/"+badgeId)){
 				
 				logger.info("Delete File Failed >> ");
 				objResponse.put("message", "Cannot delete badge. Delete File Failed");
@@ -823,9 +840,9 @@ public class GamificationBadgeService extends Service {
 
 			}
 			objResponse.put("message", "File Deleted");
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30, ""+name);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31, ""+appId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -842,14 +859,14 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Get a list of badges from database
-	 * @param appId application id
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param currentPage current cursor page
-	 * @param windowSize size of fetched data
+	 * @param windowSize size of fetched data (use -1 to fetch all data)
 	 * @param searchPhrase search word
 	 * @return HttpResponse returned as JSON object
 	 */
 	@GET
-	@Path("/{appId}")
+	@Path("/{gameId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(
 			value = {
@@ -858,21 +875,22 @@ public class GamificationBadgeService extends Service {
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")}
 	)
 	@ApiOperation(
-			value = "Find badges for specific App ID", 
+			value = "Find badges for specific Game ID", 
 			notes = "Returns a list of badges",
 			response = BadgeModel.class,
 			responseContainer = "List",
 			authorizations = @Authorization(value = "api_key")
 	)
 	public HttpResponse getBadgeList(
-			@ApiParam(value = "Application ID that contains badges", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID that contains badges", required = true)@PathParam("gameId") String gameId,
 			@ApiParam(value = "Page number cursor for retrieving data")@QueryParam("current") int currentPage,
 			@ApiParam(value = "Number of data size per fetch")@QueryParam("rowCount") int windowSize,
 			@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+appId);
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/badges/"+gameId);
+		long randomLong = new Random().nextLong(); //To be able to match 
 		
 		List<BadgeModel> badges = null;
 		Connection conn = null;
@@ -885,33 +903,33 @@ public class GamificationBadgeService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(this, Event.AGENT_GET_STARTED, "Get Badges");
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,getContext().getMainAgent(), ""+randomLong);
 			
 			try {
-				if(!badgeAccess.isAppIdExist(conn,appId)){
-					objResponse.put("message", "Cannot get badges. App not found");
+				if(!badgeAccess.isGameIdExist(conn,gameId)){
+					objResponse.put("message", "Cannot get badges. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.info("Cannot check whether application ID exist or not. Database error. >> " + e1.getMessage());
-				objResponse.put("message", "Cannot get badges. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				logger.info("Cannot check whether game ID exist or not. Database error. >> " + e1.getMessage());
+				objResponse.put("message", "Cannot get badges. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
-			// Check app id exist or not
+			// Check game id exist or not
 			
 			int offset = (currentPage - 1) * windowSize;
 			
-			int totalNum = badgeAccess.getNumberOfBadges(conn,appId);
+			int totalNum = badgeAccess.getNumberOfBadges(conn,gameId);
 			
 			if(windowSize == -1){
 				offset = 0;
 				windowSize = totalNum;
 			}
 			
-			badges = badgeAccess.getBadgesWithOffsetAndSearchPhrase(conn,appId, offset, windowSize, searchPhrase);
+			badges = badgeAccess.getBadgesWithOffsetAndSearchPhrase(conn,gameId, offset, windowSize, searchPhrase);
 			
 			
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -926,8 +944,11 @@ public class GamificationBadgeService extends Service {
 			objResponse.put("rows", badgeArray);
 			objResponse.put("total", totalNum);
 			logger.info(objResponse.toJSONString());
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24, "Badges fetched" + " : " + appId + " : " + userAgent);
-			L2pLogger.logEvent(this, Event.AGENT_GET_SUCCESS, "Badges fetched" + " : " + appId + " : " + userAgent);
+
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
+
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -958,12 +979,12 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * Fetch a badge image with specified ID
-	 * @param appId application id
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
 	 * @return HttpResponse and return the image
 	 */
 	@GET
-	@Path("/{appId}/{badgeId}/img")
+	@Path("/{gameId}/{badgeId}/img")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Badges Entry"),
@@ -971,12 +992,12 @@ public class GamificationBadgeService extends Service {
 	})
 	@ApiOperation(value = "",
 				  notes = "list of stored badges")
-	public HttpResponse getBadgeImage(@PathParam("appId") String appId,
+	public HttpResponse getBadgeImage(@PathParam("gameId") String gameId,
 								 @PathParam("badgeId") String badgeId)
 	{
 		
 		// Request log
-		L2pLogger.logEvent(this, Event.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/badges/"+appId+"/"+badgeId+"/img");
+		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/badges/"+gameId+"/"+badgeId+"/img");
 		
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
@@ -992,26 +1013,26 @@ public class GamificationBadgeService extends Service {
 			L2pLogger.logEvent(this, Event.ARTIFACT_FETCH_STARTED,"Get Badge Image");
 			
 			try {
-				if(!badgeAccess.isAppIdExist(conn,appId)){
-					objResponse.put("message", "Cannot get badge image. App not found");
+				if(!badgeAccess.isGameIdExist(conn,gameId)){
+					objResponse.put("message", "Cannot get badge image. Game not found");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				objResponse.put("message", "Cannot get badge image. Cannot check whether application ID exist or not. Database error. " + e1.getMessage());
+				objResponse.put("message", "Cannot get badge image. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
-			if(!badgeAccess.isBadgeIdExist(conn,appId, badgeId)){
+			if(!badgeAccess.isBadgeIdExist(conn,gameId, badgeId)){
 				objResponse.put("message", "Cannot get badge image. Badge not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			byte[] filecontent = getBadgeImageMethod(appId, badgeId);
+			byte[] filecontent = getBadgeImageMethod(gameId, badgeId);
 
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25, "Badge image fetched : " + badgeId + " : " + appId + " : " + userAgent);
-			L2pLogger.logEvent(this, Event.ARTIFACT_RECEIVED, "Badge image fetched : " + badgeId + " : " + appId + " : " + userAgent);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), "Badge image fetched : " + badgeId + " : " + gameId + " : " + userAgent);
+			L2pLogger.logEvent(this, Event.ARTIFACT_RECEIVED, "Badge image fetched : " + badgeId + " : " + gameId + " : " + userAgent);
 			return new HttpResponse(filecontent, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -1032,29 +1053,29 @@ public class GamificationBadgeService extends Service {
 	//RMI
 	/**
 	 * RMI function to get the badge image
-	 * @param appId application id
+	 * @param gameId Game ID obtained from Gamification Game Service
 	 * @param badgeId badge id
 	 * @return badge image as byte array
 	 */
-	public byte[] getBadgeImageMethod(String appId, String badgeId){
-		byte[] filecontent = LocalFileManager.getFile(appId+"/"+badgeId);
+	public byte[] getBadgeImageMethod(String gameId, String badgeId){
+		byte[] filecontent = LocalFileManager.getFile(gameId+"/"+badgeId);
 		return filecontent;
 	}
 	
 	// RMI
 	/**
 	 * RMI function to get badge data detail with specific ID
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param badgeId badge id
 	 * @return serialized JSON badge data
 	 */
-	public String getBadgeWithIdRMI(String appId, String badgeId) {
+	public String getBadgeWithIdRMI(String gameId, String badgeId) {
 		BadgeModel badge;
 		Connection conn = null;
 
 		try {
 			conn = dbm.getConnection();
-			badge = badgeAccess.getBadgeWithId(conn,appId, badgeId);
+			badge = badgeAccess.getBadgeWithId(conn,gameId, badgeId);
 			if(badge == null){
 				return null;
 			}
@@ -1083,14 +1104,14 @@ public class GamificationBadgeService extends Service {
 	
 	/**
 	 * RMI function to clean the directory in badge service file system
-	 * @param appId application id
+	 * @param gameId game id
 	 * @return 1 if the directory is deleted
 	 */
-	public Integer cleanStorageRMI(String appId) {
-		File appFolder = new File(LocalFileManager.getBasedir()+"/"+appId);
+	public Integer cleanStorageRMI(String gameId) {
+		File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
 		
 		try {
-			recursiveDelete(appFolder);
+			recursiveDelete(gameFolder);
 			return 1;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -1134,7 +1155,7 @@ public class GamificationBadgeService extends Service {
 	}
 
 	/**
-	 * This method is needed for every RESTful application in LAS2peer. There is no need to change!
+	 * This method is needed for every RESTful game in LAS2peer. There is no need to change!
 	 * 
 	 * @return the mapping
 	 */

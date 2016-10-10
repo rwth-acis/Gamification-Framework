@@ -3,6 +3,7 @@
 		<factor name="Performance">
 			<measure name="Average Time To Create a Game Element"/>
 			<measure name="Average Time To Get a Game Element"/>
+			<measure name="Average Time To Get Game Elements"/>
 			<measure name="Average Time To Update a Game Element"/>
 			<measure name="Average Time To Delete a Game Element"/>
 		</factor>
@@ -15,14 +16,16 @@
 		<factor name="Quantity">
 			<measure name="Number of a Game Element Created Over Time"/>
 			<measure name="Number of a Game Element Fetched Over Time"/>
+			<measure name="Number of Game Elements Fetched Over Time"/>
 			<measure name="Number of a Game Element Updated Over Time"/>
 			<measure name="Number of a Game Element Deleted Over Time"/>
 		</factor>
 		<factor name="Quality">
-			<measure name="Average Game Element Created per Application"/>
-			<measure name="Average Game Element Fetched per Application"/>
-			<measure name="Average Game Element Updated per Application"/>
-			<measure name="Average Game Element Deleted per Application"/>
+			<measure name="Average Game Element Created per Game"/>
+			<measure name="Average Game Element Fetched per Game"/>
+			<measure name="Average Game Elements Fetched per Game"/>
+			<measure name="Average Game Element Updated per Game"/>
+			<measure name="Average Game Element Deleted per Game"/>
 		</factor>
 	</dimension>
 	<dimension name="User Satisfaction">
@@ -37,6 +40,7 @@
 		<factor name="Gamification Configuration">
 			<measure name="Average Game Element Created per Member"/>
 			<measure name="Average Game Element Fetched per Member"/>
+			<measure name="Average Game Elements Fetched per Member"/>
 			<measure name="Average Game Element Updated per Member"/>
 			<measure name="Average Game Element Deleted per Member"/>
 		</factor>

@@ -23,19 +23,19 @@ public class QuestDAO {
 	}
 	
 	/**
-	 * Check whether the application id is already exist
+	 * Check whether the game id is already exist
 	 * 
 	 * @param conn database connection
-	 * @param app_id application id
-	 * @return true app_id is already exist
+	 * @param game_id game id
+	 * @return true game_id is already exist
 	 * @throws SQLException SQL Exception
 	 */
-	public boolean isAppIdExist(Connection conn,String app_id) throws SQLException  {
-			stmt = conn.prepareStatement("SELECT app_id FROM manager.application_info WHERE app_id=?");
-			stmt.setString(1, app_id);
+	public boolean isGameIdExist(Connection conn,String game_id) throws SQLException  {
+			stmt = conn.prepareStatement("SELECT game_id FROM manager.game_info WHERE game_id=?");
+			stmt.setString(1, game_id);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()){
-				//if(rs.getString("app_id").equals(app_id)){
+				//if(rs.getString("game_id").equals(game_id)){
 					return true;
 				//}
 			}
@@ -46,15 +46,15 @@ public class QuestDAO {
 	 * Get all quests in the database
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @return list of quests
 	 * @throws SQLException sql exception
 	 * @throws IOException io exception
 	 */
-	public List<QuestModel> getAllQuests(Connection conn,String appId) throws SQLException, IOException{
+	public List<QuestModel> getAllQuests(Connection conn,String gameId) throws SQLException, IOException{
 		
 		List<QuestModel> qs = new ArrayList<QuestModel>();
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".quest");
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".quest");
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			QuestModel qmodel = new QuestModel(rs.getString("quest_id"), rs.getString("name"), rs.getString("description"), QuestStatus.valueOf(rs.getString("status")), rs.getString("achievement_id"), rs.getBoolean("quest_flag"), rs.getString("quest_id_completed"), rs.getBoolean("point_flag"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
@@ -66,7 +66,7 @@ public class QuestDAO {
 		}
 		for(QuestModel q : qs){
 			List<Pair<String, Integer>> action_ids = new ArrayList<Pair<String, Integer>>();
-			stmt = conn.prepareStatement("SELECT action_id, times FROM "+appId+".quest_action WHERE quest_id=?");
+			stmt = conn.prepareStatement("SELECT action_id, times FROM "+gameId+".quest_action WHERE quest_id=?");
 			stmt.setString(1, q.getId());
 			ResultSet rs2 = stmt.executeQuery();
 			while (rs2.next()) {
@@ -82,13 +82,13 @@ public class QuestDAO {
 	 * Check whether a quest with quest id is already exist
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param quest_id quest id
 	 * @return true if the quest is already exist
 	 * @throws SQLException sql exception
 	 */
-	public boolean isQuestIdExist(Connection conn,String appId, String quest_id) throws SQLException {
-		stmt = conn.prepareStatement("SELECT quest_id FROM "+appId+".quest WHERE quest_id=? LIMIT 1");
+	public boolean isQuestIdExist(Connection conn,String gameId, String quest_id) throws SQLException {
+		stmt = conn.prepareStatement("SELECT quest_id FROM "+gameId+".quest WHERE quest_id=? LIMIT 1");
 		stmt.setString(1, quest_id);
 		
 		ResultSet rs = stmt.executeQuery();
@@ -102,22 +102,22 @@ public class QuestDAO {
 	 * Get an quest with specific id
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param quest_id quest id
 	 * @return QuestModel
 	 * @throws IOException io exception
 	 * @throws SQLException sql exception 
 	 */
-	public QuestModel getQuestWithId(Connection conn,String appId, String quest_id) throws IOException, SQLException {
+	public QuestModel getQuestWithId(Connection conn,String gameId, String quest_id) throws IOException, SQLException {
 		
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".quest WHERE quest_id = ?");
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".quest WHERE quest_id = ?");
 		stmt.setString(1, quest_id);
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()){
 			QuestModel qmodel = new QuestModel(rs.getString("quest_id"), rs.getString("name"), rs.getString("description"), QuestStatus.valueOf(rs.getString("status")), rs.getString("achievement_id"), rs.getBoolean("quest_flag"), rs.getString("quest_id_completed"), rs.getBoolean("point_flag"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
 
 			List<Pair<String, Integer>> action_ids = new ArrayList<Pair<String, Integer>>();
-			stmt = conn.prepareStatement("SELECT action_id, times FROM "+appId+".quest_action WHERE quest_id=?");
+			stmt = conn.prepareStatement("SELECT action_id, times FROM "+gameId+".quest_action WHERE quest_id=?");
 			stmt.setString(1, qmodel.getId());
 			ResultSet rs2 = stmt.executeQuery();
 			while (rs2.next()) {
@@ -135,13 +135,13 @@ public class QuestDAO {
 	 * Get total number of quest
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @return total number of quest
 	 * @throws SQLException sql exception
 	 */
-	public int getNumberOfQuests(Connection conn,String appId) throws SQLException {
+	public int getNumberOfQuests(Connection conn,String gameId) throws SQLException {
 
-			stmt = conn.prepareStatement("SELECT count(*) FROM "+appId+".quest");
+			stmt = conn.prepareStatement("SELECT count(*) FROM "+gameId+".quest");
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()){
 				return rs.getInt(1);
@@ -155,7 +155,7 @@ public class QuestDAO {
 	 * Get quests with search parameter
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param offset offset
 	 * @param window_size windowSize
 	 * @param searchPhrase search phrase
@@ -163,10 +163,10 @@ public class QuestDAO {
 	 * @throws SQLException sql exception
 	 * @throws IOException  io exception
 	 */
-	public List<QuestModel> getQuestsWithOffsetAndSearchPhrase(Connection conn,String appId, int offset, int window_size,String searchPhrase) throws SQLException, IOException {
+	public List<QuestModel> getQuestsWithOffsetAndSearchPhrase(Connection conn,String gameId, int offset, int window_size,String searchPhrase) throws SQLException, IOException {
 		List<QuestModel> qs= new ArrayList<QuestModel>();
 		String pattern = "%"+searchPhrase+"%";
-		stmt = conn.prepareStatement("SELECT * FROM "+appId+".quest WHERE quest_id LIKE '"+pattern+"' ORDER BY quest_id LIMIT "+window_size+" OFFSET "+offset);
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".quest WHERE quest_id LIKE '"+pattern+"' ORDER BY quest_id LIMIT "+window_size+" OFFSET "+offset);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			QuestModel qmodel = new QuestModel(rs.getString("quest_id"), rs.getString("name"), rs.getString("description"), QuestStatus.valueOf(rs.getString("status")), rs.getString("achievement_id"), rs.getBoolean("quest_flag"), rs.getString("quest_id_completed"), rs.getBoolean("point_flag"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
@@ -177,7 +177,7 @@ public class QuestDAO {
 		}
 		for(QuestModel q : qs){
 			List<Pair<String, Integer>> action_ids = new ArrayList<Pair<String, Integer>>();
-			stmt = conn.prepareStatement("SELECT action_id, times FROM "+appId+".quest_action WHERE quest_id=?");
+			stmt = conn.prepareStatement("SELECT action_id, times FROM "+gameId+".quest_action WHERE quest_id=?");
 			stmt.setString(1, q.getId());
 			ResultSet rs2 = stmt.executeQuery();
 			while (rs2.next()) {
@@ -194,12 +194,12 @@ public class QuestDAO {
 	 * Update a quest information
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param quest model to be updated
 	 * @throws SQLException sql exception
 	 */
-	public void updateQuest(Connection conn,String appId, QuestModel quest) throws SQLException {
-		stmt = conn.prepareStatement("UPDATE "+appId+".quest SET name = ?, description = ?, status = ?::"+appId+".quest_status, achievement_id = ?, quest_flag = ?, quest_id_completed = ?, point_flag = ?, point_value = ?, use_notification = ?, notif_message = ? WHERE quest_id = ?");
+	public void updateQuest(Connection conn,String gameId, QuestModel quest) throws SQLException {
+		stmt = conn.prepareStatement("UPDATE "+gameId+".quest SET name = ?, description = ?, status = ?::"+gameId+".quest_status, achievement_id = ?, quest_flag = ?, quest_id_completed = ?, point_flag = ?, point_value = ?, use_notification = ?, notif_message = ? WHERE quest_id = ?");
 		stmt.setString(1, quest.getName());
 		stmt.setString(2, quest.getDescription());
 		stmt.setString(3, quest.getStatus().toString());
@@ -213,7 +213,7 @@ public class QuestDAO {
 		stmt.setString(11, quest.getId());
 		stmt.executeUpdate();
 		
-		stmt = conn.prepareStatement("DELETE FROM "+appId+".quest_action WHERE quest_id=?");
+		stmt = conn.prepareStatement("DELETE FROM "+gameId+".quest_action WHERE quest_id=?");
 		stmt.setString(1, quest.getId());
 		stmt.executeUpdate();
 
@@ -223,7 +223,7 @@ public class QuestDAO {
 		for(Pair<String,Integer> a : quest.getActionIds()){
 
 		      
-			batchstmt = conn.prepareStatement("INSERT INTO "+appId+".quest_action (quest_id, action_id, times) VALUES ( ?, ?, ?)");
+			batchstmt = conn.prepareStatement("INSERT INTO "+gameId+".quest_action (quest_id, action_id, times) VALUES ( ?, ?, ?)");
 			System.out.println(quest.getId());
 			batchstmt.setString(1, quest.getId());
 			batchstmt.setString(2, a.getLeft());
@@ -240,15 +240,15 @@ public class QuestDAO {
 	 * Delete a specific quest
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param quest_id quest id
 	 * @throws SQLException sql exception
 	 */
-	public void deleteQuest(Connection conn,String appId, String quest_id) throws SQLException {
-			stmt = conn.prepareStatement("DELETE FROM "+appId+".quest WHERE quest_id = ?");
+	public void deleteQuest(Connection conn,String gameId, String quest_id) throws SQLException {
+			stmt = conn.prepareStatement("DELETE FROM "+gameId+".quest WHERE quest_id = ?");
 			stmt.setString(1, quest_id);
 			stmt.executeUpdate();
-			stmt = conn.prepareStatement("DELETE FROM "+appId+".quest_action WHERE quest_id = ?");
+			stmt = conn.prepareStatement("DELETE FROM "+gameId+".quest_action WHERE quest_id = ?");
 			stmt.setString(1, quest_id);
 			stmt.executeUpdate();
 	}
@@ -257,14 +257,14 @@ public class QuestDAO {
 	 * Add a new quest
 	 * 
 	 * @param conn database connection
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param quest quest model
 	 * @throws SQLException sql exception
 	 */
-	public void addNewQuest(Connection conn,String appId, QuestModel quest) throws SQLException {
+	public void addNewQuest(Connection conn,String gameId, QuestModel quest) throws SQLException {
 		// TODO Auto-generated method stub
 
-			stmt = conn.prepareStatement("INSERT INTO "+appId+".quest (quest_id, name, description, status, achievement_id, quest_flag, quest_id_completed, point_flag, point_value, use_notification , notif_message)  VALUES (?, ?, ?, ?::"+appId+".quest_status, ?, ?, ?, ?, ?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT INTO "+gameId+".quest (quest_id, name, description, status, achievement_id, quest_flag, quest_id_completed, point_flag, point_value, use_notification , notif_message)  VALUES (?, ?, ?, ?::"+gameId+".quest_status, ?, ?, ?, ?, ?, ?, ?)");
 			stmt.setString(1, quest.getId());
 			stmt.setString(2, quest.getName());
 			stmt.setString(3, quest.getDescription());
@@ -280,7 +280,7 @@ public class QuestDAO {
 			
 			PreparedStatement batchstmt = null;
 			for(Pair<String,Integer> a : quest.getActionIds()){
-				batchstmt = conn.prepareStatement("INSERT INTO "+appId+".quest_action (quest_id, action_id, times) VALUES ( ?, ?, ?)");
+				batchstmt = conn.prepareStatement("INSERT INTO "+gameId+".quest_action (quest_id, action_id, times) VALUES ( ?, ?, ?)");
 				batchstmt.setString(1, quest.getId());
 				batchstmt.setString(2, a.getLeft());
 				batchstmt.setInt(3, a.getRight());

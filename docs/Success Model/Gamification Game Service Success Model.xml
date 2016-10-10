@@ -1,0 +1,38 @@
+<SuccessModel name="Gamification Game Service Success Model" service="i5.las2peer.services.gamificationGameService.GamificationGameService@0.1">
+	<dimension name="System Quality">
+		<factor name="Performance">
+			<measure name="Average Time To Create a Game"/>
+			<measure name="Average Time To Delete a Game"/>
+		</factor>
+	</dimension>
+	<dimension name="Information Quality">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Use">
+		<factor name="Quantity">
+			<measure name="Number of Game Created Over Time"/>
+			<measure name="Number of Member Registered To Game Over Time"/>
+			<measure name="Number of Member Removed From Game Over Time"/>
+		</factor>
+		<factor name="Quality">
+			<measure name="Average Game Created per Member"/>
+			<measure name="Average Member Registered To Game per Member"/>
+			<measure name="Average Member Registered To Game per Game"/>
+		</factor>
+	</dimension>
+	<dimension name="User Satisfaction">
+		<factor name="Quantity">
+			<measure name="Number of Member Relogged-in Over Time"/>
+		</factor>
+	</dimension>
+	<dimension name="Individual Impact">
+		<factor name="No Factors or Measures yet">
+		</factor>
+	</dimension>
+	<dimension name="Community Impact">
+		<factor name="Quantity">
+			<measure name="Number of New Member Over Time"/>
+		</factor>
+	</dimension>
+</SuccessModel>

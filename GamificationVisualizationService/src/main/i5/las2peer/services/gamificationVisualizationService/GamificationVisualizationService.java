@@ -37,7 +37,7 @@ import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationVisualizationService.database.DatabaseManager;
 import i5.las2peer.services.gamificationVisualizationService.database.AchievementModel;
-import i5.las2peer.services.gamificationVisualizationService.database.ApplicationDAO;
+import i5.las2peer.services.gamificationVisualizationService.database.GameDAO;
 import i5.las2peer.services.gamificationVisualizationService.database.BadgeModel;
 import i5.las2peer.services.gamificationVisualizationService.database.MemberDAO;
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel;
@@ -77,7 +77,7 @@ import net.minidev.json.JSONObject;
 @Api( value = "/members", authorizations = {
 		@Authorization(value = "members_auth",
 		scopes = {
-			//@AuthorizationScope(scope = "write:members", description = "modify apps in your application"),
+			//@AuthorizationScope(scope = "write:members", description = "modify games in your game"),
 			@AuthorizationScope(scope = "read:members", description = "Get data about members")
 				  })
 }, tags = "members")
@@ -112,7 +112,7 @@ public class GamificationVisualizationService extends Service {
 	private String jdbcUrl;
 	private String jdbcSchema;
 	private DatabaseManager dbm;
-	private ApplicationDAO managerAccess;
+	private GameDAO managerAccess;
 	private MemberDAO memberAccess;
 	
 	// this header is not known to javax.ws.rs.core.HttpHeaders
@@ -127,7 +127,7 @@ public class GamificationVisualizationService extends Service {
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		setFieldValues();
 		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
-		this.managerAccess = new ApplicationDAO();
+		this.managerAccess = new GameDAO();
 		this.memberAccess = new MemberDAO();
 	}
 
@@ -146,28 +146,28 @@ public class GamificationVisualizationService extends Service {
 	
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
-	// Application PART --------------------------------------
+	// Game PART --------------------------------------
 	// //////////////////////////////////////////////////////////////////////////////////////
 	
 	
 	/**
 	 * Get member point
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param memberId member id
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
-	@Path("/points/{appId}/{memberId}")
+	@Path("/points/{gameId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Selected"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Game Selected"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Game not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
 	@ApiOperation(value = "",
-				  notes = "Select an App")
+				  notes = "Select an Game")
 	public HttpResponse getPointOfMember(
-			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
 		JSONObject objResponse = new JSONObject();
@@ -181,9 +181,9 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -193,14 +193,14 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			// Add Member to App
-			Integer memberPoint = memberAccess.getMemberPoint(conn,appId, memberId);
+			// Add Member to Game
+			Integer memberPoint = memberAccess.getMemberPoint(conn,gameId, memberId);
 			objResponse.put("message", memberPoint);
 			
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
@@ -225,22 +225,22 @@ public class GamificationVisualizationService extends Service {
 
 	/**
 	 * Get gamification level status for a specific user
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param memberId member id
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
-	@Path("/status/{appId}/{memberId}")
+	@Path("/status/{gameId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Selected"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Game Selected"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Game not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
 	@ApiOperation(value = "",
-				  notes = "Select an App")
+				  notes = "Select an Game")
 	public HttpResponse getStatusOfMember(
-			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
 		long randomLong = new Random().nextLong(); //To be able to match 
@@ -256,11 +256,11 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32,getContext().getMainAgent(), ""+randomLong);
 			
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -270,9 +270,9 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -282,7 +282,7 @@ public class GamificationVisualizationService extends Service {
 			String pointUnitName = "";
 			try {
 				pointUnitName = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "getUnitNameRMI",
-						new Serializable[] { appId, memberId });
+						new Serializable[] { gameId, memberId });
 
 				
 			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
@@ -291,10 +291,10 @@ public class GamificationVisualizationService extends Service {
 				pointUnitName = "";
 			}
 			
-			// Add Member to App
-			JSONObject obj = memberAccess.getMemberStatus(conn,appId, memberId);
+			// Add Member to Game
+			JSONObject obj = memberAccess.getMemberStatus(conn,gameId, memberId);
 			obj.put("pointUnitName", pointUnitName);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_33, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_33,getContext().getMainAgent(), ""+randomLong);
 			
 			return new HttpResponse(obj.toJSONString(), HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
@@ -320,22 +320,22 @@ public class GamificationVisualizationService extends Service {
 	
 	/**
 	 * Get gamification badges for a specific member
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param memberId member id
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
-	@Path("/badges/{appId}/{memberId}")
+	@Path("/badges/{gameId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Selected"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Game Selected"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Game not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
 	@ApiOperation(value = "",
-				  notes = "Select an App")
+				  notes = "Select an Game")
 	public HttpResponse getBadgesOfMember(
-			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
 		long randomLong = new Random().nextLong(); //To be able to match 
@@ -352,11 +352,11 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38,getContext().getMainAgent(), ""+randomLong);
 			
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -365,19 +365,19 @@ public class GamificationVisualizationService extends Service {
 				objResponse.put("message", "Member ID not found");
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			// Add Member to App
-			badges = memberAccess.getObtainedBadges(conn,appId, memberId);
+			// Add Member to Game
+			badges = memberAccess.getObtainedBadges(conn,gameId, memberId);
 			ObjectMapper objectMapper = new ObjectMapper();
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			String response =  objectMapper.writeValueAsString(badges);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39,getContext().getMainAgent(), ""+randomLong);
 			return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			
@@ -408,23 +408,23 @@ public class GamificationVisualizationService extends Service {
 	
 	/**
 	 * Get gamification quests with status for a specific member
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param memberId member id
 	 * @param statusId quest status
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
-	@Path("/quests/{appId}/{memberId}/status/{statusId}")
+	@Path("/quests/{gameId}/{memberId}/status/{statusId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Selected"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Game Selected"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Game not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
 	@ApiOperation(value = "",
-				  notes = "Select an App")
+				  notes = "Select an Game")
 	public HttpResponse getQuestsWithStatusOfMember(
-			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
 			@ApiParam(value = "Quest status", required = true)@PathParam("statusId") String statusId)
 	{
@@ -442,11 +442,11 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_42, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_42,getContext().getMainAgent(), ""+randomLong);
 			
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -456,18 +456,18 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			// Add Member to App
+			// Add Member to Game
 			if(statusId.equals("REVEALED")||statusId.equals("COMPLETED")){
-				quests = memberAccess.getMemberQuestsWithStatus(conn,appId, memberId, QuestStatus.valueOf(statusId));				
+				quests = memberAccess.getMemberQuestsWithStatus(conn,gameId, memberId, QuestStatus.valueOf(statusId));				
 			}
 			else if(statusId.equals("ALL")){
-				quests = memberAccess.getMemberQuests(conn,appId, memberId);				
+				quests = memberAccess.getMemberQuests(conn,gameId, memberId);				
 			}
 			else{
 				logger.info("Status is not recognized >> ");
@@ -479,7 +479,7 @@ public class GamificationVisualizationService extends Service {
 	    	//Set pretty printing of json
 	    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			String response =  objectMapper.writeValueAsString(quests);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_43, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_43,getContext().getMainAgent(), ""+randomLong);
 			return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			
@@ -516,23 +516,23 @@ public class GamificationVisualizationService extends Service {
 	
 	/**
 	 * Get gamification quests progress for a specific member
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param memberId member id
 	 * @param questId quest id
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
-	@Path("/quests/{appId}/{memberId}/progress/{questId}")
+	@Path("/quests/{gameId}/{memberId}/progress/{questId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Selected"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Game Selected"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Game not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
 	@ApiOperation(value = "",
-				  notes = "Select an App")
+				  notes = "Select an Game")
 	public HttpResponse getQuestProgressOfMember(
-			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
 			@ApiParam(value = "Quest ID", required = true)@PathParam("questId") String questId)
 	{
@@ -548,9 +548,9 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -560,13 +560,13 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			JSONObject outObj = memberAccess.getMemberQuestProgress(conn,appId, memberId, questId);
+			JSONObject outObj = memberAccess.getMemberQuestProgress(conn,gameId, memberId, questId);
 			return new HttpResponse(outObj.toJSONString(), HttpURLConnection.HTTP_OK);
 		} catch (SQLException e) {
 			
@@ -603,22 +603,22 @@ public class GamificationVisualizationService extends Service {
 	
 	/**
 	 * Get gamification achievements for a specific member
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param memberId member id
 	 * @return HttpResponse with the returnString
 	 */
 	@GET
-	@Path("/achievements/{appId}/{memberId}")
+	@Path("/achievements/{gameId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "App Selected"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "App not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Game Selected"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Game not found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"),
 	})
 	@ApiOperation(value = "",
-				  notes = "Select an App")
+				  notes = "Select an Game")
 	public HttpResponse getAchievementsOfMember(
-			@ApiParam(value = "Application ID", required = true)@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
 		long randomLong = new Random().nextLong(); //To be able to match 
@@ -635,11 +635,11 @@ public class GamificationVisualizationService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_40, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_40,getContext().getMainAgent(), ""+randomLong);
 			
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -649,18 +649,18 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-				ach = memberAccess.getMemberAchievements(conn,appId, memberId);
+				ach = memberAccess.getMemberAchievements(conn,gameId, memberId);
 				ObjectMapper objectMapper = new ObjectMapper();
 		    	//Set pretty printing of json
 		    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 				String response =  objectMapper.writeValueAsString(ach);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_41, ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_41,getContext().getMainAgent(), ""+randomLong);
 				return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -695,13 +695,13 @@ public class GamificationVisualizationService extends Service {
 	// Get badge image
 	/**
 	 * Fetch a badge image with specified ID
-	 * @param appId application id
+	 * @param gameId game id
 	 * @param badgeId badge id
 	 * @param memberId member id
 	 * @return HttpResponse with the return image
 	 */
 	@GET
-	@Path("/badges/{appId}/{memberId}/{badgeId}/img")
+	@Path("/badges/{gameId}/{memberId}/{badgeId}/img")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Badges Entry"),
@@ -709,7 +709,7 @@ public class GamificationVisualizationService extends Service {
 	})
 	@ApiOperation(value = "",
 				  notes = "list of stored badges")
-	public HttpResponse getBadgeImageDetail(@PathParam("appId") String appId,
+	public HttpResponse getBadgeImageDetail(@PathParam("gameId") String gameId,
 								 @PathParam("badgeId") String badgeId,
 @ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
@@ -723,9 +723,9 @@ public class GamificationVisualizationService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -735,13 +735,13 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!memberAccess.isMemberHasBadge(conn,appId, memberId, badgeId)){
+			if(!memberAccess.isMemberHasBadge(conn,gameId, memberId, badgeId)){
 				logger.info("Error. member "+ memberId +" does not have a badge " + badgeId +".");
 				objResponse.put("message", "Error. member "+ memberId +" does not have a badge " + badgeId +".");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -750,7 +750,7 @@ public class GamificationVisualizationService extends Service {
 			// RMI call with parameters
 			byte[] result;
 			try {
-				result = (byte[]) this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeImageMethod", (String) appId, (String) badgeId );
+				result = (byte[]) this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeImageMethod", (String) gameId, (String) badgeId );
 				if (result != null) {
 					return new HttpResponse(result, HttpURLConnection.HTTP_OK);
 				}
@@ -789,26 +789,26 @@ public class GamificationVisualizationService extends Service {
 	// Get badge information individually
 	/**
 	 * Get a badge data with specific ID from database
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param badgeId badge id
 	 * @param memberId member id
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
-	@Path("/badges/{appId}/{memberId}/{badgeId}")
+	@Path("/badges/{gameId}/{memberId}/{badgeId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a badges"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find point for specific App ID and badge ID", 
+	@ApiOperation(value = "Find point for specific Game ID and badge ID", 
 				  notes = "Returns a badge",
 				  response = BadgeModel.class,
 				  responseContainer = "List",
 				  authorizations = @Authorization(value = "api_key")
 				  )
 	public HttpResponse getBadgeDetailWithId(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Badge ID")@PathParam("badgeId") String badgeId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
@@ -822,9 +822,9 @@ public class GamificationVisualizationService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -834,13 +834,13 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!memberAccess.isMemberHasBadge(conn,appId, memberId, badgeId)){
+			if(!memberAccess.isMemberHasBadge(conn,gameId, memberId, badgeId)){
 				logger.info("Error. member "+ memberId +" does not have a badge " + badgeId +".");
 				objResponse.put("message", "Error. member "+ memberId +" does not have a badge " + badgeId +".");
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
@@ -849,7 +849,7 @@ public class GamificationVisualizationService extends Service {
 			String result;
 			try {
 				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeWithIdRMI",
-						new Serializable[] { appId, badgeId });
+						new Serializable[] { gameId, badgeId });
 
 				System.out.println("BADGE STRING " + result);
 				if (result != null) {
@@ -890,25 +890,25 @@ public class GamificationVisualizationService extends Service {
 	// Get quest information individually
 	/**
 	 * Get a quest data with specific ID from database
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param questId quest id
 	 * @param memberId member id
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
-	@Path("/quests/{appId}/{memberId}/{questId}")
+	@Path("/quests/{gameId}/{memberId}/{questId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a quest"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find quest for specific App ID and quest ID", 
+	@ApiOperation(value = "Find quest for specific Game ID and quest ID", 
 				  notes = "Returns a quest",
 				  response = QuestModel.class,
 				  authorizations = @Authorization(value = "api_key")
 				  )
 	public HttpResponse getQuestDetailWithId(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Quest ID")@PathParam("questId") String questId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
@@ -923,9 +923,9 @@ public class GamificationVisualizationService extends Service {
 		
 		try {
 			conn = dbm.getConnection();
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -935,9 +935,9 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -945,7 +945,7 @@ public class GamificationVisualizationService extends Service {
 			String result;
 			try {
 				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1", "getQuestWithIdRMI",
-						new Serializable[] { appId, questId });
+						new Serializable[] { gameId, questId });
 				if (result != null) {
 					return new HttpResponse(result, HttpURLConnection.HTTP_OK);
 				}
@@ -985,25 +985,25 @@ public class GamificationVisualizationService extends Service {
 	// Get achievement information individually
 	/**
 	 * Get an achievement data with specific ID from database
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param achievementId achievement id
 	 * @param memberId member id
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
-	@Path("/achievements/{appId}/{memberId}/{achievementId}")
+	@Path("/achievements/{gameId}/{memberId}/{achievementId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found an achievement"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "Find point for specific App ID and achievement ID", 
+	@ApiOperation(value = "Find point for specific Game ID and achievement ID", 
 				  notes = "Returns a achievement",
 				  response = AchievementModel.class,
 				  authorizations = @Authorization(value = "api_key")
 				  )
 	public HttpResponse getAchievementDetailWithId(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Achievement ID")@PathParam("achievementId") String achievementId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 	{
@@ -1019,9 +1019,9 @@ public class GamificationVisualizationService extends Service {
 		
 		try {	
 			conn = dbm.getConnection();
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -1031,13 +1031,13 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!memberAccess.isMemberHasAchievement(conn,appId, memberId, achievementId)){
+			if(!memberAccess.isMemberHasAchievement(conn,gameId, memberId, achievementId)){
 				logger.info("Error. member "+ memberId +" does not have an achievement " + achievementId +".");
 				objResponse.put("message", "Member "+ memberId +" does not have an achievement " + achievementId +".");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -1046,7 +1046,7 @@ public class GamificationVisualizationService extends Service {
 			// RMI call with parameters
 			try {
 				Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1", "getAchievementWithIdRMI",
-						new Serializable[] { appId, achievementId });
+						new Serializable[] { gameId, achievementId });
 				if (result != null) {
 					L2pLogger.logEvent(Event.RMI_SUCCESSFUL, "Get Achievement with ID RMI success");
 					return new HttpResponse((String) result, HttpURLConnection.HTTP_OK);
@@ -1088,13 +1088,13 @@ public class GamificationVisualizationService extends Service {
 	
 	/**
 	 * Trigger an action
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param actionId actionId
 	 * @param memberId memberId
 	 * @return Notifications in JSON
 	 */
 	@POST
-	@Path("/actions/{appId}/{actionId}/{memberId}")
+	@Path("/actions/{gameId}/{actionId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "{\"status\": 3, \"message\": \"Action upload success ( (actionid) )\"}"),
@@ -1108,7 +1108,7 @@ public class GamificationVisualizationService extends Service {
 	@ApiOperation(value = "triggerAction",
 				 notes = "A method to trigger an ")
 	public HttpResponse triggerAction(
-			@ApiParam(value = "Application ID", required = true) @PathParam("appId") String appId,
+			@ApiParam(value = "Game ID", required = true) @PathParam("gameId") String gameId,
 			@ApiParam(value = "Action ID", required = true) @PathParam("actionId") String actionId,
 			@ApiParam(value = "Member ID", required = true) @PathParam("memberId") String memberId)  {
 		long randomLong = new Random().nextLong(); //To be able to match 
@@ -1122,10 +1122,10 @@ public class GamificationVisualizationService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38, ""+randomLong);
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38,getContext().getMainAgent(), ""+randomLong);
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -1135,9 +1135,9 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -1146,11 +1146,11 @@ public class GamificationVisualizationService extends Service {
 			String result;
 			try {
 				result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationActionService.GamificationActionService@0.1", "triggerActionRMI",
-						new Serializable[] { appId, memberId, actionId });
+						new Serializable[] { gameId, memberId, actionId });
 				if (result != null) {
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39, ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_44, ""+appId);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_45, ""+memberId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_44,getContext().getMainAgent(), ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_45,getContext().getMainAgent(), ""+memberId);
 					
 					return new HttpResponse(result, HttpURLConnection.HTTP_OK);
 				}
@@ -1190,7 +1190,7 @@ public class GamificationVisualizationService extends Service {
 	// Leaderboard
 	/**
 	 * Get local leaderboard
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param memberId member id
 	 * @param currentPage current cursor page
 	 * @param windowSize size of fetched data
@@ -1198,7 +1198,7 @@ public class GamificationVisualizationService extends Service {
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
-	@Path("/leaderboard/local/{appId}/{memberId}")
+	@Path("/leaderboard/local/{gameId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return local leaderboard"),
@@ -1209,7 +1209,7 @@ public class GamificationVisualizationService extends Service {
 				  authorizations = @Authorization(value = "api_key")
 				  )
 	public HttpResponse getLocalLeaderboard(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
 			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
@@ -1227,11 +1227,11 @@ public class GamificationVisualizationService extends Service {
 		
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_34, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_34,getContext().getMainAgent(), ""+randomLong);
 			
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -1241,9 +1241,9 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -1253,7 +1253,7 @@ public class GamificationVisualizationService extends Service {
 			String pointUnitName = "";
 			try {
 				pointUnitName = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "getUnitNameRMI",
-						new Serializable[] { appId, memberId });
+						new Serializable[] { gameId, memberId });
 
 				
 			} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
@@ -1263,8 +1263,8 @@ public class GamificationVisualizationService extends Service {
 			}
 			
 			int offset = (currentPage - 1) * windowSize;
-			int totalNum = memberAccess.getNumberOfMembers(conn,appId);
-			JSONArray arrResult = memberAccess.getMemberLocalLeaderboard(conn,appId, offset, windowSize, searchPhrase);
+			int totalNum = memberAccess.getNumberOfMembers(conn,gameId);
+			JSONArray arrResult = memberAccess.getMemberLocalLeaderboard(conn,gameId, offset, windowSize, searchPhrase);
 			
 			for(int i = 0; i < arrResult.size(); i++){
 				JSONObject object = (JSONObject) arrResult.get(i);
@@ -1275,7 +1275,7 @@ public class GamificationVisualizationService extends Service {
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", arrResult);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_35, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_35,getContext().getMainAgent(), ""+randomLong);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -1298,7 +1298,7 @@ public class GamificationVisualizationService extends Service {
 	
 	/**
 	 * Get global leaderboard
-	 * @param appId applicationId
+	 * @param gameId gameId
 	 * @param memberId member id
 	 * @param currentPage current cursor page
 	 * @param windowSize size of fetched data
@@ -1306,7 +1306,7 @@ public class GamificationVisualizationService extends Service {
 	 * @return HttpResponse Returned as JSON object
 	 */
 	@GET
-	@Path("/leaderboard/global/{appId}/{memberId}")
+	@Path("/leaderboard/global/{gameId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return global leaderboard"),
@@ -1317,7 +1317,7 @@ public class GamificationVisualizationService extends Service {
 				  authorizations = @Authorization(value = "api_key")
 				  )
 	public HttpResponse getGlobalLeaderboard(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
 			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
@@ -1334,11 +1334,11 @@ public class GamificationVisualizationService extends Service {
 		}
 		try {
 			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_36, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_36,getContext().getMainAgent(), ""+randomLong);
 			
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -1348,22 +1348,22 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			
 			int offset = (currentPage - 1) * windowSize;
-			int totalNum = memberAccess.getNumberOfMembers(conn,appId);
-			JSONArray arrResult = memberAccess.getMemberGlobalLeaderboard(conn,appId, offset, windowSize, searchPhrase);
+			int totalNum = memberAccess.getNumberOfMembers(conn,gameId);
+			JSONArray arrResult = memberAccess.getMemberGlobalLeaderboard(conn,gameId, offset, windowSize, searchPhrase);
 			
 			objResponse.put("current", currentPage);
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", arrResult);
 			objResponse.put("total", totalNum);
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37, ""+randomLong);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37,getContext().getMainAgent(), ""+randomLong);
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 		} catch (SQLException e) {
@@ -1384,8 +1384,14 @@ public class GamificationVisualizationService extends Service {
 	    }
 	}
 	
+	/**
+	 * Get notification of the members after action has been triggered
+	 * @param gameId gameId
+	 * @param memberId member id
+	 * @return HttpResponse Returned as JSON object
+	 */
 	@GET
-	@Path("/notifications/{appId}/{memberId}")
+	@Path("/notifications/{gameId}/{memberId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return global leaderboard"),
@@ -1396,7 +1402,7 @@ public class GamificationVisualizationService extends Service {
 				  authorizations = @Authorization(value = "api_key")
 				  )
 	public HttpResponse getNotification(
-			@ApiParam(value = "Application ID")@PathParam("appId") String appId,
+			@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 			@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId,
 			@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
 			@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
@@ -1413,9 +1419,9 @@ public class GamificationVisualizationService extends Service {
 		
 		try {
 			conn = dbm.getConnection();
-			if(!managerAccess.isAppIdExist(conn,appId)){
-				logger.info("App not found >> ");
-				objResponse.put("message", "App not found");
+			if(!managerAccess.isGameIdExist(conn,gameId)){
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
@@ -1425,14 +1431,14 @@ public class GamificationVisualizationService extends Service {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
-			if(!managerAccess.isMemberRegisteredInApp(conn,memberId,appId)){
-				logger.info("Member is not registered in App >> ");
-				objResponse.put("message", "Member is not registered in App");
+			if(!managerAccess.isMemberRegisteredInGame(conn,memberId,gameId)){
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 			}
 			
-			JSONArray arrResult = memberAccess.getMemberNotification(conn,appId,memberId);
+			JSONArray arrResult = memberAccess.getMemberNotification(conn,gameId,memberId);
 			
 			
 			return new HttpResponse(arrResult.toJSONString(), HttpURLConnection.HTTP_OK);
@@ -1491,7 +1497,7 @@ public class GamificationVisualizationService extends Service {
 	}
 
 	/**
-	 * This method is needed for every RESTful application in LAS2peer. There is no need to change!
+	 * This method is needed for every RESTful game in LAS2peer. There is no need to change!
 	 * 
 	 * @return the mapping
 	 */

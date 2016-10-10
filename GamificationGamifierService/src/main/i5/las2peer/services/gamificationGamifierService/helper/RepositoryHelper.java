@@ -24,7 +24,6 @@ import java.util.Base64;
 import java.util.Collection;
 
 import javax.imageio.ImageIO;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;

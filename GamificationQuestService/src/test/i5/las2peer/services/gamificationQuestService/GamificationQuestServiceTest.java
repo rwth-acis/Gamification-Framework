@@ -4,25 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
 
-import javax.imageio.ImageIO;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -41,7 +26,7 @@ import i5.las2peer.webConnector.client.ClientResponse;
 import i5.las2peer.webConnector.client.MiniClient;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
+
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.
@@ -66,7 +51,7 @@ public class GamificationQuestServiceTest {
 	private static final ServiceNameVersion testGamificationQuestService = new ServiceNameVersion(GamificationQuestService.class.getCanonicalName(),"0.1");
 
 	
-	private static String appId = "test";
+	private static String gameId = "test";
 	private static String achievementId = "achievement1";
 	private static String actionId = "actionquestid";
 	private static String questId = "quest_test_id";
@@ -221,7 +206,7 @@ public class GamificationQuestServiceTest {
 			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
 			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			
-			ClientResponse result = c1.sendRequest("POST", mainPath + appId, obj.toJSONString(), "application/json", "*/*", headers);
+			ClientResponse result = c1.sendRequest("POST", mainPath + gameId, obj.toJSONString(), "application/json", "*/*", headers);
 
 			System.out.println(result.getResponse());
 			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
@@ -246,7 +231,7 @@ public class GamificationQuestServiceTest {
 		System.out.println("Test --- Get Quest With Id");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET",  mainPath + appId + "/" + questId, "");
+			ClientResponse result = c1.sendRequest("GET",  mainPath + gameId + "/" + questId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -288,7 +273,7 @@ public class GamificationQuestServiceTest {
 			headers[0] = new Pair<String>("Accept-Encoding","gzip, deflate");
 			headers[1] = new Pair<String>("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			
-			ClientResponse result = c1.sendRequest("PUT", mainPath + appId +"/"+ questId, obj.toJSONString(), "application/json", "*/*", headers);
+			ClientResponse result = c1.sendRequest("PUT", mainPath + gameId +"/"+ questId, obj.toJSONString(), "application/json", "*/*", headers);
 			
 			System.out.println(result.getResponse());
 			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
@@ -314,7 +299,7 @@ public class GamificationQuestServiceTest {
 		System.out.println("Test --- Get Quest List");
 		try
 		{
-			ClientResponse result = c1.sendRequest("GET", mainPath + appId + "?current=1&rowCount=10&searchPhrase=", "");
+			ClientResponse result = c1.sendRequest("GET", mainPath + gameId + "?current=1&rowCount=10&searchPhrase=", "");
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
@@ -331,7 +316,7 @@ public class GamificationQuestServiceTest {
 	public void testZ3_deleteQuest(){
 		try
 		{
-			ClientResponse result = c1.sendRequest("DELETE",  mainPath + appId + "/" + questId, "");
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + gameId + "/" + questId, "");
 	        assertEquals(200, result.getHttpCode());
 		} catch (Exception e)
 		{
