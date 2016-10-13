@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <service consumes="*" name="i5.las2peer.services.gamificationActionService.GamificationActionService" path="gamification/actions" produces="text/plain" version="0.1">
   <methods>
-    <method httpMethod="post" name="createNewAction" path="{gameId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
-        <parameter annotation="header" index="1" name="Content-Type" type="java.lang.String"/>
-        <parameter annotation="content" index="2" name="" type="[B"/>
-      </parameters>
-    </method>
     <method httpMethod="get" name="getActionWithId" path="{gameId}/{actionId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
@@ -34,6 +27,13 @@
         <parameter annotation="query" index="1" name="current" type="int"/>
         <parameter annotation="query" index="2" name="rowCount" type="int"/>
         <parameter annotation="query" index="3" name="searchPhrase" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="post" name="createNewAction" path="{gameId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="header" index="1" name="Content-Type" type="java.lang.String"/>
+        <parameter annotation="content" index="2" name="" type="[B"/>
       </parameters>
     </method>
   </methods>

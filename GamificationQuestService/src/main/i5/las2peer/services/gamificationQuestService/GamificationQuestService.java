@@ -539,7 +539,7 @@ public class GamificationQuestService extends Service {
 	 */
 	@PUT
 	@Path("/{gameId}/{questId}")
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Quest Updated"),
