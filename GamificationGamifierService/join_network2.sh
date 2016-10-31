@@ -1,4 +1,4 @@
 
 
 java -cp "lib/*:service/*" i5.las2peer.tools.L2pNodeLauncher -p 9115 -b 137.226.232.171:9010 --observer uploadStartupDirectory\(\'etc/startup\'\) \
-startService\(\'i5.las2peer.services.gamificationGamifierService.GamificationGamifierService@0.1\',\'gamificationgamifierpass\'\) interactive
+startService\(\'i5.las2peer.services.gamificationGamifierService.GamificationGamifierService@0.1\',\'gamificationgamifierpass\'\) startWebConnector interactive

@@ -582,7 +582,9 @@ public class GamificationQuestService extends Service {
 		int questpointvalue = 0;
 		List<Pair<String, Integer>> questactionids = new ArrayList<Pair<String, Integer>>();
 		
-
+		boolean questnotifcheck = false;
+		String questnotifmessage = "";
+		
 		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 		String name = userAgent.getLoginName();
 		if(name.equals("anonymous")){
@@ -656,11 +658,15 @@ public class GamificationQuestService extends Service {
 				questquestflag = boolfromJSON(obj,"questquestflag");
 				questpointflag = boolfromJSON(obj,"questpointflag");
 				questpointvalue = intfromJSON(obj,"questpointvalue");
+				questnotifcheck = boolfromJSON(obj, "questnotificationcheck");
+				questnotifmessage = stringfromJSON(obj, "questnotificationmessage");
 				
 				quest.setQuestFlag(questquestflag);
 				quest.setPointFlag(questpointflag);
 				quest.setQuestIdCompleted(questquestidcompleted);
 				quest.setPointValue(questpointvalue);
+				quest.useNotification(questnotifcheck);
+				quest.setNotificationMessage(questnotifmessage);
 				try {
 					questactionids = listPairfromJSON(obj,"questactionids","action","times");
 					quest.setActionIds(questactionids);
