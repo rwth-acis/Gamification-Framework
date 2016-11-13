@@ -360,7 +360,7 @@ public class GamificationBadgeService extends Service {
 				}
 				FormDataPart partFilecontent = parts.get("badgeimageinput");
 				if (partFilecontent != null) {
-					System.out.println(partFilecontent.getContent());
+					//System.out.println(partFilecontent.getContent());
 					// these data belong to the file input form element
 						filename = partFilecontent.getHeader(HEADER_CONTENT_DISPOSITION).getParameter("filename");
 						byte[] filecontentbefore = partFilecontent.getContentRaw();
@@ -851,7 +851,14 @@ public class GamificationBadgeService extends Service {
 			objResponse.put("message", "Cannot delete badge. Cannot delete file. " + e.getMessage());
 			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-		}
+		}		 // always close connections
+	    finally {
+		      try {
+		        conn.close();
+		      } catch (SQLException e) {
+		        logger.printStackTrace(e);
+		      }
+		    }
 		
 	}
 	

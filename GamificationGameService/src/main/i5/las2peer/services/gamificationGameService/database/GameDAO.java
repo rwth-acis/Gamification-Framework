@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import i5.las2peer.services.gamificationGameService.database.MemberModel;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -181,6 +183,48 @@ public class GameDAO {
 	}
 	
 	/**
+	 * Get all of games' information with member's games information. Return the list of all existing games in gamification framework
+	 *  with additional flag information "memberHas" that indicates the member has that game if it is true
+	 * 
+	 * @param conn database connection
+	 * @param memberId member Id
+	 * @return list of all games
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getAllGamesWithMemberInformation(Connection conn, String memberId) throws SQLException{
+		JSONArray arrayResult = new JSONArray();
+		
+		List<String> gameIds = new ArrayList<String>();
+		stmt = conn.prepareStatement("SELECT game_id FROM manager.member_game WHERE member_id = ?");
+		stmt.setString(1, memberId);
+		ResultSet rsgameId = stmt.executeQuery();
+		while (rsgameId.next()) {
+			gameIds.add(rsgameId.getString("game_id"));
+		}
+		
+			stmt = conn.prepareStatement("SELECT * FROM manager.game_info");
+			
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				JSONObject obj = new JSONObject();
+				obj.put("game_id", rs.getString("game_id"));
+				obj.put("description", rs.getString("description"));
+				obj.put("community_type", rs.getString("community_type"));
+				obj.put("memberHas", false);
+				
+				for(int i=0; i < gameIds.size();i++){
+					if(gameIds.get(i).equals(rs.getString("game_id"))){
+						obj.replace("memberHas", true);
+						gameIds.remove(i);
+					}
+				}
+				arrayResult.add(obj);
+			}
+
+			return arrayResult;
+	}
+	
+	/**
 	 * Get all of games' information
 	 * 
 	 * @param conn database connection
@@ -190,7 +234,7 @@ public class GameDAO {
 	public List<GameModel> getAllGames(Connection conn) throws SQLException{
 		// TODO Auto-generated method stub
 		List<GameModel> games = new ArrayList<GameModel>();
-
+			
 			stmt = conn.prepareStatement("SELECT * FROM manager.game_info");
 			
 			ResultSet rs = stmt.executeQuery();

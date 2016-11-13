@@ -296,9 +296,18 @@ $BODY$
 DECLARE
 comm_type text;
 _found int;
+member_rec record;
 BEGIN
 	EXECUTE 'SELECT community_type FROM manager.game_info WHERE game_id = '||quote_literal(game_id)||'' INTO comm_type;
 	RAISE NOTICE 'Community type : %', comm_type;
+
+	-- remove member one by one to sync with global leaderboard
+	FOR member_rec IN
+		EXECUTE 'SELECT member_id FROM manager.member_game WHERE game_id = '||quote_literal(game_id)||''
+	LOOP
+		EXECUTE 'SELECT remove_member_from_game('||quote_literal(member_rec.member_id)||', '||quote_literal(game_id)||');';
+	END LOOP;
+	
 	-- check comm type table, delete table if no game with specific community type
 	EXECUTE 'DROP SCHEMA IF EXISTS '|| game_id ||' CASCADE;';
 	-- drop table if no game with community type

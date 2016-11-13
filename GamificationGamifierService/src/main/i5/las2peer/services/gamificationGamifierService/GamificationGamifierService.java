@@ -69,7 +69,7 @@ import net.minidev.json.parser.ParseException;
  * 
  */
 // TODO Adjust the following configuration
-@Path("/gamification")
+@Path("/gamification/gamifier")
 @Version("0.1") // this annotation is used by the XML mapper
 @Api
 @SwaggerDefinition(

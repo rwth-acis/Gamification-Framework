@@ -753,11 +753,12 @@ public class GamificationActionService extends Service {
 	    	
 	    	String actionString = objectMapper.writeValueAsString(achs);
 			JSONArray actionArray = (JSONArray) JSONValue.parse(actionString);
-			logger.info(actionArray.toJSONString());
 			objResponse.put("current", currentPage);
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", actionArray);
 			objResponse.put("total", totalNum);
+
+			logger.info(objResponse.toJSONString());
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
 			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
@@ -800,15 +801,15 @@ public class GamificationActionService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			JSONArray arr = new JSONArray();
+			JSONObject obj = new JSONObject();
 			
 			if(!actionAccess.isActionIdExist(conn,gameId, actionId)){
 				return null;
 			}
 			
-			arr = actionAccess.triggerAction(conn,gameId, memberId, actionId);
+			obj = actionAccess.triggerAction(conn,gameId, memberId, actionId);
 			
-			return arr.toJSONString();
+			return obj.toJSONString();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

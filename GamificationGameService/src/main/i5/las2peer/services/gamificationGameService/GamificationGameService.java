@@ -57,6 +57,7 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 /**
@@ -494,25 +495,27 @@ public class GamificationGameService extends Service {
     	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     	try {
 			conn = dbm.getConnection();
-			List<List<GameModel>> allGames = gameAccess.getSeparateGamesWithMemberId(conn,name);
-
+			//List<List<GameModel>> allGames = gameAccess.getSeparateGamesWithMemberId(conn,name);
+			JSONArray allGames = gameAccess.getAllGamesWithMemberInformation(conn, name);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_11,getContext().getMainAgent(), ""+name);
 			
-			try {
-				String response = objectMapper.writeValueAsString(allGames);
-				allGames.clear();
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_11,getContext().getMainAgent(), ""+name);
-				
-				return new HttpResponse(response, HttpURLConnection.HTTP_OK);
-			
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-				
-				allGames.clear();
-				// return HTTP Response on error
-				objResponse.put("message", "Cannot delete Game. JsonProcessingException." + e.getMessage());
-				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-			}
+			return new HttpResponse(allGames.toJSONString(), HttpURLConnection.HTTP_OK);
+//			try {
+//				String response = objectMapper.writeValueAsString(allGames);
+//				allGames.clear();
+//				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_11,getContext().getMainAgent(), ""+name);
+//				
+//				return new HttpResponse(response, HttpURLConnection.HTTP_OK);
+//			
+//			} catch (JsonProcessingException e) {
+//				e.printStackTrace();
+//				
+//				allGames.clear();
+//				// return HTTP Response on error
+//				objResponse.put("message", "Cannot delete Game. JsonProcessingException." + e.getMessage());
+//				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+//				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+//			}
 		} catch (SQLException e) {
 			
 			e.printStackTrace();

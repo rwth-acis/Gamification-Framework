@@ -21,10 +21,12 @@
        ).done(function(data) {
          console.log('Trigger success : ' + actionId);
          console.log(data);
-         if (data.length > 0){
-             sendOpenNotificationIntent(JSON.stringify(data));
+         if(data.ok){
+           if(data.hasOwnProperty('notification')){
+               sendOpenNotificationIntent(JSON.stringify(data.notification));
+           }
+           sendRefreshTabIntent();
          }
-         sendRefreshTabIntent();
        })
        .fail(function() {
          alert( "Trigger failed " + actionId );
@@ -45,7 +47,7 @@
       function(intent) {
         // define your reactions on incoming iwc events here
 
-        if(intent.action == "FETCH_APPID") {
+        if(intent.action == "FETCH_GAMEID") {
           sendRefreshGameIdIntent();
         }
 
@@ -72,7 +74,7 @@
       "component": "",
       "data": data,
       "dataType": "text/xml",
-      "action": "REFRESH_APPID",
+      "action": "REFRESH_GAMEID",
       "categories": ["", ""],
       "flags": [void 0],
       "extras": {}

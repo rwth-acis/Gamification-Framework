@@ -438,7 +438,14 @@ public class GamificationAchievementService extends Service {
 			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 			return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-		}
+		}		 // always close connections
+	    finally {
+		      try {
+		        conn.close();
+		      } catch (SQLException e) {
+		        logger.printStackTrace(e);
+		      }
+		    }
 	}
 
 	

@@ -215,9 +215,12 @@ public class ActionDAO {
 	 * @throws SQLException sql exception
 	 * @return JSONArray of notifications
 	 */
-	public JSONArray triggerAction(Connection conn,String gameId, String memberId, String actionId) throws SQLException {
+	public JSONObject triggerAction(Connection conn,String gameId, String memberId, String actionId) throws SQLException {
 		
 		JSONArray resArray = new JSONArray();
+		Boolean hasNotif = false;
+
+		JSONObject finalObj = new JSONObject();
 		System.out.println("data : " + gameId + " " + memberId);
 		// Submit action into member_action
 		stmt = conn.prepareStatement("INSERT INTO "+gameId+".member_action (member_id, action_id) VALUES (?, ?)");
@@ -229,6 +232,7 @@ public class ActionDAO {
 		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".notification WHERE member_id = ?");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
+		
 		while (rs.next()){
 			if(rs.getBoolean("use_notification")){
 				JSONObject resObj = new JSONObject();
@@ -237,14 +241,21 @@ public class ActionDAO {
 				resObj.put("typeId", rs.getString("type_id"));
 				resObj.put("message", rs.getString("message"));
 				resArray.add(resObj);
+
+				hasNotif = true;
 			}
 		}
-		// Clean up notification for the member
-		stmt = conn.prepareStatement("DELETE FROM "+gameId+".notification WHERE member_id = ?");
-		stmt.setString(1, memberId);
-		stmt.executeUpdate();	
 		
-		return resArray;
+		if(hasNotif){
+			// Clean up notification for the member
+			stmt = conn.prepareStatement("DELETE FROM "+gameId+".notification WHERE member_id = ?");
+			stmt.setString(1, memberId);
+			stmt.executeUpdate();
+
+			finalObj.put("notification",resArray);
+		}
+		finalObj.put("ok",true);
+		return finalObj;
 	}
 	
 }

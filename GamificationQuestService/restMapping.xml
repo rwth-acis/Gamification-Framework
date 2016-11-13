@@ -13,7 +13,7 @@
         <parameter annotation="path" index="1" name="questId" type="java.lang.String"/>
       </parameters>
     </method>
-    <method consumes="application/json" httpMethod="put" name="updateQuest" path="{gameId}/{questId}" produces="text/plain" type="i5.las2peer.restMapper.HttpResponse">
+    <method consumes="application/json" httpMethod="put" name="updateQuest" path="{gameId}/{questId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
         <parameter annotation="path" index="1" name="questId" type="java.lang.String"/>
