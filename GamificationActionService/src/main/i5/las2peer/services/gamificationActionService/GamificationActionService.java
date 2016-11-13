@@ -801,15 +801,15 @@ public class GamificationActionService extends Service {
 
 		try {
 			conn = dbm.getConnection();
-			JSONArray arr = new JSONArray();
+			JSONObject obj = new JSONObject();
 			
 			if(!actionAccess.isActionIdExist(conn,gameId, actionId)){
 				return null;
 			}
 			
-			arr = actionAccess.triggerAction(conn,gameId, memberId, actionId);
+			obj = actionAccess.triggerAction(conn,gameId, memberId, actionId);
 			
-			return arr.toJSONString();
+			return obj.toJSONString();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -187,6 +187,7 @@ public class GameDAO {
 	 *  with additional flag information "memberHas" that indicates the member has that game if it is true
 	 * 
 	 * @param conn database connection
+	 * @param memberId member Id
 	 * @return list of all games
 	 * @throws SQLException sql exception
 	 */
