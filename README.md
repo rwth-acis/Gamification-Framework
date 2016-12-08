@@ -3,33 +3,33 @@
 # Gamification-Framework
 
 ## Database
-The database that is used is PostgreSQL 9.5. SQL script to create the database and initialize the framework is located in psql folder.
+The database used is PostgreSQL 9.5. SQL script to create the database and initialize the framework is located in psql folder.
 The default framework database name is 'gamification'and user name is 'gamification'. Each created application will have its own schema. A schema named 'manager' is used to maintain application and user information globally. A schema named 'global_leaderboard' contains global leaderboard data with the table name in the schema is community_type name.
 
 ## Building the Projects
 
 1. **Configure Database**
-	1. Go to psql folder in the main folder.
+  * Go to psql folder in the main folder.
   * Create database with the name *gamification* or run sql script in dbcreation.sql
   * Initialize the database by running sql script in db.sql
 2. **Configure las2peer project properties**
-	1. All of las2peer project properties (database driver name and credentials) can be configured by changing the content of *gamification.config* file in config folder. The content of gamification.config are described in **Content of gamification.config** section.
-	1. To apply the configuration to all services, run  ```bash main.sh -s```
+  * All of las2peer project properties (database driver name and credentials) can be configured by changing the content of *gamification.config* file in config folder. The content of gamification.config are described in **Content of gamification.config** section.
+  * To apply the configuration to all services, run  ```bash main.sh -s or ./main.sh -s```
   
 3. **Build the code**
-	1. To build and test all projects in Gamification-Framework, run ```bash main.sh -m all```
-	2. To clean up the projects, run ```bash main.sh -m clean```
-	3. To only build the projects (without testing), run ```bash main.sh -m build```
+	1. To build and test all projects in Gamification-Framework, run ```./main.sh -m all```
+	2. To clean up the projects, run ```./main.sh -m clean```
+	3. To only build the projects (without testing), run ```./main.sh -m build```
 
 ## Starting the Projects
 
 To run all services, in main folder project execute
 
-1. ```bash main.sh -r start_one_node```, to run all services in a node in new network
-1. ```bash main.sh -r join_one_node```, to run all services in a node and join existing network
-1. ```bash main.sh -r join_node```
-	1. ```bash main.sh -r join_node start```, to run all services in different node and join existing network
-	1. ```bash main.sh -r join_node stop```, to stop all services in different node and join existing network
+1. ```./main.sh -r start_one_node```, to run all services in a node in new network
+1. ```./main.sh -r join_one_node```, to run all services in a node and join existing network
+1. ```./main.sh -r join_node```
+	1. ```./main.sh -r join_node start```, to run all services in different node and join existing network
+	1. ```./main.sh -r join_node stop```, to stop all services in different node and join existing network
 
 ## Content of gamification.config
 

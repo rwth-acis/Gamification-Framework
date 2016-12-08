@@ -15,18 +15,186 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Class to maintain the model that are used in the game management
  * 
  */
 
-public class MemberDAO {
+public class VisualizationDAO {
 	
 	
 	PreparedStatement stmt;
 	
-	public MemberDAO(){
+	public VisualizationDAO(){
+	}
+	
+	/**
+	 * Check whether the game id is already exist
+	 * 
+	 * @param conn database connection
+	 * @param game_id game id
+	 * @return true game_id is already exist
+	 * @throws SQLException SQL Exception
+	 */
+	public boolean isGameIdExist(Connection conn,String game_id) throws SQLException  {
+			stmt = conn.prepareStatement("SELECT game_id FROM manager.game_info WHERE game_id=?");
+			stmt.setString(1, game_id);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()){
+				//if(rs.getString("game_id").equals(game_id)){
+					return true;
+				//}
+			}
+			return false;
+	}
+	
+	/**
+	 * Check whether the member is already registered
+	 * 
+	 * @param member_id member id
+	 * @param conn database connection
+	 * @return true member is already registered
+	 * @throws SQLException exception
+	 */
+	public boolean isMemberRegistered(Connection conn,String member_id) throws SQLException {
+		
+		try {
+			stmt = conn.prepareStatement("SELECT member_id,first_name,last_name,email FROM manager.member_info WHERE member_id=?");
+			stmt.setString(1, member_id);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()){
+				return true;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	/**
+	 * Check whether a member is registered in an game
+	 * 
+	 * @param member_id member id
+	 * @param conn database connection
+	 * @param game_id game id
+	 * @return member registered in game
+	 * @throws SQLException sql exception
+	 */
+	public boolean isMemberRegisteredInGame(Connection conn,String member_id, String game_id) throws SQLException {
+		stmt = conn.prepareStatement("SELECT * FROM manager.member_game WHERE member_id=? AND game_id=?");
+		stmt.setString(1, member_id);
+		stmt.setString(2, game_id);
+		try {
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()){
+				return true;
+			}
+			else{
+				return false;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	// Member DAO
+	/**
+	 * Get point of a member
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @param memberId member id
+	 * @return member point
+	 * @throws SQLException sql exception
+	 */
+	public Integer getMemberPoint(Connection conn,String gameId, String memberId) throws SQLException{
+
+		stmt = conn.prepareStatement("SELECT point_value FROM "+gameId+".member_point WHERE member_id=?");
+		stmt.setString(1, memberId);
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) {
+			return rs.getInt("point_value");
+		}
+
+		return null;
+	}
+	
+	/**
+	 * Get status of a member
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @param memberId member id
+	 * @return member point
+	 * @throws SQLException sql exception
+	 */
+	public JSONObject getMemberStatus(Connection conn,String gameId, String memberId) throws SQLException{
+		Integer currentLevel = 0;
+		Integer memberPoint = 0;
+		JSONObject resObj = new JSONObject();
+		stmt = conn.prepareStatement("SELECT level_num,point_value FROM "+gameId+".member_level INNER JOIN "+gameId+".member_point ON ("+gameId+".member_level.member_id = "+gameId+".member_point.member_id) WHERE "+gameId+".member_level.member_id = ? LIMIT 1");
+		stmt.setString(1, memberId);
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) {
+			currentLevel = rs.getInt("level_num");
+			memberPoint = rs.getInt("point_value");
+		}
+		else{
+			throw new SQLException("Member ID not found");
+		}
+		//Get current and next level
+		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+gameId+".level WHERE level_num >= ? LIMIT 2");
+		stmt.setInt(1, currentLevel);
+		rs = stmt.executeQuery();
+		if (rs.next()) {
+			Integer currentLevelPointThreshold = rs.getInt("point_value");
+			String currentLevelName = rs.getString("name");
+			if(rs.next()){
+				Integer nextLevelPointThreshold = rs.getInt("point_value");
+				Integer nextLevelNum = rs.getInt("level_num");
+				String nextLevelName = rs.getString("name");
+				float progress = (float) (((float)(memberPoint - currentLevelPointThreshold)/(float)(nextLevelPointThreshold - currentLevelPointThreshold)) * 100.0);
+				
+				resObj.put("memberLevel", currentLevel);
+				resObj.put("memberPoint", memberPoint);
+				resObj.put("memberLevelName", currentLevelName);
+				resObj.put("nextLevel", nextLevelNum);
+				resObj.put("nextLevelPoint", nextLevelPointThreshold);
+				resObj.put("nextLevelName", nextLevelName);
+				resObj.put("progress", Math.round(progress));
+				
+				
+			}
+			else{
+				//throw new SQLException("No next level found, you may be on the highest level");
+				resObj.put("memberLevel", currentLevel);
+				resObj.put("memberPoint", memberPoint);
+				resObj.put("memberLevelName", currentLevelName);
+				resObj.put("nextLevel", null);
+				resObj.put("nextLevelPoint", null);
+				resObj.put("nextLevelName", "");
+				resObj.put("progress", 100);
+			}
+			
+			stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+gameId+".member_point) SELECT * FROM sorted WHERE member_id = '"+memberId+"' LIMIT 1");
+			ResultSet rs2 = stmt.executeQuery();
+			if (rs2.next()) {
+				resObj.put("rank", rs2.getInt("row_number"));
+			}
+			else{
+				resObj.put("rank", "-");
+			}
+		}
+		else{
+			throw new SQLException("No level found");
+		}
+
+		return resObj;
 	}
 	
 	/**
@@ -258,121 +426,25 @@ public class MemberDAO {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Check if the member has completed a quest
+	 * Get total number of members for leaderboard
 	 * 
 	 * @param conn database connection
 	 * @param gameId game id
-	 * @param memberId member id
-	 * @param questId quest id
-	 * @return true if member has a badge
+	 * @return total number of members for leaderboard
 	 * @throws SQLException sql exception
 	 */
-	public boolean isMemberHasCompletedQuest(Connection conn,String gameId, String memberId, String questId) throws SQLException{
-		stmt = conn.prepareStatement("SELECT badge_id FROM "+gameId+".member_quest WHERE member_id=? AND quest_id=? AND status='COMPLETED'");
-		stmt.setString(1, memberId);
-		stmt.setString(2, questId);
-
-		ResultSet rs = stmt.executeQuery();
-		if(rs.next()){
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * Get point of a member
-	 * 
-	 * @param conn database connection
-	 * @param gameId game id
-	 * @param memberId member id
-	 * @return member point
-	 * @throws SQLException sql exception
-	 */
-	public Integer getMemberPoint(Connection conn,String gameId, String memberId) throws SQLException{
-
-		stmt = conn.prepareStatement("SELECT point_value FROM "+gameId+".member_point WHERE member_id=?");
-		stmt.setString(1, memberId);
-		ResultSet rs = stmt.executeQuery();
-		if (rs.next()) {
-			return rs.getInt("point_value");
-		}
-
-		return null;
-	}
-	
-	/**
-	 * Get status of a member
-	 * 
-	 * @param conn database connection
-	 * @param gameId game id
-	 * @param memberId member id
-	 * @return member point
-	 * @throws SQLException sql exception
-	 */
-	public JSONObject getMemberStatus(Connection conn,String gameId, String memberId) throws SQLException{
-		Integer currentLevel = 0;
-		Integer memberPoint = 0;
-		JSONObject resObj = new JSONObject();
-		stmt = conn.prepareStatement("SELECT level_num,point_value FROM "+gameId+".member_level INNER JOIN "+gameId+".member_point ON ("+gameId+".member_level.member_id = "+gameId+".member_point.member_id) WHERE "+gameId+".member_level.member_id = ? LIMIT 1");
-		stmt.setString(1, memberId);
-		ResultSet rs = stmt.executeQuery();
-		if (rs.next()) {
-			currentLevel = rs.getInt("level_num");
-			memberPoint = rs.getInt("point_value");
-		}
-		else{
-			throw new SQLException("Member ID not found");
-		}
-		//Get current and next level
-		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+gameId+".level WHERE level_num >= ? LIMIT 2");
-		stmt.setInt(1, currentLevel);
-		rs = stmt.executeQuery();
-		if (rs.next()) {
-			Integer currentLevelPointThreshold = rs.getInt("point_value");
-			String currentLevelName = rs.getString("name");
+	public int getNumberOfMembers(Connection conn,String gameId) throws SQLException {
+		
+			stmt = conn.prepareStatement("SELECT count(*) FROM "+gameId+".member_point");
+			ResultSet rs = stmt.executeQuery();
 			if(rs.next()){
-				Integer nextLevelPointThreshold = rs.getInt("point_value");
-				Integer nextLevelNum = rs.getInt("level_num");
-				String nextLevelName = rs.getString("name");
-				float progress = (float) (((float)(memberPoint - currentLevelPointThreshold)/(float)(nextLevelPointThreshold - currentLevelPointThreshold)) * 100.0);
-				
-				resObj.put("memberLevel", currentLevel);
-				resObj.put("memberPoint", memberPoint);
-				resObj.put("memberLevelName", currentLevelName);
-				resObj.put("nextLevel", nextLevelNum);
-				resObj.put("nextLevelPoint", nextLevelPointThreshold);
-				resObj.put("nextLevelName", nextLevelName);
-				resObj.put("progress", Math.round(progress));
-				
-				
+				return rs.getInt(1);
 			}
 			else{
-				//throw new SQLException("No next level found, you may be on the highest level");
-				resObj.put("memberLevel", currentLevel);
-				resObj.put("memberPoint", memberPoint);
-				resObj.put("memberLevelName", currentLevelName);
-				resObj.put("nextLevel", null);
-				resObj.put("nextLevelPoint", null);
-				resObj.put("nextLevelName", "");
-				resObj.put("progress", 100);
+				return 0;
 			}
-			
-			stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+gameId+".member_point) SELECT * FROM sorted WHERE member_id = '"+memberId+"' LIMIT 1");
-			ResultSet rs2 = stmt.executeQuery();
-			if (rs2.next()) {
-				resObj.put("rank", rs2.getInt("row_number"));
-			}
-			else{
-				resObj.put("rank", "-");
-			}
-		}
-		else{
-			throw new SQLException("No level found");
-		}
-
-		return resObj;
 	}
 	
 	/**
@@ -442,26 +514,6 @@ public class MemberDAO {
 		return arr;
 	}
 	
-	/**
-	 * Get total number of members for leaderboard
-	 * 
-	 * @param conn database connection
-	 * @param gameId game id
-	 * @return total number of members for leaderboard
-	 * @throws SQLException sql exception
-	 */
-	public int getNumberOfMembers(Connection conn,String gameId) throws SQLException {
-		
-			stmt = conn.prepareStatement("SELECT count(*) FROM "+gameId+".member_point");
-			ResultSet rs = stmt.executeQuery();
-			if(rs.next()){
-				return rs.getInt(1);
-			}
-			else{
-				return 0;
-			}
-	}
-	
 	public static enum NotificationType {
 		BADGE,
 		ACHIEVEMENT,
@@ -490,4 +542,5 @@ public class MemberDAO {
 		
 		return resArray;
 	}
+	
 }

@@ -582,11 +582,15 @@ $BODY$
 DECLARE
 p_quest record;
 action_count integer;
+comp_result integer;
+current_point integer;
 point_action integer;
 quests_use_action character varying(15);
 game_id character varying(20);
 BEGIN
 	game_id = TG_TABLE_SCHEMA;
+
+	RAISE NOTICE 'ACTION TRIGGERED';
 	-- count how many action_id user has performed
 	-- get quests affected by the performed action
 	FOR p_quest IN
@@ -604,8 +608,18 @@ BEGIN
 	END LOOP;
   -- Update member point
   EXECUTE 'SELECT point_value FROM '|| game_id ||'.action WHERE action_id = '|| quote_literal(NEW.action_id) ||'' INTO point_action;
-  EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value = point_value + '|| point_action ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
-
+  -- get current point value
+	EXECUTE 'SELECT point_value FROM '|| game_id ||'.member_point WHERE member_id = '|| quote_literal(NEW.member_id) ||';' INTO current_point;
+	-- check point if less than 0
+	comp_result := current_point + point_action;
+	RAISE NOTICE 'comp_result : %', comp_result;
+	IF comp_result < 0 THEN
+			EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value = 0 WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
+	ELSE
+		-- add point
+			EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value = '|| comp_result ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
+	END IF;
+ 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
 $BODY$
@@ -627,6 +641,8 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION give_rewards_when_quest_completed() RETURNS trigger AS
 $BODY$
 DECLARE
+current_point integer;
+comp_result integer;
 ach record;
 point_obtained integer;
 achievement_id character varying(20);
@@ -655,8 +671,17 @@ BEGIN
 			AND '|| game_id ||'.member_achievement.member_id = '|| quote_literal(NEW.member_id) ||' AND '|| game_id ||'.member_achievement.achievement_id = '|| quote_literal(ach.achievement_id) ||';';
 			-- get point obtained
 			EXECUTE 'SELECT point_value FROM '|| game_id ||'.achievement WHERE achievement_id = '|| quote_literal(ach.achievement_id) ||';' INTO point_obtained;
+			-- get current point value
+			EXECUTE 'SELECT point_value FROM '|| game_id ||'.member_point WHERE member_id = '|| quote_literal(NEW.member_id) ||';' INTO current_point;
+			-- check point if less than 0
+			comp_result = current_point + point_obtained;
+			IF comp_result < 0 THEN
+				EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value = 0 WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
+    		ELSE
 			-- add point
-			EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value = point_value + '|| point_obtained ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
+				EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value =  '|| comp_result ||' WHERE member_id = '|| quote_literal(NEW.member_id) ||';';
+			END IF;
+
 		END LOOP;
 	END IF;
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
@@ -831,7 +856,7 @@ game_id character varying(20);
 BEGIN
 	game_id = TG_TABLE_SCHEMA;
 
-	RAISE NOTICE 'AppId : %', game_id;
+	RAISE NOTICE 'GameId : %', game_id;
 -- 	-- Quest
 -- 	-- Cross join member_id with (quest_ids and statuses)
  	EXECUTE 'INSERT INTO '|| game_id ||'.member_quest (member_id, quest_id, status)
