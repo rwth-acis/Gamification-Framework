@@ -54,7 +54,7 @@ function configure_function {
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationVisualizationService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationGamifierService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationGameService/join_network.sh
-	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationGameService/join_network_in_a_node.sh
+	#sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationGameService/join_network_in_a_node.sh
 
 	echo "Make it executable"
 	chmod +x GamificationAchievementService/join_network.sh
@@ -79,7 +79,21 @@ function run_one_node_function {
 
 function run_join_one_node_function {
 	echo "[Join One Node]"
-	cd GamificationGameService && sh join_network_in_a_node.sh
+	if screen -list | grep -q "gamification"; then
+		screen -S gamification -X quit
+	fi
+	echo "run Gamification.."
+	cd GamificationGameService &&  screen -dmS gamification sh join_network_in_a_node.sh
+	screen -r gamification
+}
+
+function stop_join_one_node_function {
+	echo "[Stopping Gamification..["
+	if screen -list | grep -q "gamification"; then
+		screen -S gamification -X quit
+	else
+		echo "No screen for Gamification found"
+	fi
 }
 
 function run_join_node_function {
@@ -131,7 +145,13 @@ elif [ "$1" == "-r" ]; then
 	if [ "$2" == "start_one_node" ]; then
 		run_one_node_function
 	elif [ "$2" == "join_one_node" ]; then
-		run_join_one_node_function
+		if [ "$3" == "start" ]; then
+			run_join_one_node_function
+		elif [ "$3" == "stop" ]; then
+			stop_join_one_node_function
+		else
+			run_join_one_node_function
+		fi
 	elif [ "$2" == "join_node" ]; then
 		if [ "$3" == "start" ]; then
 			run_join_node_function

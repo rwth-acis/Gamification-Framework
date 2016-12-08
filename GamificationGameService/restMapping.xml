@@ -1,39 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<service consumes="*" name="i5.las2peer.services.gamificationGameService.GamificationGameService" path="gamification/games" produces="text/plain" version="0.1">
+<service consumes="*" name="i5.las2peer.services.gamificationGamifierService.GamificationGamifierService" path="gamification/gamifier" produces="text/plain" version="0.1">
   <methods>
-    <method httpMethod="post" name="createGame" path="data" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="header" index="0" name="Content-Type" type="java.lang.String"/>
-        <parameter annotation="content" index="1" name="" type="[B"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getGameDetails" path="data/{gameId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="get" name="getActions" path="actions/{gameId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
         <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
       </parameters>
     </method>
-    <method httpMethod="delete" name="deleteGame" path="data/{gameId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+    <method httpMethod="post" name="updateRepository" path="repo" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
       <parameters>
-        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="content" index="0" name="" type="[B"/>
       </parameters>
-    </method>
-    <method httpMethod="post" name="addMemberToGame" path="data/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="get" name="getSeparateGameInfo" path="list/separated" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters/>
-    </method>
-    <method httpMethod="delete" name="removeMemberFromGame" path="data/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters>
-        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
-        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
-      </parameters>
-    </method>
-    <method httpMethod="post" name="memberLoginValidation" path="validation" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
-      <parameters/>
     </method>
   </methods>
 </service>
