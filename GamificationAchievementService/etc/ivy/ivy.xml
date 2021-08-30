@@ -10,9 +10,9 @@
 		<artifact type="jar" ext="jar" conf="*" />
 	</publications>
 	<dependencies>
-		<dependency org="i5" name="las2peer" rev="0.5-SNAPSHOT"
+		<dependency org="i5" name="las2peer" rev="1.1.2"
 			changing="true" conf="platform->*" />
-		<dependency org="i5" name="las2peer-web-connector" rev="0.5-SNAPSHOT"
+		<dependency org="i5" name="las2peer-web-connector" rev="1.1.2"
 			changing="true" conf="platform->*" />
 		<dependency org="junit" name="junit" rev="4.12"
 			conf="platform->default" />
