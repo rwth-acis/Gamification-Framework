@@ -122,7 +122,7 @@ public class GamificationLevelServiceTest {
 		connector.start(node);
 		Thread.sleep(1000); // wait a second for the connector to become ready
 
-		connector.updateServiceList();
+//		connector.updateServiceList();
 		
 		c1 = new MiniClient();
 		c1.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
@@ -138,16 +138,16 @@ public class GamificationLevelServiceTest {
 
 		ac = new MiniClient();
 		ac.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-		
-		// avoid timing errors: wait for the repository manager to get all services before continuing
-		try
-		{
-			System.out.println("waiting..");
-			Thread.sleep(10000);
-		} catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
+// legacy		
+//		// avoid timing errors: wait for the repository manager to get all services before continuing
+//		try
+//		{
+//			System.out.println("waiting..");
+//			Thread.sleep(10000);
+//		} catch (InterruptedException e)
+//		{
+//			e.printStackTrace();
+//		}
 
 	}
 
@@ -326,16 +326,16 @@ public class GamificationLevelServiceTest {
 
 	
 	
-	
-	/**
-	 * Test the TemplateService for valid rest mapping.
-	 * Important for development.
-	 */
-	@Test
-	public void testDebugMapping()
-	{
-		GamificationLevelService cl = new GamificationLevelService();
-		assertTrue(cl.debugMapping());
-	}
+// legacy	
+//	/**
+//	 * Test the TemplateService for valid rest mapping.
+//	 * Important for development.
+//	 */
+//	@Test
+//	public void testDebugMapping()
+//	{
+//		GamificationLevelService cl = new GamificationLevelService();
+//		assertTrue(cl.debugMapping());
+//	}
 
 }

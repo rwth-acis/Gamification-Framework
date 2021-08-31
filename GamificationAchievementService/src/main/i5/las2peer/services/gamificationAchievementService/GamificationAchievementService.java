@@ -94,7 +94,7 @@ import net.minidev.json.JSONValue;
 				)
 		))
 
-public class GamificationAchievementService extends Service {
+public class GamificationAchievementService extends RESTService {
 
 	// instantiate the logger class
 	private final L2pLogger logger = L2pLogger.getInstance(GamificationAchievementService.class.getName());
@@ -871,57 +871,59 @@ public class GamificationAchievementService extends Service {
 		
 	}
 
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Methods required by the LAS2peer framework.
-	// //////////////////////////////////////////////////////////////////////////////////////
+// legacy	
+//	// //////////////////////////////////////////////////////////////////////////////////////
+//	// Methods required by the LAS2peer framework.
+//	// //////////////////////////////////////////////////////////////////////////////////////
+//
+//	/**
+//	 * Method for debugging purposes.
+//	 * Here the concept of restMapping validation is shown.
+//	 * It is important to check, if all annotations are correct and consistent.
+//	 * Otherwise the service will not be accessible by the WebConnector.
+//	 * Best to do it in the unit tests.
+//	 * To avoid being overlooked/ignored the method is implemented here and not in the test section.
+//	 * @return true, if mapping correct
+//	 */
+//	public boolean debugMapping() {
+//		String XML_LOCATION = "./restMapping.xml";
+//		String xml = getRESTMapping();
+//
+//		try {
+//			RESTMapper.writeFile(XML_LOCATION, xml);
+//		} catch (IOException e) {
+//			// write error to logfile and console
+//			logger.log(Level.SEVERE, e.toString(), e);
+//			// create and publish a monitoring message
+//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, e.toString());
+//		}
+//
+//		XMLCheck validator = new XMLCheck();
+//		ValidationResult result = validator.validate(xml);
+//
+//		if (result.isValid()) {
+//			return true;
+//		}
+//		return false;
+//	}
 
-	/**
-	 * Method for debugging purposes.
-	 * Here the concept of restMapping validation is shown.
-	 * It is important to check, if all annotations are correct and consistent.
-	 * Otherwise the service will not be accessible by the WebConnector.
-	 * Best to do it in the unit tests.
-	 * To avoid being overlooked/ignored the method is implemented here and not in the test section.
-	 * @return true, if mapping correct
-	 */
-	public boolean debugMapping() {
-		String XML_LOCATION = "./restMapping.xml";
-		String xml = getRESTMapping();
-
-		try {
-			RESTMapper.writeFile(XML_LOCATION, xml);
-		} catch (IOException e) {
-			// write error to logfile and console
-			logger.log(Level.SEVERE, e.toString(), e);
-			// create and publish a monitoring message
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, e.toString());
-		}
-
-		XMLCheck validator = new XMLCheck();
-		ValidationResult result = validator.validate(xml);
-
-		if (result.isValid()) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * This method is needed for every RESTful game in LAS2peer. There is no need to change!
-	 * 
-	 * @return the mapping
-	 */
-	public String getRESTMapping() {
-		String result = "";
-		try {
-			result = RESTMapper.getMethodsAsXML(this.getClass());
-		} catch (Exception e) {
-			// write error to logfile and console
-			logger.log(Level.SEVERE, e.toString(), e);
-			// create and publish a monitoring message
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, e.toString());
-		}
-		return result;
-	}
+// legacy	
+//	/**
+//	 * This method is needed for every RESTful game in LAS2peer. There is no need to change!
+//	 * 
+//	 * @return the mapping
+//	 */
+//	public String getRESTMapping() {
+//		String result = "";
+//		try {
+//			result = RESTMapper.getMethodsAsXML(this.getClass());
+//		} catch (Exception e) {
+//			// write error to logfile and console
+//			logger.log(Level.SEVERE, e.toString(), e);
+//			// create and publish a monitoring message
+//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, e.toString());
+//		}
+//		return result;
+//	}
 
 }
