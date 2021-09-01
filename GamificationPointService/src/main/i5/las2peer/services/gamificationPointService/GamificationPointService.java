@@ -83,7 +83,7 @@ import net.minidev.json.JSONValue;
 		))
 
 // TODO Your own Serviceclass
-public class GamificationPointService extends Service {
+public class GamificationPointService extends RESTService {
 
 	// instantiate the logger class
 	private final L2pLogger logger = L2pLogger.getInstance(GamificationPointService.class.getName());
@@ -106,405 +106,361 @@ public class GamificationPointService extends Service {
 		this.pointAccess = new PointDAO();
 	}
 
-	
-	/**
-	 * Fetch configuration data from file system
-	 * @param gameId game ID
-	 * @return point service configuration as JSON Object
-	 * @throws IOException IO Exception
-	 */
-	private JSONObject fetchConfigurationFromSystem(String gameId) throws IOException {
-		String confPath = LocalFileManager.getBasedir()+"/"+gameId+"/conf.json";
-		// RMI call without parameters
-		File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
-		if(!gameFolder.exists()){
-			if(gameFolder.mkdir()){
-				System.out.println("New directory "+ gameId +" is created!");
-			}
-			else{
-				System.out.println("Failed to create directory");
-			}
-		}
-		File fileconf = new File(confPath);
-		if(!fileconf.exists()) {
-			if(fileconf.createNewFile()){
-				// Initialize
-				LocalFileManager.writeFile(confPath, "{}");
-				System.out.println("New file is created!");
-			}
-			else{
-				System.out.println("Failed to create file");
-			}
-		} 
-		String confJSONByte = new String(LocalFileManager.getFile(gameId+"/conf.json"));
-		return (JSONObject) JSONValue.parse(confJSONByte);
-	}
-	
-	/**
-	 * Function to store configuration
-	 * @param gameId gameId
-	 * @param obj JSON object
-	 * @throws IOException 
-	 */
-	private void storeConfigurationToSystem(String gameId, JSONObject obj) throws IOException{
-		String confPath = LocalFileManager.getBasedir()+"/"+gameId+"/conf.json";
-			// RMI call without parameters
-		File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
-		if(!gameFolder.exists()){
-			if(gameFolder.mkdir()){
-				System.out.println("New directory "+ gameId +" is created!");
-			}
-			else{
-				System.out.println("Failed to create directory");
-			}
-		}
-		File fileconf = new File(confPath);
-		if(!fileconf.exists()) {
-			if(fileconf.createNewFile()){
-				// Initialize
-				LocalFileManager.writeFile(confPath, "{}");
-				System.out.println("New file is created!");
-			}
-			else{
-				System.out.println("Failed to create file");
-			}
-		} 
-		LocalFileManager.writeFile(LocalFileManager.getBasedir()+"/"+gameId+"/conf.json", obj.toJSONString());
-	}
-	
-//	/**
-//	 * Function to store configuration
-//	 * @param gameId gameId
-//	 * @throws IOException 
-//	 */
-//	private boolean cleanStorage(String gameId){
-//			// RMI call without parameters
-//		File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
-//		
-//		try {
-//			recursiveDelete(gameFolder);
-//			return true;
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			return false;
-//		}
-//
-//    }
-	/**
-	 * Function to delete a folder in the file system
-	 * @param gameFolder folder path
-	 * @throws IOException IO exception
-	 */
-	private void recursiveDelete(File gameFolder) throws IOException{
-		if(gameFolder.isDirectory()){
-    		//directory is empty, then delete it
-    		if(gameFolder.list().length==0){
-    			gameFolder.delete();
-    		   System.out.println("Directory is deleted : " 
-                                                 + gameFolder.getAbsolutePath());
-    		}else{
-    			
-    		   //list all the directory contents
-        	   String files[] = gameFolder.list();
-     
-        	   for (String temp : files) {
-        	      //construct the file structure
-        	      File fileDelete = new File(gameFolder, temp);
-        		 
-        	      //recursive delete
-        	      recursiveDelete(fileDelete);
-        	   }
-        		
-        	   //check the directory again, if empty then delete it
-        	   if(gameFolder.list().length==0){
-        		   gameFolder.delete();
-        	     System.out.println("Directory is deleted : " + gameFolder.getAbsolutePath());
-        	   }
-    		}
-    	}else{
-    		//if file, then delete it
-    		gameFolder.delete();
-    		System.out.println("File is deleted : " + gameFolder.getAbsolutePath());
-    	}
-	}
-	
-	/**
-	 * Function to return http unauthorized message
-	 * @return HTTP response unauthorized
-	 */
-	private HttpResponse unauthorizedMessage(){
-		JSONObject objResponse = new JSONObject();
-		objResponse.put("message", "You are not authorized");
-		L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-		return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
+	@Override
+	  protected void initResources() {
+	    getResourceConfig().register(Resource.class);
+	  }
 
-	}
-	
-	
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Service methods.
-	// //////////////////////////////////////////////////////////////////////////////////////
-	
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// POINT PART --------------------------------------
-	// //////////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * Change point unit name
-	 * @param gameId gameId
-	 * @param unitName point unit name
-	 * @return HttpResponse Returned as JSON object
-	 */
-	@PUT
-	@Path("/{gameId}/name/{unitName}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Unit name changed"),
-			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "changeUnitName", 
-				  notes = "Change unit name"
-				  )
-	public HttpResponse changeUnitName(
-			@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId,
-			@ApiParam(value = "Point unit name")@PathParam("unitName") String unitName)
-	{
-		
-		// Request log
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/points/"+gameId+"/name/"+unitName);
-		long randomLong = new Random().nextLong(); //To be able to match
-		
-		
-		JSONObject objResponse = new JSONObject();
-		Connection conn = null;
-
-		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-		String name = userAgent.getLoginName();
-		if(name.equals("anonymous")){
-			return unauthorizedMessage();
-		}
-		try {
-			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
+	  @Path("/") // this is the root resource
+	  public static class Resource {
+	    // put here all your service methods
+		  
+		  /**
+			 * Fetch configuration data from file system
+			 * @param gameId game ID
+			 * @return point service configuration as JSON Object
+			 * @throws IOException IO Exception
+			 */
+			private JSONObject fetchConfigurationFromSystem(String gameId) throws IOException {
+				String confPath = LocalFileManager.getBasedir()+"/"+gameId+"/conf.json";
+				// RMI call without parameters
+				File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
+				if(!gameFolder.exists()){
+					if(gameFolder.mkdir()){
+						System.out.println("New directory "+ gameId +" is created!");
+					}
+					else{
+						System.out.println("Failed to create directory");
+					}
+				}
+				File fileconf = new File(confPath);
+				if(!fileconf.exists()) {
+					if(fileconf.createNewFile()){
+						// Initialize
+						LocalFileManager.writeFile(confPath, "{}");
+						System.out.println("New file is created!");
+					}
+					else{
+						System.out.println("Failed to create file");
+					}
+				} 
+				String confJSONByte = new String(LocalFileManager.getFile(gameId+"/conf.json"));
+				return (JSONObject) JSONValue.parse(confJSONByte);
+			}
 			
-			if(!pointAccess.isGameIdExist(conn,gameId)){
-				objResponse.put("message", "Cannot update point unit name. Game not found");
-				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+			/**
+			 * Function to store configuration
+			 * @param gameId gameId
+			 * @param obj JSON object
+			 * @throws IOException 
+			 */
+			private void storeConfigurationToSystem(String gameId, JSONObject obj) throws IOException{
+				String confPath = LocalFileManager.getBasedir()+"/"+gameId+"/conf.json";
+					// RMI call without parameters
+				File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
+				if(!gameFolder.exists()){
+					if(gameFolder.mkdir()){
+						System.out.println("New directory "+ gameId +" is created!");
+					}
+					else{
+						System.out.println("Failed to create directory");
+					}
+				}
+				File fileconf = new File(confPath);
+				if(!fileconf.exists()) {
+					if(fileconf.createNewFile()){
+						// Initialize
+						LocalFileManager.writeFile(confPath, "{}");
+						System.out.println("New file is created!");
+					}
+					else{
+						System.out.println("Failed to create file");
+					}
+				} 
+				LocalFileManager.writeFile(LocalFileManager.getBasedir()+"/"+gameId+"/conf.json", obj.toJSONString());
 			}
-			if(unitName != null){
+			
+//			/**
+//			 * Function to store configuration
+//			 * @param gameId gameId
+//			 * @throws IOException 
+//			 */
+//			private boolean cleanStorage(String gameId){
+//					// RMI call without parameters
+//				File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
+//				
+//				try {
+//					recursiveDelete(gameFolder);
+//					return true;
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//					return false;
+//				}
+		//
+//		    }
+			/**
+			 * Function to delete a folder in the file system
+			 * @param gameFolder folder path
+			 * @throws IOException IO exception
+			 */
+			private void recursiveDelete(File gameFolder) throws IOException{
+				if(gameFolder.isDirectory()){
+		    		//directory is empty, then delete it
+		    		if(gameFolder.list().length==0){
+		    			gameFolder.delete();
+		    		   System.out.println("Directory is deleted : " 
+		                                                 + gameFolder.getAbsolutePath());
+		    		}else{
+		    			
+		    		   //list all the directory contents
+		        	   String files[] = gameFolder.list();
+		     
+		        	   for (String temp : files) {
+		        	      //construct the file structure
+		        	      File fileDelete = new File(gameFolder, temp);
+		        		 
+		        	      //recursive delete
+		        	      recursiveDelete(fileDelete);
+		        	   }
+		        		
+		        	   //check the directory again, if empty then delete it
+		        	   if(gameFolder.list().length==0){
+		        		   gameFolder.delete();
+		        	     System.out.println("Directory is deleted : " + gameFolder.getAbsolutePath());
+		        	   }
+		    		}
+		    	}else{
+		    		//if file, then delete it
+		    		gameFolder.delete();
+		    		System.out.println("File is deleted : " + gameFolder.getAbsolutePath());
+		    	}
+			}
+			
+			/**
+			 * Function to return http unauthorized message
+			 * @return HTTP response unauthorized
+			 */
+			private HttpResponse unauthorizedMessage(){
+				JSONObject objResponse = new JSONObject();
+				objResponse.put("message", "You are not authorized");
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
+
+			}
+			
+			
+			
+			// //////////////////////////////////////////////////////////////////////////////////////
+			// Service methods.
+			// //////////////////////////////////////////////////////////////////////////////////////
+			
+			// //////////////////////////////////////////////////////////////////////////////////////
+			// POINT PART --------------------------------------
+			// //////////////////////////////////////////////////////////////////////////////////////
+			/**
+			 * Change point unit name
+			 * @param gameId gameId
+			 * @param unitName point unit name
+			 * @return HttpResponse Returned as JSON object
+			 */
+			@PUT
+			@Path("/{gameId}/name/{unitName}")
+			@Produces(MediaType.APPLICATION_JSON)
+			@ApiResponses(value = {
+					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Unit name changed"),
+					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+					@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
+			@ApiOperation(value = "changeUnitName", 
+						  notes = "Change unit name"
+						  )
+			public HttpResponse changeUnitName(
+					@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId,
+					@ApiParam(value = "Point unit name")@PathParam("unitName") String unitName)
+			{
+				
+				// Request log
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/points/"+gameId+"/name/"+unitName);
+				long randomLong = new Random().nextLong(); //To be able to match
+				
+				
+				JSONObject objResponse = new JSONObject();
+				Connection conn = null;
+
+				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				String name = userAgent.getLoginName();
+				if(name.equals("anonymous")){
+					return unauthorizedMessage();
+				}
+				try {
+					conn = dbm.getConnection();
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
+					
+					if(!pointAccess.isGameIdExist(conn,gameId)){
+						objResponse.put("message", "Cannot update point unit name. Game not found");
+						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					}
+					if(unitName != null){
+						JSONObject objRetrieve;
+						try {
+							objRetrieve = fetchConfigurationFromSystem(gameId);
+							objRetrieve.put("pointUnitName", unitName);
+							storeConfigurationToSystem(gameId, objRetrieve);
+							logger.info(objRetrieve.toJSONString());
+							objResponse.put("message", "Unit name "+unitName+" is updated");
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
+							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+						} catch (IOException e) {
+							e.printStackTrace();
+							// return HTTP Response on error
+							objResponse.put("message", "Cannot update point unit name. IO Exception. " + e.getMessage());
+							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						}
+					}
+					else{
+						// Unit name is null
+						
+						// return HTTP Response on error
+						objResponse.put("message", "Cannot update point unit name. Unit Name cannot be null. " );
+						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+
+					}
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+					objResponse.put("message", "Cannot update point unit name. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				}		 
+				// always close connections
+			    finally {
+			      try {
+			        conn.close();
+			      } catch (SQLException e) {
+			        logger.printStackTrace(e);
+			      }
+			    }
+				
+			}
+			
+			/**
+			 * Fetch point unit name
+			 * @param gameId gameId
+			 * @return HttpResponse Returned as JSON object
+			 */
+			@GET
+			@Path("/{gameId}/name")
+			@Produces(MediaType.APPLICATION_JSON)
+			@ApiResponses(value = {
+					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Unit name"),
+					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+					@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
+			@ApiOperation(value = "getUnitName", 
+						  notes = "Get unit name"
+						  )
+			public HttpResponse getUnitName(
+					@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId)
+			{
+				
+				// Request log
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/points/"+gameId+"/name");
+				long randomLong = new Random().nextLong(); //To be able to match
+					
+				
+				JSONObject objResponse = new JSONObject();
+				Connection conn = null;
+
+				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				String name = userAgent.getLoginName();
+				if(name.equals("anonymous")){
+					return unauthorizedMessage();
+				}
+				try {
+					conn = dbm.getConnection();
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
+					
+					if(!pointAccess.isGameIdExist(conn,gameId)){
+						objResponse.put("message", "Cannot get point unit name. Game not found");
+						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					}
+					JSONObject objRetrieve;
+					try {
+						objRetrieve = fetchConfigurationFromSystem(gameId);
+						String pointUnitName = (String) objRetrieve.get("pointUnitName");
+						if(pointUnitName==null){
+							objRetrieve.put("pointUnitName", "");
+						}
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
+						
+						return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
+				
+
+					} catch (IOException e) {
+						e.printStackTrace();
+						
+						// return HTTP Response on error
+						objResponse.put("message", "Cannot get point unit name. IO Exception. " + e.getMessage());
+						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+
+					}
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+					objResponse.put("message", "Cannot get point unit name. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
+					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
+					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				}		 
+				// always close connections
+			    finally {
+			      try {
+			        conn.close();
+			      } catch (SQLException e) {
+			        logger.printStackTrace(e);
+			      }
+			    }
+
+				
+			}
+			
+			public String getUnitNameRMI(String gameId, String memberId){
 				JSONObject objRetrieve;
 				try {
 					objRetrieve = fetchConfigurationFromSystem(gameId);
-					objRetrieve.put("pointUnitName", unitName);
-					storeConfigurationToSystem(gameId, objRetrieve);
-					logger.info(objRetrieve.toJSONString());
-					objResponse.put("message", "Unit name "+unitName+" is updated");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+					String pointUnitName = (String) objRetrieve.get("pointUnitName");
+					if(pointUnitName==null){
+						pointUnitName = "";
+					}
+						
+					return pointUnitName;	
+
 				} catch (IOException e) {
 					e.printStackTrace();
-					// return HTTP Response on error
-					objResponse.put("message", "Cannot update point unit name. IO Exception. " + e.getMessage());
-					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return "";
 				}
 			}
-			else{
-				// Unit name is null
+
+			/**
+			 * RMI function to delete directory of an game in the point service file system
+			 * @param gameId gameId
+			 * @return 1 if the directory is deleted
+			 */
+			public Integer cleanStorageRMI(String gameId) {
+				File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
 				
-				// return HTTP Response on error
-				objResponse.put("message", "Cannot update point unit name. Unit Name cannot be null. " );
-				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-
-			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-			objResponse.put("message", "Cannot update point unit name. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}		 
-		// always close connections
-	    finally {
-	      try {
-	        conn.close();
-	      } catch (SQLException e) {
-	        logger.printStackTrace(e);
-	      }
-	    }
-		
-	}
-	
-	/**
-	 * Fetch point unit name
-	 * @param gameId gameId
-	 * @return HttpResponse Returned as JSON object
-	 */
-	@GET
-	@Path("/{gameId}/name")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Unit name"),
-			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-	@ApiOperation(value = "getUnitName", 
-				  notes = "Get unit name"
-				  )
-	public HttpResponse getUnitName(
-			@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId)
-	{
-		
-		// Request log
-		L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/points/"+gameId+"/name");
-		long randomLong = new Random().nextLong(); //To be able to match
-			
-		
-		JSONObject objResponse = new JSONObject();
-		Connection conn = null;
-
-		UserAgent userAgent = (UserAgent) getContext().getMainAgent();
-		String name = userAgent.getLoginName();
-		if(name.equals("anonymous")){
-			return unauthorizedMessage();
-		}
-		try {
-			conn = dbm.getConnection();
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
-			
-			if(!pointAccess.isGameIdExist(conn,gameId)){
-				objResponse.put("message", "Cannot get point unit name. Game not found");
-				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-			}
-			JSONObject objRetrieve;
-			try {
-				objRetrieve = fetchConfigurationFromSystem(gameId);
-				String pointUnitName = (String) objRetrieve.get("pointUnitName");
-				if(pointUnitName==null){
-					objRetrieve.put("pointUnitName", "");
+				try {
+					recursiveDelete(gameFolder);
+					return 1;
+				} catch (IOException e) {
+					e.printStackTrace();
+					return 0;
 				}
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
-				
-				return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
-		
-
-			} catch (IOException e) {
-				e.printStackTrace();
-				
-				// return HTTP Response on error
-				objResponse.put("message", "Cannot get point unit name. IO Exception. " + e.getMessage());
-				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-
 			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-			objResponse.put("message", "Cannot get point unit name. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-			L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}		 
-		// always close connections
-	    finally {
-	      try {
-	        conn.close();
-	      } catch (SQLException e) {
-	        logger.printStackTrace(e);
-	      }
-	    }
-
-		
-	}
-	
-	public String getUnitNameRMI(String gameId, String memberId){
-		JSONObject objRetrieve;
-		try {
-			objRetrieve = fetchConfigurationFromSystem(gameId);
-			String pointUnitName = (String) objRetrieve.get("pointUnitName");
-			if(pointUnitName==null){
-				pointUnitName = "";
-			}
-				
-			return pointUnitName;	
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "";
-		}
-	}
-
-	/**
-	 * RMI function to delete directory of an game in the point service file system
-	 * @param gameId gameId
-	 * @return 1 if the directory is deleted
-	 */
-	public Integer cleanStorageRMI(String gameId) {
-		File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
-		
-		try {
-			recursiveDelete(gameFolder);
-			return 1;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return 0;
-		}
-	}
-// legacy	
-//	// //////////////////////////////////////////////////////////////////////////////////////
-//	// Methods required by the LAS2peer framework.
-//	// //////////////////////////////////////////////////////////////////////////////////////
-//
-//	/**
-//	 * Method for debugging purposes.
-//	 * Here the concept of restMapping validation is shown.
-//	 * It is important to check, if all annotations are correct and consistent.
-//	 * Otherwise the service will not be accessible by the WebConnector.
-//	 * Best to do it in the unit tests.
-//	 * To avoid being overlooked/ignored the method is implemented here and not in the test section.
-//	 * @return true, if mapping correct
-//	 */
-//	public boolean debugMapping() {
-//		String XML_LOCATION = "./restMapping.xml";
-//		String xml = getRESTMapping();
-//
-//		try {
-//			RESTMapper.writeFile(XML_LOCATION, xml);
-//		} catch (IOException e) {
-//			// write error to logfile and console
-//			logger.log(Level.SEVERE, e.toString(), e);
-//			// create and publish a monitoring message
-//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, e.toString());
-//		}
-//
-//		XMLCheck validator = new XMLCheck();
-//		ValidationResult result = validator.validate(xml);
-//
-//		if (result.isValid()) {
-//			return true;
-//		}
-//		return false;
-//	}
-//
-//	/**
-//	 * This method is needed for every RESTful game in LAS2peer. There is no need to change!
-//	 * 
-//	 * @return the mapping
-//	 */
-//	public String getRESTMapping() {
-//		String result = "";
-//		try {
-//			result = RESTMapper.getMethodsAsXML(this.getClass());
-//		} catch (Exception e) {
-//			// write error to logfile and console
-//			logger.log(Level.SEVERE, e.toString(), e);
-//			// create and publish a monitoring message
-//			L2pLogger.logEvent(this, Event.SERVICE_ERROR, e.toString());
-//		}
-//		return result;
-//	}
+	  }
 
 }
