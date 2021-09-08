@@ -25,12 +25,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import i5.las2peer.api.Service;
 import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
 import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.p2p.TimeoutException;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -215,7 +215,7 @@ public class GamificationGameService extends RESTService {
 			})
 			public HttpResponse createGame(
 					@ApiParam(value = "Game detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
-					@ApiParam(value = "Content of form data", required = true)@ContentParam byte[] formData) {
+					@ApiParam(value = "Content of form data", required = true) byte[] formData) {
 				
 				// Request log
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/games/data");

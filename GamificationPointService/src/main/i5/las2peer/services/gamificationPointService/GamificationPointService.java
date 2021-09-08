@@ -14,9 +14,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import i5.las2peer.api.Service;
+
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;

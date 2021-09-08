@@ -23,12 +23,12 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.TreeWalk;
 
 
-import i5.las2peer.api.Service;
 import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
 import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.p2p.TimeoutException;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -217,7 +217,7 @@ public class GamificationGamifierService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "User data error to be retrieved. Not JSON object")
 			})
 			public HttpResponse updateRepository(
-					@ApiParam(value = "Data in JSON", required = true)@ContentParam byte[] contentB) {
+					@ApiParam(value = "Data in JSON", required = true) byte[] contentB) {
 				// Request log
 				L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/gamifier/repo");
 				long randomLong = new Random().nextLong(); //To be able to match

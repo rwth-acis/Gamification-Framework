@@ -27,9 +27,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import i5.las2peer.api.Service;
+
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -193,7 +194,7 @@ public class GamificationActionService extends RESTService {
 				public HttpResponse createNewAction(
 						@ApiParam(value = "Game ID to store a new action", required = true) @PathParam("gameId") String gameId,
 						@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-						@ApiParam(value = "Action detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
+						@ApiParam(value = "Action detail in multiple/form-data type", required = true) byte[] formData)  {
 					
 					// Request log
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/actions/"+gameId);
@@ -470,9 +471,9 @@ public class GamificationActionService extends RESTService {
 							 notes = "A method to update an action with details (action ID, action name, action description, action point value")
 				public HttpResponse updateAction(
 						@ApiParam(value = "Game ID to store an updated action", required = true) @PathParam("gameId") String gameId,
-							@PathParam("actionId") String actionId,
+						@PathParam("actionId") String actionId,
 						@ApiParam(value = "action detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-												 @ContentParam byte[] formData)  {
+						byte[] formData)  {
 					
 					// Request log
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/actions/"+gameId+"/"+actionId);

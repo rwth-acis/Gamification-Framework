@@ -27,9 +27,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import i5.las2peer.api.Service;
+
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -196,7 +197,7 @@ public class GamificationLevelService extends RESTService {
 			public HttpResponse createLevel(
 					@ApiParam(value = "Game ID to store a new level", required = true) @PathParam("gameId") String gameId,
 					@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-					@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
+					@ApiParam(value = "Level detail in multiple/form-data type", required = true) byte[] formData)  {
 				
 				// Request log
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/levels/"+gameId);
@@ -465,7 +466,7 @@ public class GamificationLevelService extends RESTService {
 					@ApiParam(value = "Game ID to store a new level", required = true) @PathParam("gameId") String gameId,
 						@PathParam("levelNum") int levelNum,
 					@ApiParam(value = "Content type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-					@ApiParam(value = "Level detail in multiple/form-data type", required = true)@ContentParam byte[] formData)  {
+					@ApiParam(value = "Level detail in multiple/form-data type", required = true) byte[] formData)  {
 				
 				// Request log
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/levels/"+gameId+"/"+levelNum);

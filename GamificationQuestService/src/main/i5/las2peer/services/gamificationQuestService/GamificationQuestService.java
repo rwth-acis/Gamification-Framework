@@ -26,9 +26,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import i5.las2peer.api.Service;
+
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
@@ -281,7 +282,7 @@ public class GamificationQuestService extends RESTService {
 						 notes = "A method to store a new quest with details")
 			public HttpResponse createNewQuest(
 					@ApiParam(value = "Game ID to store a new quest", required = true) @PathParam("gameId") String gameId,
-					@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB)  {
+					@ApiParam(value = "Quest detail in JSON", required = true) byte[] contentB)  {
 
 				// Request log
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/quests/"+gameId);
@@ -562,7 +563,7 @@ public class GamificationQuestService extends RESTService {
 			public HttpResponse updateQuest(
 					@ApiParam(value = "Game ID to store a new quest", required = true) @PathParam("gameId") String gameId,
 					@ApiParam(value = "Quest ID")@PathParam("questId") String questId,
-					@ApiParam(value = "Quest detail in JSON", required = true)@ContentParam byte[] contentB) {
+					@ApiParam(value = "Quest detail in JSON", required = true) byte[] contentB) {
 
 				// Request log
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/quests/"+gameId+"/"+questId);
