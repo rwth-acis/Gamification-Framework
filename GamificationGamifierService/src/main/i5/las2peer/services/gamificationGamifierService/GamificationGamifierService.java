@@ -13,6 +13,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
@@ -134,13 +136,14 @@ public class GamificationGamifierService extends RESTService {
 			}
 			/**
 			 * Function to return http unauthorized message
-			 * @return HTTP response unauthorized
+			 * @return HTTP Response returns JSON object
 			 */
-			private HttpResponse unauthorizedMessage(){
+			private Response unauthorizedMessage(){
 				JSONObject objResponse = new JSONObject();
 				objResponse.put("message", "You are not authorized");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, "Not Authorized");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
+				return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
 			}	
 			
@@ -148,7 +151,7 @@ public class GamificationGamifierService extends RESTService {
 			/**
 			 * Get action data from database via Gamification Action Service
 			 * @param gameId gameId
-			 * @return HttpResponse Returned as JSON object
+			 * @return HTTP Response returned as JSON object
 			 */
 			@GET
 			@Path("/actions/{gameId}")
@@ -159,7 +162,7 @@ public class GamificationGamifierService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Fetch the actions"),
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 					@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-			public HttpResponse getActions(@ApiParam(value = "Game ID")@PathParam("gameId") String gameId){
+			public Response getActions(@ApiParam(value = "Game ID")@PathParam("gameId") String gameId){
 				JSONObject objResponse = new JSONObject();
 				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
 				String name = userAgent.getLoginName();
@@ -173,12 +176,14 @@ public class GamificationGamifierService extends RESTService {
 								new Serializable[] { gameId });
 						if (result != null) {
 							L2pLogger.logEvent(Event.RMI_SUCCESSFUL, "Get Actions RMI success");
-							return new HttpResponse((String) result, HttpURLConnection.HTTP_OK);
+							return Response.status(HttpURLConnection.HTTP_OK).entity((String) result).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse((String) result, HttpURLConnection.HTTP_OK);
 						}
 						L2pLogger.logEvent(Event.RMI_FAILED, "Get Actions RMI failed");
 						objResponse.put("message", "Cannot find actions");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
 							| TimeoutException e) {
@@ -186,7 +191,8 @@ public class GamificationGamifierService extends RESTService {
 						L2pLogger.logEvent(Event.RMI_FAILED, "Get Actions RMI failed. " + e.getMessage());
 						objResponse.put("message", "Cannot find Actions. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					}
 
@@ -202,7 +208,7 @@ public class GamificationGamifierService extends RESTService {
 			 *  <li>aopScript - Aspect-Oriented Programming script part that is going to be added in Gamifier.js
 			 * </ul>
 			 * @param contentB Content Byte JSON
-			 * @return HttpResponse Returned as JSON object
+			 * @return HTTP Response Returned as JSON object
 			 */
 			@POST
 			@Path("/repo")
@@ -216,7 +222,7 @@ public class GamificationGamifierService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "User data error to be retrieved. Not JSON object")
 			})
-			public HttpResponse updateRepository(
+			public Response updateRepository(
 					@ApiParam(value = "Data in JSON", required = true) byte[] contentB) {
 				// Request log
 				L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/gamifier/repo");
@@ -237,7 +243,8 @@ public class GamificationGamifierService extends RESTService {
 					objResponse.put("message", "Cannot update repository. Cannot parse json data into string");
 					//L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 					L2pLogger.logEvent(this, Event.AGENT_UPLOAD_FAILED, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 				
 				
@@ -260,12 +267,14 @@ public class GamificationGamifierService extends RESTService {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot update repository. Cannot parse json data into string. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (IOException e) {
 					e.printStackTrace();		
 					objResponse.put("message", "Cannot update repository. Cannot parse json data into string. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 				// check if repo exist
 				TreeWalk treeWalk = null;
@@ -345,16 +354,19 @@ public class GamificationGamifierService extends RESTService {
 					e1.printStackTrace();		
 					objResponse.put("message", "Cannot update repository. Github exception. " + e1.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 					objResponse.put("message", "Cannot update repository. Github exception. " + e1.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (Exception e) {
 			        objResponse.put("message", "Cannot update repository. Github exception. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}
 			    finally {
 				  newRepository.close();
@@ -366,8 +378,8 @@ public class GamificationGamifierService extends RESTService {
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_10,getContext().getMainAgent(), "" + randomLong);
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_22,getContext().getMainAgent(), "" + gameId);
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_23,getContext().getMainAgent(), "" + name);
-				
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+				return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 			}
 	  }

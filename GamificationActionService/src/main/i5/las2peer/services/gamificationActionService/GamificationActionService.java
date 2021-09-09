@@ -20,6 +20,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
+
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 
@@ -146,14 +148,14 @@ public class GamificationActionService extends RESTService {
 			 
 				/**
 				 * Function to return http unauthorized message
-				 * @return HTTP response unauthorized
+				 * @return HTTP Response returned as JSON object
 				 */
-				private HttpResponse unauthorizedMessage(){
+				private Response unauthorizedMessage(){
 					JSONObject objResponse = new JSONObject();
 					logger.info("You are not authorized >> " );
 					objResponse.put("message", "You are not authorized");
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-
+					return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 				}	
 
 				// //////////////////////////////////////////////////////////////////////////////////////
@@ -175,7 +177,7 @@ public class GamificationActionService extends RESTService {
 				 * @param gameId Game ID obtained from Gamification Game Service
 				 * @param formData Form data with multipart/form-data type
 				 * @param contentType Content type (implicitly sent in header)
-				 * @return HttpResponse returned as JSON object
+				 * @return HTTP Response returned as JSON object
 				 */
 				@POST
 				@Path("/{gameId}")
@@ -191,7 +193,7 @@ public class GamificationActionService extends RESTService {
 				})
 				@ApiOperation(value = "createNewAction",
 							 notes = "A method to store a new action with details (action ID, action name, action description,action point value")
-				public HttpResponse createNewAction(
+				public Response createNewAction(
 						@ApiParam(value = "Game ID to store a new action", required = true) @PathParam("gameId") String gameId,
 						@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 						@ApiParam(value = "Action detail in multiple/form-data type", required = true) byte[] formData)  {
@@ -225,13 +227,15 @@ public class GamificationActionService extends RESTService {
 							if(!actionAccess.isGameIdExist(conn,gameId)){
 								objResponse.put("message", "Cannot create action. Game not found");
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 							}
 						} catch (SQLException e1) {
 							e1.printStackTrace();
 							objResponse.put("message", "Cannot create action. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 						FormDataPart partID = parts.get("actionid");
@@ -241,7 +245,8 @@ public class GamificationActionService extends RESTService {
 							if(actionAccess.isActionIdExist(conn,gameId, actionid)){
 								objResponse.put("message", "Cannot create action. Failed to add the action. action ID already exist!");
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 							}
 							FormDataPart partName = parts.get("actionname");
 							if (partName != null) {
@@ -278,20 +283,22 @@ public class GamificationActionService extends RESTService {
 								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
 								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
 								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
-								
-								return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
+								return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 							} catch (SQLException e) {
 								e.printStackTrace();
 								objResponse.put("message", "Cannot create action. Failed to upload " + actionid + ". " + e.getMessage());
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 							}
 						}
 						else{
 							objResponse.put("message", "Cannot create action. Action ID cannot be null!");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 						}
 						
@@ -300,26 +307,30 @@ public class GamificationActionService extends RESTService {
 						// the stream failed to follow required syntax
 						objResponse.put("message", "Cannot create action. Failed to upload " + actionid + ". " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 
 					} catch (IOException e) {
 						// a read or write error occurred
 						objResponse.put("message", "Cannot create action. Failed to upload " + actionid + ". " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					} catch (SQLException e) {
 						e.printStackTrace();
 						objResponse.put("message", "Cannot create action. Failed to upload " + actionid + ". " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					}
 					catch (NullPointerException e){
 						e.printStackTrace();
 						objResponse.put("message", "Cannot create action. Failed to upload " + actionid + ". " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}		 
 					// always close connections
 				    finally {
@@ -336,7 +347,7 @@ public class GamificationActionService extends RESTService {
 				 * Get an action data with specific ID from database
 				 * @param gameId gameId
 				 * @param actionId Action ID
-				 * @return HttpResponse returned Action Model {@link ActionModel} as JSON object
+				 * @return HTTP Response returned Action Model {@link ActionModel} as JSON object
 				 * @see ActionModel
 				 */
 				@GET
@@ -351,7 +362,7 @@ public class GamificationActionService extends RESTService {
 							  response = ActionModel.class,
 							  authorizations = @Authorization(value = "api_key")
 							  )
-				public HttpResponse getActionWithId(
+				public Response getActionWithId(
 						@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 						@ApiParam(value = "Action ID")@PathParam("actionId") String actionId)
 				{
@@ -379,18 +390,21 @@ public class GamificationActionService extends RESTService {
 								if(!actionAccess.isGameIdExist(conn,gameId)){
 									objResponse.put("message", "Cannot get action. Game not found");
 									L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-									return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+									return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+									//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 								}
 							} catch (SQLException e1) {
 								e1.printStackTrace();
 								objResponse.put("message", "Cannot get action. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 							}
 							if(!actionAccess.isActionIdExist(conn,gameId, actionId)){
 								objResponse.put("message", "Cannot get action. Action not found");
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 							}
 							action = actionAccess.getActionWithId(conn,gameId, actionId);
 							if(action != null){
@@ -402,19 +416,22 @@ public class GamificationActionService extends RESTService {
 						    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
 						    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
 								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
-								return new HttpResponse(actionString, HttpURLConnection.HTTP_OK);
+								return Response.status(HttpURLConnection.HTTP_OK).entity(actionString).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(actionString, HttpURLConnection.HTTP_OK);
 							}
 							else{
 								objResponse.put("message", "Cannot get action. Cannot find badge with " + actionId);
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 							}
 						} catch (SQLException e) {
 							e.printStackTrace();
 							objResponse.put("message", "Cannot get action. DB Error. " + e.getMessage());
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 						}
 						
@@ -422,13 +439,15 @@ public class GamificationActionService extends RESTService {
 						e.printStackTrace();
 						objResponse.put("message", "Cannot get action. JSON processing error. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						
 					} catch (SQLException e) {
 						e.printStackTrace();
 						objResponse.put("message", "Cannot get action. DB Error. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 					}
 					 // always close connections
@@ -456,7 +475,7 @@ public class GamificationActionService extends RESTService {
 				 * @param actionId Action ID to be updated
 				 * @param formData Form data with multipart/form-data type
 				 * @param contentType Content type (implicitly sent in header)
-				 * @return HttpResponse returned as JSON object
+				 * @return HTTP Response returned as JSON object
 				 */
 				@PUT
 				@Path("/{gameId}/{actionId}")
@@ -469,7 +488,7 @@ public class GamificationActionService extends RESTService {
 				})
 				@ApiOperation(value = "Update an action",
 							 notes = "A method to update an action with details (action ID, action name, action description, action point value")
-				public HttpResponse updateAction(
+				public Response updateAction(
 						@ApiParam(value = "Game ID to store an updated action", required = true) @PathParam("gameId") String gameId,
 						@PathParam("actionId") String actionId,
 						@ApiParam(value = "action detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
@@ -506,14 +525,16 @@ public class GamificationActionService extends RESTService {
 							logger.info("action ID cannot be null >> " );
 							objResponse.put("message", "action ID cannot be null");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 						try{
 							if(!actionAccess.isGameIdExist(conn,gameId)){
 								logger.info("Game not found >> ");
 								objResponse.put("message", "Game not found");
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 							}
 							
 							
@@ -524,7 +545,8 @@ public class GamificationActionService extends RESTService {
 								logger.info("action not found in database >> " );
 								objResponse.put("message", "action not found in database");
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 							}
 							
 							FormDataPart partName = parts.get("actionname");
@@ -569,14 +591,16 @@ public class GamificationActionService extends RESTService {
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+							return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 						} catch (SQLException e) {
 							e.printStackTrace();
 							System.out.println(e.getMessage());
 							logger.info("SQLException >> " + e.getMessage());
 							objResponse.put("message", "Cannot connect to database");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						
 					} catch (MalformedStreamException e) {
@@ -585,21 +609,24 @@ public class GamificationActionService extends RESTService {
 						logger.info("MalformedStreamException >> " );
 						objResponse.put("message", "Failed to upload " + actionId + ". "+e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					} catch (IOException e) {
 						// a read or write error occurred
 						logger.log(Level.SEVERE, e.getMessage(), e);
 						logger.info("IOException >> " );
 						objResponse.put("message", "Failed to upload " + actionId + ".");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					} catch (SQLException e) {
 						e.printStackTrace();
 						System.out.println(e.getMessage());
 						logger.info("SQLException >> " + e.getMessage());
 						objResponse.put("message", "Cannot connect to database");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					 // always close connections
 				    finally {
@@ -617,7 +644,7 @@ public class GamificationActionService extends RESTService {
 				 * Delete an action data with specified ID
 				 * @param gameId Game ID obtained from Gamification Game Service
 				 * @param actionId Action ID to be deleted
-				 * @return HttpResponse returned as JSON object
+				 * @return HTTP Response returned as JSON object
 				 */
 				@DELETE
 				@Path("/{gameId}/{actionId}")
@@ -629,7 +656,7 @@ public class GamificationActionService extends RESTService {
 				})
 				@ApiOperation(value = "",
 							  notes = "delete an action")
-				public HttpResponse deleteAction(@PathParam("gameId") String gameId,
+				public Response deleteAction(@PathParam("gameId") String gameId,
 											 @PathParam("actionId") String actionId)
 				{
 					
@@ -653,18 +680,21 @@ public class GamificationActionService extends RESTService {
 							if(!actionAccess.isGameIdExist(conn,gameId)){
 								objResponse.put("message", "Cannot delete action. Game not found");
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 							}
 						} catch (SQLException e1) {
 							e1.printStackTrace();
 							objResponse.put("message", "Cannot delete action. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						if(!actionAccess.isActionIdExist(conn,gameId, actionId)){
 							objResponse.put("message", "Cannot delete action. Failed to delete the action. Action ID is not exist!");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 						actionAccess.deleteAction(conn,gameId, actionId);
 						
@@ -672,14 +702,16 @@ public class GamificationActionService extends RESTService {
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 					} catch (SQLException e) {
 						
 						e.printStackTrace();
 						objResponse.put("message", "Cannot delete action. Database error. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					 // always close connections
 				    finally {
@@ -698,7 +730,7 @@ public class GamificationActionService extends RESTService {
 				 * @param currentPage current cursor page
 				 * @param windowSize size of fetched data (use -1 to fetch all data)
 				 * @param searchPhrase search word
-				 * @return HttpResponse returned as JSON object
+				 * @return HTTP Response returned as JSON object
 				 */
 				@GET
 				@Path("/{gameId}")
@@ -712,7 +744,7 @@ public class GamificationActionService extends RESTService {
 							  response = ActionModel.class,
 							  responseContainer = "List"
 							  )
-				public HttpResponse getActionList(
+				public Response getActionList(
 						@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 						@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
 						@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
@@ -739,13 +771,15 @@ public class GamificationActionService extends RESTService {
 							if(!actionAccess.isGameIdExist(conn,gameId)){
 								objResponse.put("message", "Cannot get actions. Game not found");
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 							}
 						} catch (SQLException e1) {
 							e1.printStackTrace();
 							objResponse.put("message", "Cannot get actions. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						int offset = (currentPage - 1) * windowSize;
 						int totalNum = actionAccess.getNumberOfActions(conn,gameId);
@@ -772,7 +806,8 @@ public class GamificationActionService extends RESTService {
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 						
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -780,12 +815,14 @@ public class GamificationActionService extends RESTService {
 						// return HTTP Response on error
 						objResponse.put("message", "Cannot get actions. Database error. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					} catch (JsonProcessingException e) {
 						e.printStackTrace();
 						objResponse.put("message","Cannot get actions. JSON processing error. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					}
 					 // always close connections

@@ -18,6 +18,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
 
 
 
@@ -168,14 +169,15 @@ public class GamificationGameService extends RESTService {
 			
 			/**
 			 * Function to return http unauthorized message
-			 * @return HTTP response unauthorized
+			 * @return HTTP Response returns JSON objects
 			 */
-			private HttpResponse unauthorizedMessage(){
+			private Response unauthorizedMessage(){
 				JSONObject objResponse = new JSONObject();
 				//logger.info("You are not authorized >> " );
 				objResponse.put("message", "You are not authorized");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, "Not Authorized");
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
+				return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
 			}
 			
@@ -213,7 +215,7 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
 					@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "New game created")
 			})
-			public HttpResponse createGame(
+			public Response createGame(
 					@ApiParam(value = "Game detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
 					@ApiParam(value = "Content of form data", required = true) byte[] formData) {
 				
@@ -249,7 +251,8 @@ public class GamificationGameService extends RESTService {
 							// game id already exist
 							objResponse.put("message", "Game ID already exist");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 						
 						FormDataPart partGameDesc = parts.get("gamedesc");
@@ -276,34 +279,38 @@ public class GamificationGameService extends RESTService {
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_2,getContext().getMainAgent(), ""+randomLong);
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3,getContext().getMainAgent(), ""+name);
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4,getContext().getMainAgent(), ""+newGame.getId());
-
 							objResponse.put("message", "New game created");
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_CREATED);
+							return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_CREATED);
 
 						} catch (SQLException e) {
 							e.printStackTrace();
 							objResponse.put("message", "Cannot Add New Game. Database Error. " + e.getMessage());
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 					}
 					else{
 						// game id cannot be empty
 						objResponse.put("message", "Cannot Add New Game. Game ID cannot be empty.");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 				}
 				catch (IOException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot Add New Game. Error in parsing form data. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot Add New Game. Error checking game ID exist. "  + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				} 		 
 				// always close connections
 			    finally {
@@ -333,7 +340,7 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database Error"),
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Failed to process JSON")
 			})
-			public HttpResponse getGameDetails(
+			public Response getGameDetails(
 					@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId)
 			{
 				// Request log
@@ -353,7 +360,8 @@ public class GamificationGameService extends RESTService {
 					if(!gameAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot get Game detail. Game not found");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					// Add Member to Game
 					GameModel game = gameAccess.getGameWithId(conn,gameId);
@@ -361,17 +369,20 @@ public class GamificationGameService extends RESTService {
 			    	//Set pretty printing of json
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			    	String gameString = objectMapper.writeValueAsString(game);
-			    	return new HttpResponse(gameString, HttpURLConnection.HTTP_OK);
+			    	return Response.status(HttpURLConnection.HTTP_OK).entity(gameString).type(MediaType.APPLICATION_JSON).build();
+			    	//return new HttpResponse(gameString, HttpURLConnection.HTTP_OK);
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get Game detail. Database Error. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get Game detail. Failed to process JSON. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}		 
 				// always close connections
 			    finally {
@@ -386,7 +397,7 @@ public class GamificationGameService extends RESTService {
 			/**
 			 * Delete a game data with specified ID
 			 * @param gameId Game ID
-			 * @return HttpResponse with the returnString
+			 * @return HTTP Response with the returnString
 			 */
 			@DELETE
 			@Path("/data/{gameId}")
@@ -403,7 +414,7 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Error delete storage"),
 					@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
 
-			public HttpResponse deleteGame(
+			public Response deleteGame(
 					@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId)
 			{
 				// Request log
@@ -423,7 +434,8 @@ public class GamificationGameService extends RESTService {
 					if(!gameAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot delete Game. Game not found.");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					try {
 						if(cleanStorage(gameId)){
@@ -433,26 +445,30 @@ public class GamificationGameService extends RESTService {
 								if(gameAccess.deleteGameDB(conn,gameId)){
 									objResponse.put("message", "Game deleted");
 									L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_13,getContext().getMainAgent(), ""+name);
-									return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+									return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+									//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 								}
 							//}
 							objResponse.put("message", "Cannot delete Game. Database error. ");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
 							| TimeoutException e) {
 						e.printStackTrace();
 						L2pLogger.logEvent(Event.RMI_FAILED, "Failed to clean storage");
 						objResponse.put("message", "RMI error. Failed to clean storage. ");
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot delete Game. Error checking game ID exist. "  + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}			 
 				// always close connections
 			    finally {
@@ -465,7 +481,8 @@ public class GamificationGameService extends RESTService {
 					
 				objResponse.put("message", "Cannot delete Game. Error delete storage.");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 			}
 
 			
@@ -473,7 +490,7 @@ public class GamificationGameService extends RESTService {
 			 * Get all game list separated into two categories. All games registered for the member and other games.
 			 * 
 			 * 
-			 * @return HttpResponse with the returnString
+			 * @return HTTP Response with the returnString
 			 */
 			@GET
 			@Path("/list/separated")
@@ -486,7 +503,7 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database error"),
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "JsonProcessingException")
 			})
-			public HttpResponse getSeparateGameInfo() {
+			public Response getSeparateGameInfo() {
 				// Request log
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/games/list/separated");
 						
@@ -506,8 +523,9 @@ public class GamificationGameService extends RESTService {
 					//List<List<GameModel>> allGames = gameAccess.getSeparateGamesWithMemberId(conn,name);
 					JSONArray allGames = gameAccess.getAllGamesWithMemberInformation(conn, name);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_11,getContext().getMainAgent(), ""+name);
-					
-					return new HttpResponse(allGames.toJSONString(), HttpURLConnection.HTTP_OK);
+					return Response.status(HttpURLConnection.HTTP_OK).entity(allGames.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(allGames.toJSONString(), HttpURLConnection.HTTP_OK);
+
 //					try {
 //						String response = objectMapper.writeValueAsString(allGames);
 //						allGames.clear();
@@ -529,7 +547,8 @@ public class GamificationGameService extends RESTService {
 					e.printStackTrace();
 					objResponse.put("message", "Database error");
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}		 
 				// always close connections
 			    finally {
@@ -547,7 +566,7 @@ public class GamificationGameService extends RESTService {
 			 * Remove a member from the game
 			 * @param gameId gameId
 			 * @param memberId memberId
-			 * @return HttpResponse status if a member is removed
+			 * @return HTTP Response status if a member is removed
 			 */
 			@DELETE
 			@Path("/data/{gameId}/{memberId}")
@@ -561,7 +580,7 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "No member found"),
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Database error")
 			})
-			public HttpResponse removeMemberFromGame(
+			public Response removeMemberFromGame(
 					@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId,
 					@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 			{
@@ -581,33 +600,38 @@ public class GamificationGameService extends RESTService {
 					if(!gameAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot remove member from Game. Game not found");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					try {
 						if(!gameAccess.isMemberRegistered(conn,memberId)){
 							objResponse.put("message", "Cannot remove member from Game. No member found");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 						gameAccess.removeMemberFromGame(conn,memberId, gameId);
 						objResponse.put("message", memberId + "is removed from " + gameId);
 
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_5,getContext().getMainAgent(), ""+ memberId);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_6,getContext().getMainAgent(), ""+ gameId);
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 					}
 					catch (SQLException e) {
 						e.printStackTrace();
 						objResponse.put("message", "Cannot remove member from Game. Database error. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot remove member from Game. Error checking game ID exist "  + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}		 
 				// always close connections
 			    finally {
@@ -624,7 +648,7 @@ public class GamificationGameService extends RESTService {
 			 * Add a member to the game
 			 * @param gameId gameId
 			 * @param memberId memberId
-			 * @return HttpResponse status if the member is added
+			 * @return HTTP Response status if the member is added
 			 */
 			@POST
 			@Path("/data/{gameId}/{memberId}")
@@ -637,7 +661,7 @@ public class GamificationGameService extends RESTService {
 			})
 			@ApiOperation(value = "addMemberToGame",
 						  notes = "add a member to an game")
-			public HttpResponse addMemberToGame(
+			public Response addMemberToGame(
 					@ApiParam(value = "Game ID", required = true)@PathParam("gameId") String gameId,
 					@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId)
 			{
@@ -657,27 +681,31 @@ public class GamificationGameService extends RESTService {
 					if(!gameAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot add member to Game. Game not found");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					try {
 						gameAccess.addMemberToGame(conn,gameId, memberId);
 						objResponse.put("success", memberId + " is added to " + gameId);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_3,getContext().getMainAgent(), ""+memberId);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_4,getContext().getMainAgent(), ""+gameId);
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					}
 					catch (SQLException e) {
 						
 						e.printStackTrace();
 						objResponse.put("message", "Cannot add member to Game. Database error. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot add member to Game. Error checking game ID exist. "  + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				}		 
 				// always close connections
 			    finally {
@@ -692,7 +720,7 @@ public class GamificationGameService extends RESTService {
 			
 			/**
 			 * Validate member and add to the database as the new member if he/she is not registered yet
-			 * @return HttpResponse status if validation success
+			 * @return HTTP Response status if validation success
 			 */
 			@POST
 			@Path("/validation")
@@ -706,7 +734,7 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "User data error to be retrieved. Not JSON object")
 			})
-			public HttpResponse memberLoginValidation() {
+			public Response memberLoginValidation() {
 				// Request log
 				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/games/validation");
 				
@@ -762,14 +790,15 @@ public class GamificationGameService extends RESTService {
 									gameAccess.registerMember(conn,member);
 									objResponse.put("message", "Welcome " + member.getId() + "!");
 									L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_7,getContext().getMainAgent(), ""+member.getId());
-									
-									return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+									return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+									//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 								}
 							} catch (SQLException e) {
 								e.printStackTrace();
 								objResponse.put("message", "Cannot validate member login. Database Error. " + e.getMessage());
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 							}		 
 							// always close connections
 						    finally {
@@ -783,17 +812,19 @@ public class GamificationGameService extends RESTService {
 							//logger.warning("Parsing user data failed! Got '" + jsonUserData.getClass().getName() + " instead of "+ JSONObject.class.getName() + " expected!");
 							objResponse.put("message", "Cannot validate member login. User data error to be retrieved. Not JSON object.");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						objResponse.put("message", "Member already registered");
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_8,getContext().getMainAgent(), ""+member.getId());
-						
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					}
 					else{
 						objResponse.put("message", "Cannot validate member login. User data error to be retrieved.");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 						
 				

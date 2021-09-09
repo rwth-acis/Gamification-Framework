@@ -18,6 +18,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 import org.apache.commons.lang3.tuple.Pair;
@@ -139,13 +141,14 @@ public class GamificationQuestService extends RESTService {
 		  
 		  /**
 			 * Function to return http unauthorized message
-			 * @return HTTP response unauthorized
+			 * @return HTTP Response unauthorized
 			 */
 			private HttpResponse unauthorizedMessage(){
 				JSONObject objResponse = new JSONObject();
 				objResponse.put("message", "You are not authorized");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
+				return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
 			}
 			
@@ -266,7 +269,7 @@ public class GamificationQuestService extends RESTService {
 			 * </ul>
 			 * @param gameId gameId
 			 * @param contentB content JSON
-			 * @return HttpResponse returned as JSON object
+			 * @return HTTP Response returned as JSON object
 			 */
 			@POST
 			@Path("/{gameId}")
@@ -280,7 +283,7 @@ public class GamificationQuestService extends RESTService {
 			})
 			@ApiOperation(value = "createNewQuest",
 						 notes = "A method to store a new quest with details")
-			public HttpResponse createNewQuest(
+			public Response createNewQuest(
 					@ApiParam(value = "Game ID to store a new quest", required = true) @PathParam("gameId") String gameId,
 					@ApiParam(value = "Quest detail in JSON", required = true) byte[] contentB)  {
 
@@ -326,7 +329,8 @@ public class GamificationQuestService extends RESTService {
 					if(content.equals(null)){
 						objResponse.put("message", "Cannot create quest. Cannot parse json data into string");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					}
 					
@@ -335,19 +339,22 @@ public class GamificationQuestService extends RESTService {
 						if(!questAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot create quest. Game not found");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot create quest. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					questid = stringfromJSON(obj,"questid");
 					if(questAccess.isQuestIdExist(conn,gameId, questid)){
 						objResponse.put("message", "Cannot create quest. Failed to add the quest. Quest ID already exist! ");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					questname = stringfromJSON(obj,"questname");
 					queststatus = stringfromJSON(obj,"queststatus");
@@ -366,7 +373,8 @@ public class GamificationQuestService extends RESTService {
 						if(questquestidcompleted.equals(null)){
 							objResponse.put("message", "Cannot create quest. Completed quest ID cannot be null if it is selected");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 					}else{
 						questquestidcompleted = null;
@@ -384,38 +392,44 @@ public class GamificationQuestService extends RESTService {
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
+					return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 				} catch (MalformedStreamException e) {
 					// the stream failed to follow required syntax
 					objResponse.put("message", "Cannot create quest. MalformedStreamException. Failed to upload " + questid + ". " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 
 				} catch (IOException e) {
 					// a read or write error occurred
 					objResponse.put("message", "Cannot create quest. IO Exception. Failed to upload " + questid + ". " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot create quest. Database error. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}
 				catch (NullPointerException e){
 					e.printStackTrace();
 					objResponse.put("message", "Cannot create quest. NullPointerException. Failed to upload " + questid + ". " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				} catch (ParseException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot create quest. ParseException. Failed to parse JSON. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}		 
 				// always close connections
 			    finally {
@@ -432,7 +446,7 @@ public class GamificationQuestService extends RESTService {
 			 * Get a quest data with specific ID from database
 			 * @param gameId gameId
 			 * @param questId quest id
-			 * @return HttpResponse returned as JSON object
+			 * @return HTTP Response returned as JSON object
 			 */
 			@GET
 			@Path("/{gameId}/{questId}")
@@ -445,7 +459,7 @@ public class GamificationQuestService extends RESTService {
 						  notes = "Returns quest detail with specific ID",
 						  response = QuestModel.class
 						  )
-			public HttpResponse getQuestWithId(
+			public Response getQuestWithId(
 					@ApiParam(value = "Game ID")@PathParam("gameId") String gameId,
 					@ApiParam(value = "Quest ID")@PathParam("questId") String questId)
 			{
@@ -471,25 +485,29 @@ public class GamificationQuestService extends RESTService {
 						if(!questAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot get quest. Game not found");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot get quest. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					if(!questAccess.isQuestIdExist(conn,gameId, questId)){
 						objResponse.put("message", "Cannot get quest. Quest not found");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					quest = questAccess.getQuestWithId(conn,gameId, questId);
 
 					if(quest == null){
 						objResponse.put("message", "Cannot get quest. Quest Null, Cannot find quest with " + questId);
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					ObjectMapper objectMapper = new ObjectMapper();
 			    	//Set pretty printing of json
@@ -499,19 +517,22 @@ public class GamificationQuestService extends RESTService {
 			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
 			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
-					return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
+					return Response.status(HttpURLConnection.HTTP_OK).entity(questString).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(questString, HttpURLConnection.HTTP_OK);
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get quest. DB Error. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				} catch (IOException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get quest. Problem in the quest model. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}		 
 				// always close connections
@@ -546,7 +567,7 @@ public class GamificationQuestService extends RESTService {
 			 * @param gameId gameId
 			 * @param questId questId
 			 * @param contentB JSON data
-			 * @return HttpResponse returned as JSON object
+			 * @return HTTP Response returned as JSON object
 			 */
 			@PUT
 			@Path("/{gameId}/{questId}")
@@ -560,7 +581,7 @@ public class GamificationQuestService extends RESTService {
 			})
 			@ApiOperation(value = "updateQuest",
 						 notes = "A method to update a quest with details")
-			public HttpResponse updateQuest(
+			public Response updateQuest(
 					@ApiParam(value = "Game ID to store a new quest", required = true) @PathParam("gameId") String gameId,
 					@ApiParam(value = "Quest ID")@PathParam("questId") String questId,
 					@ApiParam(value = "Quest detail in JSON", required = true) byte[] contentB) {
@@ -579,7 +600,8 @@ public class GamificationQuestService extends RESTService {
 					objResponse.put("message", "Cannot update quest. Cannot parse json data into string");
 					
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}
 				
@@ -610,28 +632,32 @@ public class GamificationQuestService extends RESTService {
 							logger.info("Game not found >> ");
 							objResponse.put("message", "Cannot update quest. Game not found");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						logger.info("Cannot check whether game ID exist or not. Database error. >> " + e1.getMessage());
 						objResponse.put("message", "Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					if (questId == null) {
 						logger.info("quest ID cannot be null >> " );
 						objResponse.put("message", "Cannot update quest. quest ID cannot be null");
 						
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 						
 						QuestModel quest = questAccess.getQuestWithId(conn,gameId, questId);
 						if(!questAccess.isQuestIdExist(conn,gameId, questId)){
 							objResponse.put("message", "Cannot update quest. Failed to update the quest. Quest ID is not exist!");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						JSONObject obj = (JSONObject) JSONValue.parseWithException(content);
 						
@@ -663,7 +689,8 @@ public class GamificationQuestService extends RESTService {
 							if(questquestidcompleted.equals(null) || questquestidcompleted.equals("")){
 								objResponse.put("message", "Cannot update quest. Completed quest ID cannot be null if it is selected");
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-								return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 							}	
 						}
 						questquestflag = boolfromJSON(obj,"questquestflag");
@@ -691,24 +718,28 @@ public class GamificationQuestService extends RESTService {
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_OK);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_OK);
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot update quest. DB Error. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				} catch (ParseException e) {
 					e.printStackTrace();			
 					objResponse.put("message", "Cannot update quest. ParseExceptionr. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (IOException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot update quest. Problem with the model. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} 		 
 				// always close connections
 			    finally {
@@ -725,7 +756,7 @@ public class GamificationQuestService extends RESTService {
 			 * Delete a quest data with specified ID
 			 * @param gameId gameId
 			 * @param questId questId
-			 * @return HttpResponse returned as JSON object
+			 * @return HTTP Response returned as JSON object
 			 */
 			@DELETE
 			@Path("/{gameId}/{questId}")
@@ -737,7 +768,7 @@ public class GamificationQuestService extends RESTService {
 			})
 			@ApiOperation(value = "deleteQuest",
 						  notes = "delete a quest")
-			public HttpResponse deleteQuest(@PathParam("gameId") String gameId,
+			public Response deleteQuest(@PathParam("gameId") String gameId,
 										 @PathParam("questId") String questId)
 			{
 				
@@ -761,18 +792,21 @@ public class GamificationQuestService extends RESTService {
 						if(!questAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot delete quest. Game not found");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot delete quest. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					if(!questAccess.isQuestIdExist(conn,gameId, questId)){
 						objResponse.put("message", "Cannot delete quest. Failed to delete the quest. Quest ID is not exist!");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					questAccess.deleteQuest(conn,gameId, questId);
 					
@@ -780,14 +814,16 @@ public class GamificationQuestService extends RESTService {
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 				} catch (SQLException e) {
 					
 					e.printStackTrace();
 					objResponse.put("message", "Cannot delete quest. Database error. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}		 
 				// always close connections
 			    finally {
@@ -805,7 +841,7 @@ public class GamificationQuestService extends RESTService {
 			 * @param currentPage current cursor page
 			 * @param windowSize size of fetched data (use -1 to fetch all data)
 			 * @param searchPhrase search word
-			 * @return HttpResponse returned as JSON object
+			 * @return HTTP Response returned as JSON object
 			 */
 			@GET
 			@Path("/{gameId}")
@@ -819,7 +855,7 @@ public class GamificationQuestService extends RESTService {
 						  response = QuestModel.class,
 						  responseContainer = "List"
 						  )
-			public HttpResponse getQuestList(
+			public Response getQuestList(
 					@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId,
 					@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
 					@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
@@ -848,13 +884,15 @@ public class GamificationQuestService extends RESTService {
 						if(!questAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot get quests. Game not found");
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot get quests. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					int offset = (currentPage - 1) * windowSize;
 					int totalNum = questAccess.getNumberOfQuests(conn,gameId);
@@ -894,28 +932,28 @@ public class GamificationQuestService extends RESTService {
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
 					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
-
-					
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
-					
-					// return HTTP Response on error
 					objResponse.put("message", "Cannot get quests. Database error. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get quests. JSON process error. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				} catch (IOException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get quests. IO Exception. " + e.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}		 
 				// always close connections

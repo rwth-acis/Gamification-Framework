@@ -13,6 +13,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+
 
 
 import i5.las2peer.logging.L2pLogger;
@@ -239,13 +241,14 @@ public class GamificationPointService extends RESTService {
 			
 			/**
 			 * Function to return http unauthorized message
-			 * @return HTTP response unauthorized
+			 * @return HTTP Response unauthorized
 			 */
-			private HttpResponse unauthorizedMessage(){
+			private Response unauthorizedMessage(){
 				JSONObject objResponse = new JSONObject();
 				objResponse.put("message", "You are not authorized");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-				return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
+				return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 
 			}
 			
@@ -262,7 +265,7 @@ public class GamificationPointService extends RESTService {
 			 * Change point unit name
 			 * @param gameId gameId
 			 * @param unitName point unit name
-			 * @return HttpResponse Returned as JSON object
+			 * @return HTTP Response Returned as JSON object
 			 */
 			@PUT
 			@Path("/{gameId}/name/{unitName}")
@@ -274,7 +277,7 @@ public class GamificationPointService extends RESTService {
 			@ApiOperation(value = "changeUnitName", 
 						  notes = "Change unit name"
 						  )
-			public HttpResponse changeUnitName(
+			public Response changeUnitName(
 					@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId,
 					@ApiParam(value = "Point unit name")@PathParam("unitName") String unitName)
 			{
@@ -299,7 +302,8 @@ public class GamificationPointService extends RESTService {
 					if(!pointAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot update point unit name. Game not found");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					if(unitName != null){
 						JSONObject objRetrieve;
@@ -312,13 +316,15 @@ public class GamificationPointService extends RESTService {
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
 							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+							return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 						} catch (IOException e) {
 							e.printStackTrace();
 							// return HTTP Response on error
 							objResponse.put("message", "Cannot update point unit name. IO Exception. " + e.getMessage());
 							L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-							return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 					}
 					else{
@@ -327,14 +333,16 @@ public class GamificationPointService extends RESTService {
 						// return HTTP Response on error
 						objResponse.put("message", "Cannot update point unit name. Unit Name cannot be null. " );
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 					objResponse.put("message", "Cannot update point unit name. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}		 
 				// always close connections
 			    finally {
@@ -350,7 +358,7 @@ public class GamificationPointService extends RESTService {
 			/**
 			 * Fetch point unit name
 			 * @param gameId gameId
-			 * @return HttpResponse Returned as JSON object
+			 * @return HTTP Response Returned as JSON object
 			 */
 			@GET
 			@Path("/{gameId}/name")
@@ -362,7 +370,7 @@ public class GamificationPointService extends RESTService {
 			@ApiOperation(value = "getUnitName", 
 						  notes = "Get unit name"
 						  )
-			public HttpResponse getUnitName(
+			public Response getUnitName(
 					@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId)
 			{
 				
@@ -386,7 +394,8 @@ public class GamificationPointService extends RESTService {
 					if(!pointAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot get point unit name. Game not found");
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					JSONObject objRetrieve;
 					try {
@@ -398,8 +407,8 @@ public class GamificationPointService extends RESTService {
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
 						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
-						
-						return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objRetrieve.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
 				
 
 					} catch (IOException e) {
@@ -408,14 +417,16 @@ public class GamificationPointService extends RESTService {
 						// return HTTP Response on error
 						objResponse.put("message", "Cannot get point unit name. IO Exception. " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-						return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 					objResponse.put("message", "Cannot get point unit name. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 					L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
-					return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}		 
 				// always close connections
 			    finally {
