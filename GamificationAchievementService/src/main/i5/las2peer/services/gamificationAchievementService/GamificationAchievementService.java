@@ -132,13 +132,14 @@ public class GamificationAchievementService extends RESTService {
 
 	@Override
 	  protected void initResources() {
-	    getResourceConfig().register(Resource.class);
+	    //getResourceConfig().register(Resource.class);
+		 System.out.println("jojojoj");
 	  }
-	
-	@Path("/") // this is the root resource
-	  public static class Resource {
-	    // put here all your service methods
-		
+//	
+//	@Path("/") // this is the root resource
+//	  public static class Resource {
+//	    // put here all your service methods
+//		
 		/**
 		 * Function to return http unauthorized message
 		 * @return HTTP response unauthorized
@@ -917,6 +918,6 @@ public class GamificationAchievementService extends RESTService {
 			
 		}
 		
-	  }
+//	  }
 
 }

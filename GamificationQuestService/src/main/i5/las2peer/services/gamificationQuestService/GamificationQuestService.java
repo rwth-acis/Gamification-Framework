@@ -19,7 +19,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-
+import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 import org.apache.commons.lang3.tuple.Pair;
@@ -131,18 +131,19 @@ public class GamificationQuestService extends RESTService {
 	
 	@Override
 	  protected void initResources() {
-	    getResourceConfig().register(Resource.class);
+	    //getResourceConfig().register(Resource.class);
+		 System.out.println("jojojoj");
 	  }
-
-	  @Path("/") // this is the root resource
-	  public static class Resource {
-	    // put here all your service methods
-		  
+//
+//	  @Path("/") // this is the root resource
+//	  public static class Resource {
+//	    // put here all your service methods
+//		  
 		  /**
 			 * Function to return http unauthorized message
 			 * @return HTTP Response unauthorized
 			 */
-			private HttpResponse unauthorizedMessage(){
+			private Response unauthorizedMessage(){
 				JSONObject objResponse = new JSONObject();
 				objResponse.put("message", "You are not authorized");
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -1011,5 +1012,5 @@ public class GamificationQuestService extends RESTService {
 			      }
 			    }
 			}
-	  }
+	  //}
 }

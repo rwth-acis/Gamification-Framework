@@ -135,13 +135,14 @@ public class GamificationLevelService extends RESTService {
 
 	@Override
 	  protected void initResources() {
-	    getResourceConfig().register(Resource.class);
+	    //getResourceConfig().register(Resource.class);
+		 System.out.println("jojojoj");
 	  }
-
-	  @Path("/") // this is the root resource
-	  public static class Resource {
-	    // put here all your service methods
-		  
+//
+//	  @Path("/") // this is the root resource
+//	  public static class Resource {
+//	    // put here all your service methods
+//		  
 		  /**
 			 * Function to return http unauthorized message
 			 * @return HTTP Response unauthorized
@@ -152,7 +153,6 @@ public class GamificationLevelService extends RESTService {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
-
 			}
 			
 			
@@ -840,7 +840,7 @@ public class GamificationLevelService extends RESTService {
 			      }
 			    }
 			}
-	  }
+	  //}
 	
 
 }

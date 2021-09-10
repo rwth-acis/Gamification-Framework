@@ -110,13 +110,14 @@ public class GamificationPointService extends RESTService {
 
 	@Override
 	  protected void initResources() {
-	    getResourceConfig().register(Resource.class);
+	    //getResourceConfig().register(Resource.class);
+		 System.out.println("jojojoj");
 	  }
 
-	  @Path("/") // this is the root resource
-	  public static class Resource {
-	    // put here all your service methods
-		  
+//	  @Path("/") // this is the root resource
+//	  public static class Resource {
+//	    // put here all your service methods
+//		  
 		  /**
 			 * Fetch configuration data from file system
 			 * @param gameId game ID
@@ -472,6 +473,6 @@ public class GamificationPointService extends RESTService {
 					return 0;
 				}
 			}
-	  }
+	  //}
 
 }

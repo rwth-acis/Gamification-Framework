@@ -37,7 +37,7 @@ import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.annotations.ContentParam;
 //import i5.las2peer.restMapper.annotations.Version;
 //import i5.las2peer.restMapper.tools.ValidationResult;
-import i5.las2peer.restMapper.tools.XMLCheck;
+//import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationGamifierService.helper.RepositoryHelper;
@@ -114,13 +114,14 @@ public class GamificationGamifierService extends RESTService {
 	
 	@Override
 	  protected void initResources() {
-	    getResourceConfig().register(Resource.class);
+	    //getResourceConfig().register(Resource.class);
+		 System.out.println("jojojoj");
 	  }
-
-	  @Path("/") // this is the root resource
-	  public static class Resource {
-	    // put here all your service methods
-		  
+//
+//	  @Path("/") // this is the root resource
+//	  public static class Resource {
+//	    // put here all your service methods
+//		  
 		  /**
 			 * Get an element of JSON object with specified key as string
 			 * @return string value
@@ -381,6 +382,6 @@ public class GamificationGamifierService extends RESTService {
 				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 			}
-	  }
+	  //}
 
 }

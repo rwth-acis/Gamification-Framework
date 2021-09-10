@@ -130,13 +130,14 @@ public class GamificationGameService extends RESTService {
 
 	@Override
 	  protected void initResources() {
-	    getResourceConfig().register(Resource.class);
+	    //getResourceConfig().register(Resource.class);
+		 System.out.println("jojojoj");
 	  }
-
-	  @Path("/") // this is the root resource
-	  public static class Resource {
-	    // put here all your service methods
-		  
+//
+//	  @Path("/") // this is the root resource
+//	  public static class Resource {
+//	    // put here all your service methods
+//		  
 		  /**
 			 * Function to delete directories of an game in badge service and point service file system
 			 * @return true if directories are deleted
@@ -865,7 +866,7 @@ public class GamificationGameService extends RESTService {
 			      }
 			    }	
 			}
-	  }
+	  //}
 	
 	
 	

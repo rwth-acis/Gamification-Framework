@@ -37,6 +37,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
 import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
@@ -113,22 +114,21 @@ import net.minidev.json.JSONValue;
 						url = "http://your-software-license-url.com"
 				)
 		))
-
-// TODO Your own Serviceclass
+//@ServicePath("service")
 public class GamificationBadgeService extends RESTService {
 
 	// instantiate the logger class
-	private static final L2pLogger logger = L2pLogger.getInstance(GamificationBadgeService.class.getName());
+	private final L2pLogger logger = L2pLogger.getInstance(GamificationBadgeService.class.getName());
 	/*
 	 * Database configuration
 	 */
-	private static String jdbcDriverClassName;
-	private static String jdbcLogin;
-	private static String jdbcPass;
-	private static String jdbcUrl;
-	private static String jdbcSchema;
-	private static DatabaseManager dbm;
-	private static BadgeDAO badgeAccess;
+	private String jdbcDriverClassName;
+	private String jdbcLogin;
+	private String jdbcPass;
+	private String jdbcUrl;
+	private String jdbcSchema;
+	private DatabaseManager dbm;
+	private BadgeDAO badgeAccess;
 
 	
 	// this header is not known to javax.ws.rs.core.HttpHeaders
@@ -141,23 +141,24 @@ public class GamificationBadgeService extends RESTService {
 	public GamificationBadgeService() {
 		// read and set properties values
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
+		//super();
 		setFieldValues();
+		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		this.badgeAccess = new BadgeDAO();
 		
 	}
 	
 	 @Override
 	  protected void initResources() {
-	    getResourceConfig().register(Resource.class);
-	    dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
-		badgeAccess = new BadgeDAO();
+	    //getResourceConfig().register(Resource.class);
+		 System.out.println("jojojoj");
 	  }
 
 
-	@Path("/") // this is the root resource
-	  public static class Resource {
-	    // put here all your service methods
-		
-		
+//	@Path("/") // this is the root resource
+//	  public static class Resource {
+//	    // put here all your service methods
+//		
 		/**
 		 * Function to delete a folder in the file system
 		 * @param gameFolder folder path
@@ -1164,6 +1165,6 @@ public class GamificationBadgeService extends RESTService {
 				return 0;
 			}
 		}
-	  }
+	  //}
 	
 }
