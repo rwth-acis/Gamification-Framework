@@ -20,6 +20,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.MediaType;
+
 
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
@@ -28,17 +30,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-
+import i5.las2peer.api.Context;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
 import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.HttpResponse;
-import i5.las2peer.restMapper.MediaType;
-import i5.las2peer.restMapper.RESTMapper;
-import i5.las2peer.restMapper.annotations.ContentParam;
-import i5.las2peer.restMapper.annotations.Version;
-import i5.las2peer.restMapper.tools.ValidationResult;
-import i5.las2peer.restMapper.tools.XMLCheck;
+//import i5.las2peer.restMapper.HttpResponse;
+//import i5.las2peer.restMapper.MediaType;
+//import i5.las2peer.restMapper.RESTMapper;
+//import i5.las2peer.restMapper.annotations.ContentParam;
+//import i5.las2peer.restMapper.annotations.Version;
+//import i5.las2peer.restMapper.tools.ValidationResult;
+//import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationAchievementService.database.AchievementDAO;
 import i5.las2peer.services.gamificationAchievementService.database.AchievementModel;
@@ -76,7 +78,6 @@ import net.minidev.json.JSONValue;
  */
 
 @Path("/gamification/achievements")
-@Version("0.1") // this annotation is used by the XML mapper
 @Api( value = "/gamification/achievements", authorizations = {
 		@Authorization(value = "achievements_auth")
 })
@@ -127,7 +128,6 @@ public class GamificationAchievementService extends RESTService {
 		setFieldValues();
 		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.achievementAccess = new AchievementDAO();
-		
 	}
 
 	@Override
@@ -191,7 +191,7 @@ public class GamificationAchievementService extends RESTService {
 				@ApiParam(value = "Achievement detail in multiple/form-data type", required = true) byte[] formData)  {
 			
 			// Request log
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/achievements/"+gameId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "POST " + "gamification/achievements/"+gameId);
 			long randomLong = new Random().nextLong(); //To be able to match 
 			
 			// parse given multipart form data
@@ -206,7 +206,7 @@ public class GamificationAchievementService extends RESTService {
 			String achievementnotifmessage = null;
 			Connection conn = null;
 			
-			UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 			String name = userAgent.getLoginName();
 			if(name.equals("anonymous")){
 				return unauthorizedMessage();
@@ -214,7 +214,7 @@ public class GamificationAchievementService extends RESTService {
 			try {
 				conn = dbm.getConnection();
 				
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,Context.getCurrent().getMainAgent(), ""+randomLong);
 				
 				// Check the existence of game ID
 				try {
@@ -295,9 +295,9 @@ public class GamificationAchievementService extends RESTService {
 						objResponse.put("message", "Achievement upload success (" + achievementid +")");
 						
 						// Mobsos Logger
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,Context.getCurrent().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,Context.getCurrent().getMainAgent(), ""+name);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,Context.getCurrent().getMainAgent(), ""+gameId);
 						return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
@@ -388,7 +388,7 @@ public class GamificationAchievementService extends RESTService {
 		{
 			
 			// Request log
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/achievements/"+gameId+"/"+achievementId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/achievements/"+gameId+"/"+achievementId);
 			long randomLong = new Random().nextLong(); //To be able to match 
 			
 			
@@ -396,14 +396,14 @@ public class GamificationAchievementService extends RESTService {
 			Connection conn = null;
 			
 			JSONObject objResponse = new JSONObject();
-			UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 			String name = userAgent.getLoginName();
 			if(name.equals("anonymous")){
 				return unauthorizedMessage();
 			}
 			try {
 				conn = dbm.getConnection();
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,Context.getCurrent().getMainAgent(), ""+randomLong);
 				
 				try {
 					
@@ -439,9 +439,9 @@ public class GamificationAchievementService extends RESTService {
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			    	
 			    	String achievementString = objectMapper.writeValueAsString(achievement);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
-			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,Context.getCurrent().getMainAgent(), ""+randomLong);
+			    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,Context.getCurrent().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,Context.getCurrent().getMainAgent(), ""+gameId);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(achievementString).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(achievementString, HttpURLConnection.HTTP_OK);
 				} catch (SQLException e) {
@@ -513,7 +513,7 @@ public class GamificationAchievementService extends RESTService {
 				byte[] formData)  {
 			
 			// Request log
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/achievements/"+gameId+"/"+achievementId);
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "PUT " + "gamification/achievements/"+gameId+"/"+achievementId);
 			long randomLong = new Random().nextLong(); //To be able to match 
 					
 			
@@ -528,14 +528,14 @@ public class GamificationAchievementService extends RESTService {
 			String achievementnotifmessage = null;
 			Connection conn = null;
 			
-			UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 			String name = userAgent.getLoginName();
 			if(name.equals("anonymous")){
 				return unauthorizedMessage();
 			}
 			try {
 				conn = dbm.getConnection();
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,Context.getCurrent().getMainAgent(), ""+randomLong);
 				
 				Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 				
@@ -632,9 +632,9 @@ public class GamificationAchievementService extends RESTService {
 					}
 					achievementAccess.updateAchievement(conn,gameId, currentAchievement);
 					objResponse.put("message", "Achievement updated");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,Context.getCurrent().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,Context.getCurrent().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,Context.getCurrent().getMainAgent(), ""+gameId);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -700,19 +700,19 @@ public class GamificationAchievementService extends RESTService {
 		{
 			
 			// Request log
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "DELETE " + "gamification/achievements/"+gameId+"/"+achievementId);		
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "DELETE " + "gamification/achievements/"+gameId+"/"+achievementId);		
 			long randomLong = new Random().nextLong(); //To be able to match 
 
 			Connection conn = null;
 			JSONObject objResponse = new JSONObject();
-			UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 			String name = userAgent.getLoginName();
 			if(name.equals("anonymous")){
 				return unauthorizedMessage();
 			}
 			try {
 				conn = dbm.getConnection();
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,Context.getCurrent().getMainAgent(), ""+randomLong);
 				
 				try {
 					if(!achievementAccess.isGameIdExist(conn,gameId)){
@@ -737,9 +737,9 @@ public class GamificationAchievementService extends RESTService {
 				achievementAccess.deleteAchievement(conn,gameId, achievementId);
 				
 				objResponse.put("message", "Cannot delete achievement. Achievement Deleted");
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,Context.getCurrent().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,Context.getCurrent().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,Context.getCurrent().getMainAgent(), ""+gameId);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -790,20 +790,20 @@ public class GamificationAchievementService extends RESTService {
 		{
 			
 			// Request log
-			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/achievements/"+gameId);		
+			L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/achievements/"+gameId);		
 			long randomLong = new Random().nextLong(); //To be able to match 
 
 			List<AchievementModel> achs = null;
 			Connection conn = null;
 			JSONObject objResponse = new JSONObject();
-			UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 			String name = userAgent.getLoginName();
 			if(name.equals("anonymous")){
 				return unauthorizedMessage();
 			}
 			try {
 				conn = dbm.getConnection();
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,getContext().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,Context.getCurrent().getMainAgent(), ""+randomLong);
 				
 				try {
 					if(!achievementAccess.isGameIdExist(conn,gameId)){
@@ -841,9 +841,9 @@ public class GamificationAchievementService extends RESTService {
 				objResponse.put("rows", achievementArray);
 				objResponse.put("total", totalNum);
 				
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,Context.getCurrent().getMainAgent(), ""+randomLong);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,Context.getCurrent().getMainAgent(), ""+name);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,Context.getCurrent().getMainAgent(), ""+gameId);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 				

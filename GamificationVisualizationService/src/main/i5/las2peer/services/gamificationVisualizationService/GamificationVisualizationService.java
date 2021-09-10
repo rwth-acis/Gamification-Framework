@@ -23,19 +23,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-
+import i5.las2peer.api.Context;
 import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
 import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.HttpResponse;
-import i5.las2peer.restMapper.MediaType;
-import i5.las2peer.restMapper.RESTMapper;
-import i5.las2peer.restMapper.annotations.Version;
-import i5.las2peer.restMapper.tools.ValidationResult;
-import i5.las2peer.restMapper.tools.XMLCheck;
+//import i5.las2peer.restMapper.HttpResponse;
+//import i5.las2peer.restMapper.MediaType;
+//import i5.las2peer.restMapper.RESTMapper;
+//import i5.las2peer.restMapper.annotations.Version;
+//import i5.las2peer.restMapper.tools.ValidationResult;
+//import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationVisualizationService.database.DatabaseManager;
@@ -75,7 +75,6 @@ import net.minidev.json.JSONObject;
  */
 // TODO Adjust the following configuration
 @Path("/visualization")
-@Version("0.1") // this annotation is used by the XML mapper
 @Api( value = "/members", authorizations = {
 		@Authorization(value = "members_auth",
 		scopes = {
@@ -186,7 +185,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -265,7 +264,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -273,7 +272,7 @@ public class GamificationVisualizationService extends RESTService {
 
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_32,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					if(!visualizationAccess.isGameIdExist(conn,gameId)){
 						logger.info("Game not found >> ");
@@ -314,7 +313,7 @@ public class GamificationVisualizationService extends RESTService {
 					// Add Member to Game
 					JSONObject obj = visualizationAccess.getMemberStatus(conn,gameId, memberId);
 					obj.put("pointUnitName", pointUnitName);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_33,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_33,Context.getCurrent().getMainAgent(), ""+randomLong);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(obj.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(obj.toJSONString(), HttpURLConnection.HTTP_OK);
 				} catch (SQLException e) {
@@ -365,7 +364,7 @@ public class GamificationVisualizationService extends RESTService {
 				Connection conn = null;
 
 				List<BadgeModel> badges = new ArrayList<BadgeModel>();
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -373,7 +372,7 @@ public class GamificationVisualizationService extends RESTService {
 
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					if(!visualizationAccess.isGameIdExist(conn,gameId)){
 						logger.info("Game not found >> ");
@@ -401,7 +400,7 @@ public class GamificationVisualizationService extends RESTService {
 			    	//Set pretty printing of json
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 					String response =  objectMapper.writeValueAsString(badges);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39,Context.getCurrent().getMainAgent(), ""+randomLong);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 				} catch (SQLException e) {
@@ -461,7 +460,7 @@ public class GamificationVisualizationService extends RESTService {
 				Connection conn = null;
 
 				List<QuestModel> quests = new ArrayList<QuestModel>();
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -469,7 +468,7 @@ public class GamificationVisualizationService extends RESTService {
 
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_42,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_42,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					if(!visualizationAccess.isGameIdExist(conn,gameId)){
 						logger.info("Game not found >> ");
@@ -510,7 +509,7 @@ public class GamificationVisualizationService extends RESTService {
 			    	//Set pretty printing of json
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 					String response =  objectMapper.writeValueAsString(quests);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_43,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_43,Context.getCurrent().getMainAgent(), ""+randomLong);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 				} catch (SQLException e) {
@@ -575,7 +574,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -669,7 +668,7 @@ public class GamificationVisualizationService extends RESTService {
 				Connection conn = null;
 
 				List<AchievementModel> ach = new ArrayList<AchievementModel>();
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -677,7 +676,7 @@ public class GamificationVisualizationService extends RESTService {
 
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_40,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_40,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					if(!visualizationAccess.isGameIdExist(conn,gameId)){
 						logger.info("Game not found >> ");
@@ -705,7 +704,7 @@ public class GamificationVisualizationService extends RESTService {
 				    	//Set pretty printing of json
 				    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 						String response =  objectMapper.writeValueAsString(ach);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_41,getContext().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_41,Context.getCurrent().getMainAgent(), ""+randomLong);
 						return Response.status(HttpURLConnection.HTTP_OK).entity(response).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 
@@ -764,7 +763,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -871,7 +870,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -979,7 +978,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -1081,7 +1080,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -1194,14 +1193,14 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_38,Context.getCurrent().getMainAgent(), ""+randomLong);
 					if(!visualizationAccess.isGameIdExist(conn,gameId)){
 						logger.info("Game not found >> ");
 						objResponse.put("message", "Game not found");
@@ -1230,9 +1229,9 @@ public class GamificationVisualizationService extends RESTService {
 						result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationActionService.GamificationActionService@0.1", "triggerActionRMI",
 								new Serializable[] { gameId, memberId, actionId });
 						if (result != null) {
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39,getContext().getMainAgent(), ""+randomLong);
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_44,getContext().getMainAgent(), ""+gameId);
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_45,getContext().getMainAgent(), ""+memberId);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_39,Context.getCurrent().getMainAgent(), ""+randomLong);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_44,Context.getCurrent().getMainAgent(), ""+gameId);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_45,Context.getCurrent().getMainAgent(), ""+memberId);
 							return Response.status(HttpURLConnection.HTTP_OK).entity(result).type(MediaType.APPLICATION_JSON).build();
 							//return new HttpResponse(result, HttpURLConnection.HTTP_OK);
 						}
@@ -1304,7 +1303,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -1312,7 +1311,7 @@ public class GamificationVisualizationService extends RESTService {
 				
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_34,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_34,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					if(!visualizationAccess.isGameIdExist(conn,gameId)){
 						logger.info("Game not found >> ");
@@ -1363,7 +1362,7 @@ public class GamificationVisualizationService extends RESTService {
 					objResponse.put("rowCount", windowSize);
 					objResponse.put("rows", arrResult);
 					objResponse.put("total", totalNum);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_35,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_35,Context.getCurrent().getMainAgent(), ""+randomLong);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -1417,14 +1416,14 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_36,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_36,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					if(!visualizationAccess.isGameIdExist(conn,gameId)){
 						logger.info("Game not found >> ");
@@ -1456,7 +1455,7 @@ public class GamificationVisualizationService extends RESTService {
 					objResponse.put("rowCount", windowSize);
 					objResponse.put("rows", arrResult);
 					objResponse.put("total", totalNum);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_37,Context.getCurrent().getMainAgent(), ""+randomLong);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -1509,7 +1508,7 @@ public class GamificationVisualizationService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();

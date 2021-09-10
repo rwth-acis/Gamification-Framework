@@ -20,7 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-
+import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 
@@ -29,17 +29,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-
+import i5.las2peer.api.Context;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
 import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.HttpResponse;
-import i5.las2peer.restMapper.MediaType;
-import i5.las2peer.restMapper.RESTMapper;
-import i5.las2peer.restMapper.annotations.ContentParam;
-import i5.las2peer.restMapper.annotations.Version;
-import i5.las2peer.restMapper.tools.ValidationResult;
-import i5.las2peer.restMapper.tools.XMLCheck;
+//import i5.las2peer.restMapper.HttpResponse;
+//import i5.las2peer.restMapper.MediaType;
+//import i5.las2peer.restMapper.RESTMapper;
+//import i5.las2peer.restMapper.annotations.ContentParam;
+//import i5.las2peer.restMapper.annotations.Version;
+//import i5.las2peer.restMapper.tools.ValidationResult;
+//import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationLevelService.database.LevelDAO;
 import i5.las2peer.services.gamificationLevelService.database.LevelModel;
@@ -77,7 +77,6 @@ import net.minidev.json.JSONValue;
  */
 // TODO Adjust the following configuration
 @Path("/gamification/levels")
-@Version("0.1") // this annotation is used by the XML mapper
 @Api( value = "/levels", authorizations = {
 		@Authorization(value = "levels_auth",
 		scopes = {
@@ -203,7 +202,7 @@ public class GamificationLevelService extends RESTService {
 					@ApiParam(value = "Level detail in multiple/form-data type", required = true) byte[] formData)  {
 				
 				// Request log
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "POST " + "gamification/levels/"+gameId);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "POST " + "gamification/levels/"+gameId);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				// parse given multipart form data
@@ -217,14 +216,14 @@ public class GamificationLevelService extends RESTService {
 				Connection conn = null;
 
 				
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_14,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					try {
 						if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -281,9 +280,9 @@ public class GamificationLevelService extends RESTService {
 						try{
 							levelAccess.addNewLevel(conn,gameId, model);
 							objResponse.put("message", "Level upload success (" + levelnum +")");
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,getContext().getMainAgent(), ""+randomLong);
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,getContext().getMainAgent(), ""+name);
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,getContext().getMainAgent(), ""+gameId);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_15,Context.getCurrent().getMainAgent(), ""+randomLong);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_24,Context.getCurrent().getMainAgent(), ""+name);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_25,Context.getCurrent().getMainAgent(), ""+gameId);
 							return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
@@ -366,14 +365,14 @@ public class GamificationLevelService extends RESTService {
 			{
 				
 				// Request log
-				L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/levels/"+gameId+"/"+levelNum);
+				L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/levels/"+gameId+"/"+levelNum);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				LevelModel level = null;
 				Connection conn = null;
 
 				JSONObject objResponse = new JSONObject();
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -381,7 +380,7 @@ public class GamificationLevelService extends RESTService {
 				try {
 					conn = dbm.getConnection();
 					try {
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,Context.getCurrent().getMainAgent(), ""+randomLong);
 						
 						try {
 							if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -410,9 +409,9 @@ public class GamificationLevelService extends RESTService {
 					    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 					    	
 					    	String levelString = objectMapper.writeValueAsString(level);
-					    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
-					    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
+					    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,Context.getCurrent().getMainAgent(), ""+randomLong);
+					    	L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,Context.getCurrent().getMainAgent(), ""+name);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,Context.getCurrent().getMainAgent(), ""+gameId);
 							return Response.status(HttpURLConnection.HTTP_OK).entity(levelString).type(MediaType.APPLICATION_JSON).build();
 							//return new HttpResponse(levelString, HttpURLConnection.HTTP_OK);
 						}
@@ -490,7 +489,7 @@ public class GamificationLevelService extends RESTService {
 					@ApiParam(value = "Level detail in multiple/form-data type", required = true) byte[] formData)  {
 				
 				// Request log
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/levels/"+gameId+"/"+levelNum);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "PUT " + "gamification/levels/"+gameId+"/"+levelNum);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				
@@ -504,7 +503,7 @@ public class GamificationLevelService extends RESTService {
 				Connection conn = null;
 
 				
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
@@ -512,7 +511,7 @@ public class GamificationLevelService extends RESTService {
 				try {
 					conn = dbm.getConnection();
 					try {
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,Context.getCurrent().getMainAgent(), ""+randomLong);
 						
 						try {
 							if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -581,9 +580,9 @@ public class GamificationLevelService extends RESTService {
 							try{
 								levelAccess.updateLevel(conn,gameId, model);
 								objResponse.put("message", "Level updated");
-								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
-								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
-								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
+								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,Context.getCurrent().getMainAgent(), ""+randomLong);
+								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,Context.getCurrent().getMainAgent(), ""+name);
+								L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,Context.getCurrent().getMainAgent(), ""+gameId);
 								return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 							} catch (SQLException e) {
@@ -664,21 +663,21 @@ public class GamificationLevelService extends RESTService {
 			{
 				
 				// Request log
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "DELETE " + "gamification/levels/"+gameId+"/"+levelNum);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "DELETE " + "gamification/levels/"+gameId+"/"+levelNum);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_20,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					try {
 						if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -704,9 +703,9 @@ public class GamificationLevelService extends RESTService {
 					
 					levelAccess.deleteLevel(conn,gameId, levelNum);
 					objResponse.put("message", "Level Deleted");
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,getContext().getMainAgent(), ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,getContext().getMainAgent(), ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,getContext().getMainAgent(), ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_21,Context.getCurrent().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_30,Context.getCurrent().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_31,Context.getCurrent().getMainAgent(), ""+gameId);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
@@ -758,7 +757,7 @@ public class GamificationLevelService extends RESTService {
 			{
 				
 				// Request log
-				L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/levels/"+gameId);
+				L2pLogger.logEvent( Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/levels/"+gameId);
 				long randomLong = new Random().nextLong(); //To be able to match 
 
 				
@@ -766,14 +765,14 @@ public class GamificationLevelService extends RESTService {
 				Connection conn = null;
 
 				JSONObject objResponse = new JSONObject();
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_46,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					try {
 						if(!levelAccess.isGameIdExist(conn,gameId)){
@@ -811,9 +810,9 @@ public class GamificationLevelService extends RESTService {
 					objResponse.put("rows", modelArray);
 					objResponse.put("total", totalNum);
 
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,getContext().getMainAgent(), ""+randomLong);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,getContext().getMainAgent(), ""+name);
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,getContext().getMainAgent(), ""+gameId);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_47,Context.getCurrent().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_48,Context.getCurrent().getMainAgent(), ""+name);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_49,Context.getCurrent().getMainAgent(), ""+gameId);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					

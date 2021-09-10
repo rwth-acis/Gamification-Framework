@@ -14,18 +14,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.MediaType;
 
-
-
+import i5.las2peer.api.Context;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
 import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.HttpResponse;
-import i5.las2peer.restMapper.MediaType;
-import i5.las2peer.restMapper.RESTMapper;
-import i5.las2peer.restMapper.annotations.Version;
-import i5.las2peer.restMapper.tools.ValidationResult;
-import i5.las2peer.restMapper.tools.XMLCheck;
+//import i5.las2peer.restMapper.HttpResponse;
+//import i5.las2peer.restMapper.MediaType;
+//import i5.las2peer.restMapper.RESTMapper;
+//import i5.las2peer.restMapper.annotations.Version;
+//import i5.las2peer.restMapper.tools.ValidationResult;
+//import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.gamificationPointService.database.PointDAO;
 import i5.las2peer.services.gamificationPointService.database.DatabaseManager;
@@ -60,7 +60,6 @@ import net.minidev.json.JSONValue;
  */
 // TODO Adjust the following configuration
 @Path("/gamification/points")
-@Version("0.1") // this annotation is used by the XML mapper
 @Api( value = "/gamification/points", authorizations = {
 		@Authorization(value = "points_auth",
 		scopes = {
@@ -283,21 +282,21 @@ public class GamificationPointService extends RESTService {
 			{
 				
 				// Request log
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "PUT " + "gamification/points/"+gameId+"/name/"+unitName);
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "PUT " + "gamification/points/"+gameId+"/name/"+unitName);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_18,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					if(!pointAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot update point unit name. Game not found");
@@ -313,9 +312,9 @@ public class GamificationPointService extends RESTService {
 							storeConfigurationToSystem(gameId, objRetrieve);
 							logger.info(objRetrieve.toJSONString());
 							objResponse.put("message", "Unit name "+unitName+" is updated");
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,getContext().getMainAgent(), ""+randomLong);
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,getContext().getMainAgent(), ""+name);
-							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,getContext().getMainAgent(), ""+gameId);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_19,Context.getCurrent().getMainAgent(), ""+randomLong);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_28,Context.getCurrent().getMainAgent(), ""+name);
+							L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_29,Context.getCurrent().getMainAgent(), ""+gameId);
 							return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 						} catch (IOException e) {
@@ -375,21 +374,21 @@ public class GamificationPointService extends RESTService {
 			{
 				
 				// Request log
-				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,getContext().getMainAgent(), "GET " + "gamification/points/"+gameId+"/name");
+				L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/points/"+gameId+"/name");
 				long randomLong = new Random().nextLong(); //To be able to match
 					
 				
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) getContext().getMainAgent();
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 				String name = userAgent.getLoginName();
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,getContext().getMainAgent(), ""+randomLong);
+					L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_16,Context.getCurrent().getMainAgent(), ""+randomLong);
 					
 					if(!pointAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot get point unit name. Game not found");
@@ -404,9 +403,9 @@ public class GamificationPointService extends RESTService {
 						if(pointUnitName==null){
 							objRetrieve.put("pointUnitName", "");
 						}
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,getContext().getMainAgent(), ""+randomLong);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,getContext().getMainAgent(), ""+name);
-						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,getContext().getMainAgent(), ""+gameId);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_17,Context.getCurrent().getMainAgent(), ""+randomLong);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_26,Context.getCurrent().getMainAgent(), ""+name);
+						L2pLogger.logEvent(Event.SERVICE_CUSTOM_MESSAGE_27,Context.getCurrent().getMainAgent(), ""+gameId);
 						return Response.status(HttpURLConnection.HTTP_OK).entity(objRetrieve.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objRetrieve.toJSONString(), HttpURLConnection.HTTP_OK);
 				
