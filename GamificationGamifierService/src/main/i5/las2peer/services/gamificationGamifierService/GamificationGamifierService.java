@@ -25,10 +25,10 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.TreeWalk;
 
 import i5.las2peer.api.Context;
-import i5.las2peer.execution.L2pServiceException;
+//import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.logging.NodeObserver.Event;
-import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.security.AgentNotFoundException;
 import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.HttpResponse;
@@ -38,8 +38,8 @@ import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.annotations.Version;
 //import i5.las2peer.restMapper.tools.ValidationResult;
 //import i5.las2peer.restMapper.tools.XMLCheck;
-import i5.las2peer.security.L2pSecurityException;
-import i5.las2peer.security.UserAgent;
+//import i5.las2peer.security.L2pSecurityException;
+import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationGamifierService.helper.RepositoryHelper;
 import i5.las2peer.services.gamificationGamifierService.exception.GitHubException;
 import io.swagger.annotations.Api;
@@ -185,8 +185,8 @@ public class GamificationGamifierService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						L2pLogger.logEvent(Event.RMI_FAILED, "Get Actions RMI failed. " + e.getMessage());
 						objResponse.put("message", "Cannot find Actions. " + e.getMessage());

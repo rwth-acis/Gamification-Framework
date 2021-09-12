@@ -39,10 +39,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
-import i5.las2peer.execution.L2pServiceException;
+//import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.logging.NodeObserver.Event;
-import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.security.AgentNotFoundException;
 import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.HttpResponse;
@@ -52,8 +52,8 @@ import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.annotations.Version;
 //import i5.las2peer.restMapper.tools.ValidationResult;
 //import i5.las2peer.restMapper.tools.XMLCheck;
-import i5.las2peer.security.L2pSecurityException;
-import i5.las2peer.security.UserAgent;
+//import i5.las2peer.security.L2pSecurityException;
+import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeModel;
 import i5.las2peer.services.gamificationBadgeService.database.DatabaseManager;
@@ -229,7 +229,8 @@ public class GamificationBadgeService extends RESTService {
 		 * @return HttpResponse with the return image
 		 * @throws IOException 
 		 */
-		private void storeBadgeDataToSystem(String gameId, String badgeid, String filename, byte[] filecontent, String mimeType, String description) throws AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException, IOException{
+		private void storeBadgeDataToSystem(String gameId, String badgeid, String filename, byte[] filecontent, String mimeType, String description) throws AgentNotFoundException, //L2pServiceException, //L2pSecurityException,
+		InterruptedException, TimeoutException, IOException{
 				// RMI call without parameters
 			File gameFolder = new File(LocalFileManager.getBasedir()+"/"+gameId);
 			if(!gameFolder.exists()){
@@ -434,8 +435,8 @@ public class GamificationBadgeService extends RESTService {
 							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | //L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						objResponse.put("message", "Cannot create badge. Failed to upload " + badgeid + ". " + e.getMessage());
 						L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -624,8 +625,8 @@ public class GamificationBadgeService extends RESTService {
 								logger.info("upload request (" + filename + ") of mime type '" + mimeType + "' with content length "
 										+ filecontent.length);
 								
-							} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-									| TimeoutException e) {
+							} catch (AgentNotFoundException | //L2pServiceException | //L2pSecurityException | 
+									InterruptedException | TimeoutException e) {
 								e.printStackTrace();
 								objResponse.put("message", "Cannot update badge. Failed to upload " + badgeId + ". " + e.getMessage() );
 								L2pLogger.logEvent(this, Event.SERVICE_ERROR, (String) objResponse.get("message"));

@@ -25,10 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import i5.las2peer.api.Context;
-import i5.las2peer.execution.L2pServiceException;
+//import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.logging.NodeObserver.Event;
-import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.security.AgentNotFoundException;
 import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.HttpResponse;
@@ -37,8 +37,8 @@ import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.annotations.Version;
 //import i5.las2peer.restMapper.tools.ValidationResult;
 //import i5.las2peer.restMapper.tools.XMLCheck;
-import i5.las2peer.security.L2pSecurityException;
-import i5.las2peer.security.UserAgent;
+//import i5.las2peer.security.L2pSecurityException;
+import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationVisualizationService.database.DatabaseManager;
 import i5.las2peer.services.gamificationVisualizationService.database.AchievementModel;
 import i5.las2peer.services.gamificationVisualizationService.database.BadgeModel;
@@ -306,8 +306,8 @@ public class GamificationVisualizationService extends RESTService {
 								new Serializable[] { gameId, memberId });
 
 						
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						pointUnitName = "";
 					}
@@ -808,8 +808,8 @@ public class GamificationVisualizationService extends RESTService {
 							return Response.status(HttpURLConnection.HTTP_OK).entity(result).type(MediaType.APPLICATION_JSON).build();
 							//return new HttpResponse(result, HttpURLConnection.HTTP_OK);
 						}
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						logger.info("Error cannot retrieve file " + e.getMessage());
 						objResponse.put("message", "Error cannot retrieve file " + e.getMessage());
@@ -923,8 +923,8 @@ public class GamificationVisualizationService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						logger.info("Cannot find badge with " + badgeId + ". " + e.getMessage());
 						objResponse.put("message", "Cannot find badge with " + badgeId + ". " + e.getMessage());
@@ -1024,8 +1024,8 @@ public class GamificationVisualizationService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						logger.info("Cannot find badge with " + questId + ". " + e.getMessage());
 						objResponse.put("message", "Cannot find badge with " + questId + ". " + e.getMessage());
@@ -1135,8 +1135,8 @@ public class GamificationVisualizationService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						logger.info("Cannot find achievement with " + achievementId + ". " + e.getMessage());
 						L2pLogger.logEvent(Event.RMI_FAILED, "Get Achievement with ID RMI failed. " + e.getMessage());
@@ -1243,8 +1243,8 @@ public class GamificationVisualizationService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						logger.info("Cannot trigger action " + actionId + ". " + e.getMessage());
 						objResponse.put("message", "Cannot trigger action " + actionId + ". " + e.getMessage());
@@ -1345,8 +1345,8 @@ public class GamificationVisualizationService extends RESTService {
 								new Serializable[] { gameId, memberId });
 
 						
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException | TimeoutException e) {
 						e.printStackTrace();
 						pointUnitName = "";
 					}

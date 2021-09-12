@@ -27,10 +27,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import i5.las2peer.api.Context;
-import i5.las2peer.execution.L2pServiceException;
+//import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.logging.NodeObserver.Event;
-import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.security.AgentNotFoundException;
 import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.HttpResponse;
@@ -40,8 +40,8 @@ import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.annotations.Version;
 //import i5.las2peer.restMapper.tools.ValidationResult;
 //import i5.las2peer.restMapper.tools.XMLCheck;
-import i5.las2peer.security.L2pSecurityException;
-import i5.las2peer.security.UserAgent;
+//import i5.las2peer.security.L2pSecurityException;
+import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationGameService.database.GameDAO;
 import i5.las2peer.services.gamificationGameService.database.GameModel;
 import i5.las2peer.services.gamificationGameService.database.DatabaseManager;
@@ -142,7 +142,8 @@ public class GamificationGameService extends RESTService {
 			 * Function to delete directories of an game in badge service and point service file system
 			 * @return true if directories are deleted
 			 */
-			private boolean cleanStorage(String gameId) throws AgentNotKnownException, L2pServiceException, L2pSecurityException, InterruptedException, TimeoutException {
+			private boolean cleanStorage(String gameId) throws AgentNotFoundException, //L2pServiceException, L2pSecurityException, 
+			InterruptedException, TimeoutException {
 
 				Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "cleanStorageRMI", new Serializable[] { gameId });
 				
@@ -455,8 +456,8 @@ public class GamificationGameService extends RESTService {
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
-					} catch (AgentNotKnownException | L2pServiceException | L2pSecurityException | InterruptedException
-							| TimeoutException e) {
+					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
+							InterruptedException  TimeoutException e) {
 						e.printStackTrace();
 						L2pLogger.logEvent(Event.RMI_FAILED, "Failed to clean storage");
 						objResponse.put("message", "RMI error. Failed to clean storage. ");

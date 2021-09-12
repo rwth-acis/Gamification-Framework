@@ -18,7 +18,7 @@ import javax.ws.rs.core.MediaType;
 
 import i5.las2peer.api.Context;
 import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.logging.NodeObserver.Event;
+import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.HttpResponse;
 //import i5.las2peer.restMapper.MediaType;
@@ -26,7 +26,7 @@ import i5.las2peer.restMapper.RESTService;
 //import i5.las2peer.restMapper.annotations.Version;
 //import i5.las2peer.restMapper.tools.ValidationResult;
 //import i5.las2peer.restMapper.tools.XMLCheck;
-import i5.las2peer.security.UserAgent;
+import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationPointService.database.PointDAO;
 import i5.las2peer.services.gamificationPointService.database.DatabaseManager;
 import i5.las2peer.services.gamificationPointService.helper.LocalFileManager;
