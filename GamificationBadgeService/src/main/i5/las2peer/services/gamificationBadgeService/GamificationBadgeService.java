@@ -114,7 +114,7 @@ import net.minidev.json.JSONValue;
 						url = "http://your-software-license-url.com"
 				)
 		))
-//@ServicePath("service")
+@ServicePath("badge")
 public class GamificationBadgeService extends RESTService {
 
 	// instantiate the logger class
@@ -148,12 +148,12 @@ public class GamificationBadgeService extends RESTService {
 		
 	}
 	
-	 @Override
-	  protected void initResources() {
-	    //getResourceConfig().register(Resource.class);
-		 System.out.println("jojojoj");
-	  }
-
+//	 @Override
+//	  protected void initResources() {
+//	    //getResourceConfig().register(Resource.class);
+//		 System.out.println("jojojoj");
+//	  }
+//
 
 //	@Path("/") // this is the root resource
 //	  public static class Resource {

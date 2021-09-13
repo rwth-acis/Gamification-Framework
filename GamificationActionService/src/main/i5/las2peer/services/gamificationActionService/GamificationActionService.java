@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.api.logging.MonitoringEvent;
@@ -104,6 +105,7 @@ import net.minidev.json.JSONValue;
 				)
 		))
 
+@ServicePath("action")
 public class GamificationActionService extends RESTService {
 
 	// instantiate the logger class
@@ -136,11 +138,11 @@ public class GamificationActionService extends RESTService {
 		this.actionAccess = new ActionDAO();
 	}
 	
-	@Override
-	  protected void initResources() {
-	    //getResourceConfig().register(Resource.class);
-		 System.out.println("jojojoj");
-	  }
+//	@Override
+//	  protected void initResources() {
+//	    //getResourceConfig().register(Resource.class);
+//		 System.out.println("jojojoj");
+//	  }
 //	
 //		
 //		 @Path("/") // this is the root resource

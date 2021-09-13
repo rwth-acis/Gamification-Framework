@@ -24,6 +24,7 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.TreeWalk;
 
+import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
 //import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
@@ -89,7 +90,7 @@ import net.minidev.json.parser.ParseException;
 						url = "http://your-software-license-url.com"
 				)
 		))
-// TODO Your own Serviceclass
+@ServicePath("gamifier")
 public class GamificationGamifierService extends RESTService {
 
 	// instantiate the logger class
@@ -112,11 +113,11 @@ public class GamificationGamifierService extends RESTService {
 	}
 
 	
-	@Override
-	  protected void initResources() {
-	    //getResourceConfig().register(Resource.class);
-		 System.out.println("jojojoj");
-	  }
+//	@Override
+//	  protected void initResources() {
+//	    //getResourceConfig().register(Resource.class);
+//		 System.out.println("jojojoj");
+//	  }
 //
 //	  @Path("/") // this is the root resource
 //	  public static class Resource {
