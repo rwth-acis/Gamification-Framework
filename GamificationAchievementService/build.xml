@@ -239,7 +239,7 @@ startWebConnector interactive
 	</target>
 
 	<target name="junit_tests" depends="init_junit, compile_all">
-		<junit fork="yes" haltonerror="no" haltonfailure="no"
+		<junit fork="yes" haltonerror="yes" haltonfailure="yes"
 			printsummary="yes">
 			<classpath>
 				<pathelement path="${tmp.classes}" />

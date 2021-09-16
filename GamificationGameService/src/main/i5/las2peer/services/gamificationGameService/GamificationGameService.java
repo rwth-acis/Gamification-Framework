@@ -147,7 +147,7 @@ public class GamificationGameService extends RESTService {
 				if (result != null) {
 					L2pLogger.logEvent(this, MonitoringEvent.RMI_SENT, "Clean Badge Service Storage : " + gameId);
 					
-					if((int)result == 1){
+					if((Integer)result == 1){
 						L2pLogger.logEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "Clean Badge Service Storage : " + gameId);
 						Object res= new Object();
 						try {
@@ -158,7 +158,7 @@ public class GamificationGameService extends RESTService {
 						}
 						if (res != null) {
 							L2pLogger.logEvent(this, MonitoringEvent.RMI_SENT, "Clean Point Service Storage : " + gameId);
-							if((int)res == 1){
+							if((Integer)res == 1){
 								L2pLogger.logEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "Clean Point Service Storage : " + gameId);
 								
 								return true;
