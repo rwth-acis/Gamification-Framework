@@ -24,21 +24,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.api.Context;
-//import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.api.logging.MonitoringEvent;
-import i5.las2peer.api.security.AgentNotFoundException;
 import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.RESTService;
-//import i5.las2peer.restMapper.HttpResponse;
-//import i5.las2peer.restMapper.MediaType;
-//import i5.las2peer.restMapper.RESTMapper;
-//import i5.las2peer.restMapper.annotations.Version;
-//import i5.las2peer.restMapper.tools.ValidationResult;
-//import i5.las2peer.restMapper.tools.XMLCheck;
-//import i5.las2peer.security.L2pSecurityException;
+import i5.las2peer.restMapper.annotations.ServicePath;
+import i5.las2peer.api.Context;
+import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.security.AgentNotFoundException;
+import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationVisualizationService.database.DatabaseManager;
 import i5.las2peer.services.gamificationVisualizationService.database.AchievementModel;
@@ -61,7 +54,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
 
-// TODO Describe your own service
+
 /**
  * Member Service
  * 
@@ -75,8 +68,8 @@ import net.minidev.json.JSONObject;
  * the entire ApiInfo annotation should be removed.
  * 
  */
-// TODO Adjust the following configuration
-@Path("/visualization")
+
+//@Path("/visualization")
 @Api( value = "/members", authorizations = {
 		@Authorization(value = "members_auth",
 		scopes = {
@@ -100,8 +93,8 @@ import net.minidev.json.JSONObject;
 						url = "http://your-software-license-url.com"
 				)
 		))
-
-@ServicePath("visualization")
+@ManualDeployment
+@ServicePath("/visualization")
 public class GamificationVisualizationService extends RESTService {
 
 	// instantiate the logger class
@@ -303,12 +296,13 @@ public class GamificationVisualizationService extends RESTService {
 					// RMI call with parameters
 					String pointUnitName = "";
 					try {
-						pointUnitName = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "getUnitNameRMI",
+						pointUnitName = (String) Context.getCurrent().invoke("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "getUnitNameRMI",
 								new Serializable[] { gameId, memberId });
 
 						
-					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
-							InterruptedException | TimeoutException e) {
+					} catch (/*AgentNotFoundException | L2pServiceException | L2pSecurityException | 
+							InterruptedException | Timeout*/ 
+							Exception e) {
 						e.printStackTrace();
 						pointUnitName = "";
 					}
@@ -804,13 +798,14 @@ public class GamificationVisualizationService extends RESTService {
 					// RMI call with parameters
 					byte[] result;
 					try {
-						result = (byte[]) this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeImageMethod", (String) gameId, (String) badgeId );
+						result = (byte[]) Context.getCurrent().invoke("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeImageMethod", (String) gameId, (String) badgeId );
 						if (result != null) {
 							return Response.status(HttpURLConnection.HTTP_OK).entity(result).type(MediaType.APPLICATION_JSON).build();
 							//return new HttpResponse(result, HttpURLConnection.HTTP_OK);
 						}
-					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
-							InterruptedException | TimeoutException e) {
+					} catch (/*AgentNotFoundException | L2pServiceException | L2pSecurityException | 
+							InterruptedException | Timeout*/ 
+							Exception e) {
 						e.printStackTrace();
 						logger.info("Error cannot retrieve file " + e.getMessage());
 						objResponse.put("message", "Error cannot retrieve file " + e.getMessage());
@@ -910,7 +905,7 @@ public class GamificationVisualizationService extends RESTService {
 					// RMI call with parameters
 					String result;
 					try {
-						result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeWithIdRMI",
+						result = (String) Context.getCurrent().invoke("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "getBadgeWithIdRMI",
 								new Serializable[] { gameId, badgeId });
 
 						System.out.println("BADGE STRING " + result);
@@ -924,8 +919,9 @@ public class GamificationVisualizationService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
-							InterruptedException | TimeoutException e) {
+					} catch (/*AgentNotFoundException | L2pServiceException | L2pSecurityException | 
+							InterruptedException | Timeout*/ 
+							Exception e) {
 						e.printStackTrace();
 						logger.info("Cannot find badge with " + badgeId + ". " + e.getMessage());
 						objResponse.put("message", "Cannot find badge with " + badgeId + ". " + e.getMessage());
@@ -1013,7 +1009,7 @@ public class GamificationVisualizationService extends RESTService {
 					// RMI call with parameters
 					String result;
 					try {
-						result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1", "getQuestWithIdRMI",
+						result = (String) Context.getCurrent().invoke("i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1", "getQuestWithIdRMI",
 								new Serializable[] { gameId, questId });
 						if (result != null) {
 							return Response.status(HttpURLConnection.HTTP_OK).entity(result).type(MediaType.APPLICATION_JSON).build();
@@ -1025,8 +1021,9 @@ public class GamificationVisualizationService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
-							InterruptedException | TimeoutException e) {
+					} catch (/*AgentNotFoundException | L2pServiceException | L2pSecurityException | 
+							InterruptedException | Timeout*/ 
+							Exception e) {
 						e.printStackTrace();
 						logger.info("Cannot find badge with " + questId + ". " + e.getMessage());
 						objResponse.put("message", "Cannot find badge with " + questId + ". " + e.getMessage());
@@ -1121,8 +1118,9 @@ public class GamificationVisualizationService extends RESTService {
 						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 					}
 					// RMI call with parameters
+					Object result = new Object();
 					try {
-						Object result = this.invokeServiceMethod("i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1", "getAchievementWithIdRMI",
+						result = Context.getCurrent().invoke("i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1", "getAchievementWithIdRMI",
 								new Serializable[] { gameId, achievementId });
 						if (result != null) {
 							L2pLogger.logEvent(MonitoringEvent.RMI_SUCCESSFUL, "Get Achievement with ID RMI success");
@@ -1136,8 +1134,9 @@ public class GamificationVisualizationService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
-							InterruptedException | TimeoutException e) {
+					} catch (/*AgentNotFoundException | L2pServiceException | L2pSecurityException | 
+							InterruptedException | Timeout*/ 
+							Exception e) {
 						e.printStackTrace();
 						logger.info("Cannot find achievement with " + achievementId + ". " + e.getMessage());
 						L2pLogger.logEvent(MonitoringEvent.RMI_FAILED, "Get Achievement with ID RMI failed. " + e.getMessage());
@@ -1227,9 +1226,9 @@ public class GamificationVisualizationService extends RESTService {
 					}
 					
 					// RMI call with parameters
-					String result;
+					String result="";
 					try {
-						result = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationActionService.GamificationActionService@0.1", "triggerActionRMI",
+						result = (String) Context.getCurrent().invoke("i5.las2peer.services.gamificationActionService.GamificationActionService@0.1", "triggerActionRMI",
 								new Serializable[] { gameId, memberId, actionId });
 						if (result != null) {
 							L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_39,Context.getCurrent().getMainAgent(), ""+randomLong);
@@ -1244,8 +1243,9 @@ public class GamificationVisualizationService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
-							InterruptedException | TimeoutException e) {
+					} catch (/*AgentNotFoundException | L2pServiceException | L2pSecurityException | 
+							InterruptedException | Timeout*/ 
+							Exception e) {
 						e.printStackTrace();
 						logger.info("Cannot trigger action " + actionId + ". " + e.getMessage());
 						objResponse.put("message", "Cannot trigger action " + actionId + ". " + e.getMessage());
@@ -1342,12 +1342,13 @@ public class GamificationVisualizationService extends RESTService {
 					// RMI call with parameters
 					String pointUnitName = "";
 					try {
-						pointUnitName = (String) this.invokeServiceMethod("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "getUnitNameRMI",
+						pointUnitName = (String) Context.getCurrent().invoke("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "getUnitNameRMI",
 								new Serializable[] { gameId, memberId });
 
 						
-					} catch (AgentNotFoundException | //L2pServiceException | L2pSecurityException | 
-							InterruptedException | TimeoutException e) {
+					} catch (/*AgentNotFoundException | L2pServiceException | L2pSecurityException | 
+							InterruptedException | Timeout*/ 
+							Exception e) {
 						e.printStackTrace();
 						pointUnitName = "";
 					}

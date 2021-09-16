@@ -3,6 +3,10 @@ package i5.las2peer.services.gamificationVisualizationService;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -13,20 +17,22 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import i5.las2peer.p2p.LocalNode;
-import i5.las2peer.p2p.ServiceNameVersion;
-import i5.las2peer.security.ServiceAgent;
-import i5.las2peer.security.UserAgent;
+import i5.las2peer.p2p.LocalNodeManager;
+import i5.las2peer.api.p2p.ServiceNameVersion;
+import i5.las2peer.api.security.ServiceAgent;
+import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.gamificationAchievementService.GamificationAchievementService;
 import i5.las2peer.services.gamificationActionService.GamificationActionService;
 import i5.las2peer.services.gamificationBadgeService.GamificationBadgeService;
+import i5.las2peer.services.gamificationGameService.GamificationGameService;
 import i5.las2peer.services.gamificationLevelService.GamificationLevelService;
 import i5.las2peer.services.gamificationPointService.GamificationPointService;
 import i5.las2peer.services.gamificationQuestService.GamificationQuestService;
 import i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService;
 import i5.las2peer.testing.MockAgentFactory;
-import i5.las2peer.webConnector.WebConnector;
-import i5.las2peer.webConnector.client.ClientResponse;
-import i5.las2peer.webConnector.client.MiniClient;
+import i5.las2peer.connectors.webConnector.WebConnector;
+import i5.las2peer.connectors.webConnector.client.ClientResponse;
+import i5.las2peer.connectors.webConnector.client.MiniClient;
 import net.minidev.json.JSONObject;
 
 /**
@@ -46,17 +52,16 @@ public class GamificationVisualizationServiceTest {
 
 	private static MiniClient c1, c2, c3, ac;
 
-	private static UserAgent user1, user2, user3, anon;
-
-	// during testing, the specified service version does not matter
-	private static final ServiceNameVersion testGamificationVisualizationService = new ServiceNameVersion(GamificationVisualizationService.class.getCanonicalName(),"0.1");
-
-	private static final ServiceNameVersion testBadgeService = new ServiceNameVersion(GamificationBadgeService.class.getCanonicalName(),"0.1");
-	private static final ServiceNameVersion testPointService = new ServiceNameVersion(GamificationPointService.class.getCanonicalName(),"0.1");
-	private static final ServiceNameVersion testLevelService = new ServiceNameVersion(GamificationLevelService.class.getCanonicalName(),"0.1");
-	private static final ServiceNameVersion testAchievementService = new ServiceNameVersion(GamificationAchievementService.class.getCanonicalName(),"0.1");
-	private static final ServiceNameVersion testActionService = new ServiceNameVersion(GamificationActionService.class.getCanonicalName(),"0.1");
-	private static final ServiceNameVersion testQuestService = new ServiceNameVersion(GamificationQuestService.class.getCanonicalName(),"0.1");
+	private static UserAgentImpl user1, user2, user3;// anon;
+	
+//	// during testing, the specified service version does not matter
+//	private static final ServiceNameVersion testGamificationVisualizationService = new ServiceNameVersion(GamificationVisualizationService.class.getCanonicalName(),"0.1");
+//	private static final ServiceNameVersion testBadgeService = new ServiceNameVersion(GamificationBadgeService.class.getCanonicalName(),"0.1");
+//	private static final ServiceNameVersion testPointService = new ServiceNameVersion(GamificationPointService.class.getCanonicalName(),"0.1");
+//	private static final ServiceNameVersion testLevelService = new ServiceNameVersion(GamificationLevelService.class.getCanonicalName(),"0.1");
+//	private static final ServiceNameVersion testAchievementService = new ServiceNameVersion(GamificationAchievementService.class.getCanonicalName(),"0.1");
+//	private static final ServiceNameVersion testActionService = new ServiceNameVersion(GamificationActionService.class.getCanonicalName(),"0.1");
+//	private static final ServiceNameVersion testQuestService = new ServiceNameVersion(GamificationQuestService.class.getCanonicalName(),"0.1");
 
 	private static String appId = "test";
 	private static String memberId = "user1";
@@ -82,104 +87,81 @@ public class GamificationVisualizationServiceTest {
 	 * 
 	 * @throws Exception
 	 */
-	@BeforeClass
-	public static void startServer() throws Exception {
+	@Before
+	public void startServer() throws Exception {
 
-//		Properties properties = new Properties();
-//	    String propertiesFile =
-//	        "./etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties";
-//	    FileReader reader = new FileReader(propertiesFile);
-//	    properties.load(reader);
-
-//	    jdbcDriverClassName = properties.getProperty("jdbcDriverClassName");
-//	    jdbcLogin = properties.getProperty("jdbcLogin");
-//	    jdbcPass = properties.getProperty("jdbcPass");
-//	    jdbcHost = properties.getProperty("gitHubUser");
-//	    jdbcPort = Integer.parseInt(properties.getProperty("jdbcPort"));
-//	    jdbcSchema = properties.getProperty("gitHubUser");
-//	    
-//	    DBManager = new SQLDatabase(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcSchema, jdbcHost, jdbcPort);
-//		try {
-//			DBManager.connect();
-//			Connection conn = DBManager.getConnection();
-//			
-//			PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+appId+".member_badge (mmeber_id,badge_id) VALUES (?, ?)");
-//			stmt.setString(1, memberId);
-//			stmt.setString(2, badgeId);
-//			stmt.executeUpdate();
-//			stmt = conn.prepareStatement("INSERT INTO "+appId+".member_achievement (mmeber_id,achievement_id) VALUES (?, ?)");
-//			stmt.setString(1, memberId);
-//			stmt.setString(2, achievementId);
-//			stmt.executeUpdate();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail("Exception: " + e);
-//			System.exit(0);
-//		}
-	    
 		// start node
-		node = LocalNode.newNode();
+		//node = LocalNode.newNode();
+		
+		node = new LocalNodeManager().newNode();
+		node.launch();
 		
 		user1 = MockAgentFactory.getAdam();
 		user2 = MockAgentFactory.getAbel();
 		user3 = MockAgentFactory.getEve();
-		anon = MockAgentFactory.getAnonymous();
+//		anon = MockAgentFactory.getAnonymous();
 		
-		user1.unlockPrivateKey("adamspass"); // agent must be unlocked in order to be stored 
-		user2.unlockPrivateKey("abelspass");
-		user3.unlockPrivateKey("evespass");
+		user1.unlock("adamspass"); // agent must be unlocked in order to be stored 
+		user2.unlock("abelspass");
+		user3.unlock("evespass");
 		
-		JSONObject user1Data = new JSONObject();
-		user1Data.put("given_name", "Adam");
-		user1Data.put("family_name", "Jordan");
-		user1Data.put("email", "adam@example.com");
-		user1.setUserData(user1Data);
-		
-		JSONObject user2Data = new JSONObject();
-		user2Data.put("given_name", "Abel");
-		user2Data.put("family_name", "leba");
-		user2Data.put("email", "abel@example.com");
-		user2.setUserData(user2Data);
-		
-		JSONObject user3Data = new JSONObject();
-		user3Data.put("given_name", "Eve");
-		user3Data.put("family_name", "vev");
-		user3Data.put("email", "eve@example.com");
-		user3.setUserData(user3Data);
+//		JSONObject user1Data = new JSONObject();
+//		user1Data.put("given_name", "Adam");
+//		user1Data.put("family_name", "Jordan");
+//		user1Data.put("email", "adam@example.com");
+//		user1.setUserData(user1Data);
+//		
+//		JSONObject user2Data = new JSONObject();
+//		user2Data.put("given_name", "Abel");
+//		user2Data.put("family_name", "leba");
+//		user2Data.put("email", "abel@example.com");
+//		user2.setUserData(user2Data);
+//		
+//		JSONObject user3Data = new JSONObject();
+//		user3Data.put("given_name", "Eve");
+//		user3Data.put("family_name", "vev");
+//		user3Data.put("email", "eve@example.com");
+//		user3.setUserData(user3Data);
 		
 		node.storeAgent(user1);
 		node.storeAgent(user2);
 		node.storeAgent(user3);
 
-		node.launch();
 		
-		ServiceAgent testService = ServiceAgent.createServiceAgent(testGamificationVisualizationService, "a pass");
-		testService.unlockPrivateKey("a pass");
-		node.registerReceiver(testService);
+//		ServiceAgent testService = ServiceAgent.createServiceAgent(testGamificationVisualizationService, "a pass");
+//		testService.unlockPrivateKey("a pass");
+//		node.registerReceiver(testService);
+		node.startService(new ServiceNameVersion(GamificationVisualizationService.class.getName(), "1.0.0"), "a pass");
 
-		ServiceAgent badgeService = ServiceAgent.createServiceAgent(testBadgeService, "a pass");
-		badgeService.unlockPrivateKey("a pass");
-		node.registerReceiver(badgeService);
+//		ServiceAgent badgeService = ServiceAgent.createServiceAgent(testBadgeService, "a pass");
+//		badgeService.unlockPrivateKey("a pass");
+//		node.registerReceiver(badgeService);
+		node.startService(new ServiceNameVersion(GamificationBadgeService.class.getName(), "1.0.0"), "a pass");
 
-		ServiceAgent pointService = ServiceAgent.createServiceAgent(testPointService, "a pass");
-		pointService.unlockPrivateKey("a pass");
-		node.registerReceiver(pointService);
+//		ServiceAgent pointService = ServiceAgent.createServiceAgent(testPointService, "a pass");
+//		pointService.unlockPrivateKey("a pass");
+//		node.registerReceiver(pointService);
+		node.startService(new ServiceNameVersion(GamificationPointService.class.getName(), "1.0.0"), "a pass");
 
-		ServiceAgent levelService = ServiceAgent.createServiceAgent(testLevelService, "a pass");
-		levelService.unlockPrivateKey("a pass");
-		node.registerReceiver(levelService);
+//		ServiceAgent levelService = ServiceAgent.createServiceAgent(testLevelService, "a pass");
+//		levelService.unlockPrivateKey("a pass");
+//		node.registerReceiver(levelService);
+		node.startService(new ServiceNameVersion(GamificationLevelService.class.getName(), "1.0.0"), "a pass");
 
-		ServiceAgent achievementService = ServiceAgent.createServiceAgent(testAchievementService, "a pass");
-		achievementService.unlockPrivateKey("a pass");
-		node.registerReceiver(achievementService);
+//		ServiceAgent achievementService = ServiceAgent.createServiceAgent(testAchievementService, "a pass");
+//		achievementService.unlockPrivateKey("a pass");
+//		node.registerReceiver(achievementService);
+		node.startService(new ServiceNameVersion(GamificationAchievementService.class.getName(), "1.0.0"), "a pass");
 
-		ServiceAgent actionService = ServiceAgent.createServiceAgent(testActionService, "a pass");
-		actionService.unlockPrivateKey("a pass");
-		node.registerReceiver(actionService);
+//		ServiceAgent actionService = ServiceAgent.createServiceAgent(testActionService, "a pass");
+//		actionService.unlockPrivateKey("a pass");
+//		node.registerReceiver(actionService);
+		node.startService(new ServiceNameVersion(GamificationActionService.class.getName(), "1.0.0"), "a pass");
 
-		ServiceAgent questService = ServiceAgent.createServiceAgent(testQuestService, "a pass");
-		questService.unlockPrivateKey("a pass");
-		node.registerReceiver(questService);
+//		ServiceAgent questService = ServiceAgent.createServiceAgent(testQuestService, "a pass");
+//		questService.unlockPrivateKey("a pass");
+//		node.registerReceiver(questService);
+		node.startService(new ServiceNameVersion(GamificationQuestService.class.getName(), "1.0.0"), "a pass");
 				
 		// start connector
 		logStream = new ByteArrayOutputStream();
@@ -192,19 +174,21 @@ public class GamificationVisualizationServiceTest {
 //		connector.updateServiceList();
 		
 		c1 = new MiniClient();
-		c1.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-		c1.setLogin(Long.toString(user1.getId()), "adamspass");
+		c1.setConnectorEndpoint(connector.getHttpEndpoint());
+		c1.setLogin(user1.getIdentifier(), "adamspass");
 		
 		c2 = new MiniClient();
-		c2.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-		c2.setLogin(Long.toString(user2.getId()), "abelspass");
+		c2.setConnectorEndpoint(connector.getHttpEndpoint());
+		c2.setLogin(user2.getIdentifier(), "abelspass");
 
 		c3 = new MiniClient();
-		c3.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-		c3.setLogin(Long.toString(user3.getId()), "evespass");
+		c3.setConnectorEndpoint(connector.getHttpEndpoint());
+		c3.setLogin(user3.getIdentifier(), "evespass");
 
-		ac = new MiniClient();
-		ac.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+//		ac = new MiniClient();
+//		ac.setConnectorEndpoint(connector.getHttpEndpoint());
+		
+		
 // legacy		
 //		// avoid timing errors: wait for the repository manager to get all services before continuing
 //		try
@@ -219,27 +203,26 @@ public class GamificationVisualizationServiceTest {
 	}
 
 	/**
-	 * Called after the tests have finished.
-	 * Shuts down the server and prints out the connector log file for reference.
+	 * Called after the test has finished. Shuts down the server and prints out the connector log file for reference.
 	 * 
 	 * @throws Exception
 	 */
-	@AfterClass
-	public static void shutDownServer() throws Exception {
-
-		connector.stop();
-		node.shutDown();
-
-		connector = null;
-		node = null;
-
-		LocalNode.reset();
-
-		System.out.println("Connector-Log:");
-		System.out.println("--------------");
-
-		System.out.println(logStream.toString());
-
+	@After
+	public void shutDownServer() throws Exception {
+		if (connector != null) {
+			connector.stop();
+			connector = null;
+		}
+		if (node != null) {
+			node.shutDown();
+			node = null;
+		}
+		if (logStream != null) {
+			System.out.println("Connector-Log:");
+			System.out.println("--------------");
+			System.out.println(logStream.toString());
+			logStream = null;
+		}
 	}
 
 	

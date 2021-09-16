@@ -22,27 +22,19 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
 
-
-
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.api.Context;
 import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.restMapper.RESTService;
-//import i5.las2peer.restMapper.HttpResponse;
-//import i5.las2peer.restMapper.MediaType;
-//import i5.las2peer.restMapper.RESTMapper;
-//import i5.las2peer.restMapper.annotations.ContentParam;
-//import i5.las2peer.restMapper.annotations.Version;
-//import i5.las2peer.restMapper.tools.ValidationResult;
-//import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.api.security.UserAgent;
+import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.Context;
 import i5.las2peer.services.gamificationAchievementService.database.AchievementDAO;
 import i5.las2peer.services.gamificationAchievementService.database.AchievementModel;
 import i5.las2peer.services.gamificationAchievementService.database.DatabaseManager;
@@ -63,7 +55,6 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 
 
-// TODO Describe your own service
 /**
  * Gamification Achievement Service
  * 
@@ -78,7 +69,7 @@ import net.minidev.json.JSONValue;
  * 
  */
 
-@Path("/gamification/achievements")
+//@Path("/gamification/achievements")
 @Api( value = "/gamification/achievements", authorizations = {
 		@Authorization(value = "achievements_auth")
 })
@@ -98,7 +89,8 @@ import net.minidev.json.JSONValue;
 						url = "http://your-software-license-url.com"
 				)
 		))
-@ServicePath("achievement")
+@ManualDeployment
+@ServicePath("/gamification/achievements")
 public class GamificationAchievementService extends RESTService {
 
 	// instantiate the logger class

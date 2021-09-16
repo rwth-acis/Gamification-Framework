@@ -37,22 +37,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.api.Context;
-//import i5.las2peer.execution.L2pServiceException;
 import i5.las2peer.logging.L2pLogger;
+import i5.las2peer.p2p.TimeoutException;
+import i5.las2peer.restMapper.annotations.ServicePath;
+import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.Context;
 import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.security.AgentNotFoundException;
-import i5.las2peer.p2p.TimeoutException;
-import i5.las2peer.restMapper.RESTService;
-//import i5.las2peer.restMapper.HttpResponse;
-//import i5.las2peer.restMapper.MediaType;
-//import i5.las2peer.restMapper.RESTMapper;
-//import i5.las2peer.restMapper.annotations.ContentParam;
-//import i5.las2peer.restMapper.annotations.Version;
-//import i5.las2peer.restMapper.tools.ValidationResult;
-//import i5.las2peer.restMapper.tools.XMLCheck;
-//import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeModel;
@@ -75,7 +67,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 
-// TODO Describe your own service
+
 /**
  * Gamification Badge Service
  * 
@@ -89,8 +81,8 @@ import net.minidev.json.JSONValue;
  * the entire ApiInfo annotation should be removed.
  * 
  */
-// TODO Adjust the following configuration
-@Path("/gamification/badges")
+
+//@Path("/gamification/badges")
 @Api( value = "/gamification/badges", authorizations = {
 		@Authorization(value = "badges_auth",
 		scopes = {
@@ -114,7 +106,8 @@ import net.minidev.json.JSONValue;
 						url = "http://your-software-license-url.com"
 				)
 		))
-@ServicePath("badge")
+@ManualDeployment
+@ServicePath("/gamification/badges")
 public class GamificationBadgeService extends RESTService {
 
 	// instantiate the logger class

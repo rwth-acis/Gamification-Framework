@@ -129,6 +129,9 @@ if [ "$1" == "-m" ]; then
 		echo "[Build only]"
 	  pwd
 	  ant build_all_projects_only
+	elif [ "$2" == "test" ]; then
+          echo "[Test only]"
+	  ant test_all_projects_only
 	elif [ "$2" == "clean" ]; then
 	  echo "[Clean only]"
 	  ant clean_all_projects

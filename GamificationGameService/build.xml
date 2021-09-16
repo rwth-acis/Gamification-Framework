@@ -182,7 +182,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
  startService('${service.name}.${service.class}@${service.version}','${service.password}') startWebConnector interactive
  pause
 
-</echo>
+       </echo>
     </target>
 
     <!-- Generate Jars -->
@@ -240,7 +240,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
     </target>
 
     <target name="junit_tests" depends="init_junit, compile_all">
-        <junit fork="yes" haltonerror="yes" haltonfailure="yes" printsummary="yes">
+        <junit fork="yes" haltonerror="no" haltonfailure="no" printsummary="yes">
             <classpath>
                 <pathelement path="${tmp.classes}" />
                 <pathelement path="${tmp.junit}" />
@@ -262,7 +262,7 @@ java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupD
     <available file="${user_agent2.path}" property="user_agent_exists2"/>
     <available file="${user_agent3.path}" property="user_agent_exists3"/>
 
-	   <available file="${service_agent.path}" property="service_agent_exists"/>
+	<available file="${service_agent.path}" property="service_agent_exists"/>
 
 	  <target name="generate_service_agent" depends="jar" unless="service_agent_exists">
 	        <echo message="Writing Service Agent xml to ${service_agent.path}"/>
@@ -352,7 +352,7 @@ agent-${service.class}.xml;${service.password}
             <filelist dir="../">
                 <file name="GamificationBadgeService/build.xml"/>
                 <file name="GamificationPointService/build.xml"/>
-				<file name="GamificationGameService/build.xml"/>
+                <file name="GamificationGameService/build.xml"/>
                 <file name="GamificationAchievementService/build.xml"/>
                 <file name="GamificationActionService/build.xml"/>
                 <file name="GamificationLevelService/build.xml"/>

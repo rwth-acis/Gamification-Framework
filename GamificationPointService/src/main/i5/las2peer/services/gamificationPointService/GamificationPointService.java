@@ -16,17 +16,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
 
+import i5.las2peer.logging.L2pLogger;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
-import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.api.logging.MonitoringEvent;
-import i5.las2peer.restMapper.RESTService;
-//import i5.las2peer.restMapper.HttpResponse;
-//import i5.las2peer.restMapper.MediaType;
-//import i5.las2peer.restMapper.RESTMapper;
-//import i5.las2peer.restMapper.annotations.Version;
-//import i5.las2peer.restMapper.tools.ValidationResult;
-//import i5.las2peer.restMapper.tools.XMLCheck;
+import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationPointService.database.PointDAO;
 import i5.las2peer.services.gamificationPointService.database.DatabaseManager;
@@ -45,7 +40,6 @@ import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 
-// TODO Describe your own service
 /**
  * Gamification Point Service
  * 
@@ -59,8 +53,8 @@ import net.minidev.json.JSONValue;
  * the entire ApiInfo annotation should be removed.
  * 
  */
-// TODO Adjust the following configuration
-@Path("/gamification/points")
+
+//@Path("/gamification/points")
 @Api( value = "/gamification/points", authorizations = {
 		@Authorization(value = "points_auth",
 		scopes = {
@@ -84,8 +78,8 @@ import net.minidev.json.JSONValue;
 						url = "http://your-software-license-url.com"
 				)
 		))
-
-@ServicePath("point")
+@ManualDeployment
+@ServicePath("/gamification/points")
 public class GamificationPointService extends RESTService {
 
 	// instantiate the logger class

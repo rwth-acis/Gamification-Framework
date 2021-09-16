@@ -29,18 +29,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import i5.las2peer.logging.L2pLogger;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
-import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.api.logging.MonitoringEvent;
-import i5.las2peer.restMapper.RESTService;
-//import i5.las2peer.restMapper.HttpResponse;
-//import i5.las2peer.restMapper.MediaType;
-//import i5.las2peer.restMapper.RESTMapper;
-//import i5.las2peer.restMapper.annotations.ContentParam;
-//import i5.las2peer.restMapper.annotations.Version;
-//import i5.las2peer.restMapper.tools.ValidationResult;
-//import i5.las2peer.restMapper.tools.XMLCheck;
+import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationLevelService.database.LevelDAO;
 import i5.las2peer.services.gamificationLevelService.database.LevelModel;
@@ -76,8 +70,8 @@ import net.minidev.json.JSONValue;
  * the entire ApiInfo annotation should be removed.
  * 
  */
-// TODO Adjust the following configuration
-@Path("/gamification/levels")
+
+//@Path("/gamification/levels")
 @Api( value = "/levels", authorizations = {
 		@Authorization(value = "levels_auth",
 		scopes = {
@@ -101,8 +95,8 @@ import net.minidev.json.JSONValue;
 						url = "http://your-software-license-url.com"
 				)
 		))
-
-@ServicePath("level")
+@ManualDeployment
+@ServicePath("/gamification/levels")
 public class GamificationLevelService extends RESTService {
 
 	// instantiate the logger class
