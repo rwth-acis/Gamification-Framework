@@ -137,7 +137,7 @@ public class GamificationGameService extends RESTService {
 			 */
 			private boolean cleanStorage(String gameId) throws AgentNotFoundException, //L2pServiceException, L2pSecurityException, 
 			InterruptedException, TimeoutException {
-				Object result = new Object();
+				Object result = null;
 				try {
 					result = Context.getCurrent().invoke("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "cleanStorageRMI", new Serializable[] { gameId });
 				} catch (Exception e) {
@@ -145,11 +145,11 @@ public class GamificationGameService extends RESTService {
 					e.printStackTrace();
 				}
 				if (result != null) {
-					L2pLogger.logEvent(this, MonitoringEvent.RMI_SENT, "Clean Badge Service Storage : " + gameId);
+					L2pLogger.logEvent(this, MonitoringEvent.RMI_SENT, "Clean Badge Service Storage : " + gameId + result);
 					
-					if((Integer)result == 1){
+					if(((Integer)result) == 1){
 						L2pLogger.logEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "Clean Badge Service Storage : " + gameId);
-						Object res= new Object();
+						Object res=null;
 						try {
 							res = Context.getCurrent().invoke("i5.las2peer.services.gamificationPointService.GamificationPointService@0.1", "cleanStorageRMI", new Serializable[] { gameId });
 						}
@@ -157,8 +157,8 @@ public class GamificationGameService extends RESTService {
 							e.printStackTrace();
 						}
 						if (res != null) {
-							L2pLogger.logEvent(this, MonitoringEvent.RMI_SENT, "Clean Point Service Storage : " + gameId);
-							if((Integer)res == 1){
+							L2pLogger.logEvent(this, MonitoringEvent.RMI_SENT, "Clean Point Service Storage : " + gameId + res);
+							if(((Integer)res )== 1){
 								L2pLogger.logEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "Clean Point Service Storage : " + gameId);
 								
 								return true;
@@ -750,18 +750,18 @@ public class GamificationGameService extends RESTService {
 					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
 					// take username as default name
 					String name = userAgent.getLoginName();
+					String email = userAgent.getEmail();
 					System.out.println("User name : " + name);
 					if(name.equals("anonymous")){
 						return unauthorizedMessage();
 					}
-					//TEMPORARY RETURN
-					return unauthorizedMessage();
-//					// try to fetch firstname/lastname from user data received from OpenID
+					
+					// try to fetch firstname/lastname from user data received from OpenID
 //					Serializable userData = userAgent.getUserData();
-//					
-//					if (userData != null) {
+					
+					if (name != "" && email != "") {//userData != null
 //						Object jsonUserData = JSONValue.parse(userData.toString());
-//						if (jsonUserData instanceof JSONObject) {
+						if (name != "" && email != ""){//jsonUserData instanceof JSONObject
 //							JSONObject obj = (JSONObject) jsonUserData;
 //							Object firstnameObj = obj.get("given_name");
 //							Object lastnameObj = obj.get("family_name");
@@ -787,51 +787,52 @@ public class GamificationGameService extends RESTService {
 //							else{
 //								email = "";
 //							}
-//							
-//							member = new MemberModel(name,firstname,lastname,email);
-//							//logger.info(member.getId()+" "+member.getFullName()+" "+member.getEmail());
-//							try {
-//								conn = dbm.getConnection();
-//								if(!gameAccess.isMemberRegistered(conn,member.getId())){
-//									gameAccess.registerMember(conn,member);
-//									objResponse.put("message", "Welcome " + member.getId() + "!");
-//									L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_7,Context.getCurrent().getMainAgent(), ""+member.getId());
-//									return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-//									//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-//								}
-//							} catch (SQLException e) {
-//								e.printStackTrace();
-//								objResponse.put("message", "Cannot validate member login. Database Error. " + e.getMessage());
-//								L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-//								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-//								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//							}		 
-//							// always close connections
-//						    finally {
-//						      try {
-//						        conn.close();
-//						      } catch (SQLException e) {
-//						        logger.printStackTrace(e);
-//						      }
-//						    }	
-//						} else {
-//							//logger.warning("Parsing user data failed! Got '" + jsonUserData.getClass().getName() + " instead of "+ JSONObject.class.getName() + " expected!");
-//							objResponse.put("message", "Cannot validate member login. User data error to be retrieved. Not JSON object.");
-//							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-//							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-//							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
-//						}
-//						objResponse.put("message", "Member already registered");
-//						L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_8,Context.getCurrent().getMainAgent(), ""+member.getId());
-//						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-//						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
-//					}
-//					else{
-//						objResponse.put("message", "Cannot validate member login. User data error to be retrieved.");
-//						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-//						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-//						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
-//					}
+							String lastname ="";
+							String firstname ="";
+							member = new MemberModel(name,firstname,lastname,email);
+							//logger.info(member.getId()+" "+member.getFullName()+" "+member.getEmail());
+							try {
+								conn = dbm.getConnection();
+								if(!gameAccess.isMemberRegistered(conn,member.getId())){
+									gameAccess.registerMember(conn,member);
+									objResponse.put("message", "Welcome " + member.getId() + "!");
+									L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_7,Context.getCurrent().getMainAgent(), ""+member.getId());
+									return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+									//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+								}
+							} catch (SQLException e) {
+								e.printStackTrace();
+								objResponse.put("message", "Cannot validate member login. Database Error. " + e.getMessage());
+								L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+							}		 
+							// always close connections
+						    finally {
+						      try {
+						        conn.close();
+						      } catch (SQLException e) {
+						        logger.printStackTrace(e);
+						      }
+						    }	
+						} else {
+							//logger.warning("Parsing user data failed! Got '" + jsonUserData.getClass().getName() + " instead of "+ JSONObject.class.getName() + " expected!");
+							objResponse.put("message", "Cannot validate member login. User data error to be retrieved. Not JSON object.");
+							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
+						}
+						objResponse.put("message", "Member already registered");
+						L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_8,Context.getCurrent().getMainAgent(), ""+member.getId());
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
+					}
+					else{
+						objResponse.put("message", "Cannot validate member login. User data error to be retrieved.");
+						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
+					}
 						
 				
 			}

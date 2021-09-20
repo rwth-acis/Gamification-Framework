@@ -257,7 +257,6 @@ public class GamificationGameServiceTest {
 				assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
 			}
 			else{
-
 				assertEquals(HttpURLConnection.HTTP_CREATED,result.getHttpCode());
 			}
 		} catch (Exception e) {
