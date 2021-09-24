@@ -1,10 +1,8 @@
 package i5.las2peer.services.gamificationVisualizationService;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,7 +14,6 @@ import org.junit.runners.MethodSorters;
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.api.p2p.ServiceNameVersion;
-import i5.las2peer.api.security.ServiceAgent;
 import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.gamificationAchievementService.GamificationAchievementService;
 import i5.las2peer.services.gamificationActionService.GamificationActionService;
@@ -39,26 +36,15 @@ import net.minidev.json.JSONObject;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GamificationVisualizationServiceTest {
 
-//	private static final String HTTP_ADDRESS = "http://127.0.0.1";
-//	private static final int HTTP_PORT = WebConnector.DEFAULT_HTTP_PORT;
 	private static final int HTTP_PORT = 8081;
 	
 	private static LocalNode node;
 	private static WebConnector connector;
 	private static ByteArrayOutputStream logStream;
 
-	private static MiniClient c1, c2, c3;//, ac;
+	private static MiniClient c1, c2, c3;
 
-	private static UserAgentImpl user1, user2, user3;// anon;
-	
-//	// during testing, the specified service version does not matter
-//	private static final ServiceNameVersion testGamificationVisualizationService = new ServiceNameVersion(GamificationVisualizationService.class.getCanonicalName(),"0.1");
-//	private static final ServiceNameVersion testBadgeService = new ServiceNameVersion(GamificationBadgeService.class.getCanonicalName(),"0.1");
-//	private static final ServiceNameVersion testPointService = new ServiceNameVersion(GamificationPointService.class.getCanonicalName(),"0.1");
-//	private static final ServiceNameVersion testLevelService = new ServiceNameVersion(GamificationLevelService.class.getCanonicalName(),"0.1");
-//	private static final ServiceNameVersion testAchievementService = new ServiceNameVersion(GamificationAchievementService.class.getCanonicalName(),"0.1");
-//	private static final ServiceNameVersion testActionService = new ServiceNameVersion(GamificationActionService.class.getCanonicalName(),"0.1");
-//	private static final ServiceNameVersion testQuestService = new ServiceNameVersion(GamificationQuestService.class.getCanonicalName(),"0.1");
+	private static UserAgentImpl user1, user2, user3;
 
 	private static String appId = "test";
 	private static String memberId = "user1";
@@ -77,6 +63,7 @@ public class GamificationVisualizationServiceTest {
 	String searchParam = "";
 	
 	String unitName = "dollar";
+	
 	/**
 	 * Called before the tests start.
 	 * 
@@ -96,71 +83,30 @@ public class GamificationVisualizationServiceTest {
 		user1 = MockAgentFactory.getAdam();
 		user2 = MockAgentFactory.getAbel();
 		user3 = MockAgentFactory.getEve();
-//		anon = MockAgentFactory.getAnonymous();
-		
-		user1.unlock("adamspass"); // agent must be unlocked in order to be stored 
+
+		// agent must be unlocked in order to be stored 
+		user1.unlock("adamspass");
 		user2.unlock("abelspass");
 		user3.unlock("evespass");
-		
-//		JSONObject user1Data = new JSONObject();
-//		user1Data.put("given_name", "Adam");
-//		user1Data.put("family_name", "Jordan");
-//		user1Data.put("email", "adam@example.com");
-//		user1.setUserData(user1Data);
-//		
-//		JSONObject user2Data = new JSONObject();
-//		user2Data.put("given_name", "Abel");
-//		user2Data.put("family_name", "leba");
-//		user2Data.put("email", "abel@example.com");
-//		user2.setUserData(user2Data);
-//		
-//		JSONObject user3Data = new JSONObject();
-//		user3Data.put("given_name", "Eve");
-//		user3Data.put("family_name", "vev");
-//		user3Data.put("email", "eve@example.com");
-//		user3.setUserData(user3Data);
 		
 		node.storeAgent(user1);
 		node.storeAgent(user2);
 		node.storeAgent(user3);
 
-		
-//		ServiceAgent testService = ServiceAgent.createServiceAgent(testGamificationVisualizationService, "a pass");
-//		testService.unlockPrivateKey("a pass");
-//		node.registerReceiver(testService);
 		node.startService(new ServiceNameVersion(GamificationVisualizationService.class.getName(), "0.1"), "a pass");
 
-//		ServiceAgent badgeService = ServiceAgent.createServiceAgent(testBadgeService, "a pass");
-//		badgeService.unlockPrivateKey("a pass");
-//		node.registerReceiver(badgeService);
 		node.startService(new ServiceNameVersion(GamificationBadgeService.class.getName(), "0.1"), "a pass");
 
-//		ServiceAgent pointService = ServiceAgent.createServiceAgent(testPointService, "a pass");
-//		pointService.unlockPrivateKey("a pass");
-//		node.registerReceiver(pointService);
 		node.startService(new ServiceNameVersion(GamificationPointService.class.getName(), "0.1"), "a pass");
 
-//		ServiceAgent levelService = ServiceAgent.createServiceAgent(testLevelService, "a pass");
-//		levelService.unlockPrivateKey("a pass");
-//		node.registerReceiver(levelService);
 		node.startService(new ServiceNameVersion(GamificationLevelService.class.getName(), "0.1"), "a pass");
 
-//		ServiceAgent achievementService = ServiceAgent.createServiceAgent(testAchievementService, "a pass");
-//		achievementService.unlockPrivateKey("a pass");
-//		node.registerReceiver(achievementService);
 		node.startService(new ServiceNameVersion(GamificationAchievementService.class.getName(), "0.1"), "a pass");
 
-//		ServiceAgent actionService = ServiceAgent.createServiceAgent(testActionService, "a pass");
-//		actionService.unlockPrivateKey("a pass");
-//		node.registerReceiver(actionService);
 		node.startService(new ServiceNameVersion(GamificationActionService.class.getName(), "0.1"), "a pass");
 
-//		ServiceAgent questService = ServiceAgent.createServiceAgent(testQuestService, "a pass");
-//		questService.unlockPrivateKey("a pass");
-//		node.registerReceiver(questService);
 		node.startService(new ServiceNameVersion(GamificationQuestService.class.getName(), "0.1"), "a pass");
-				
-		// start connector
+
 		logStream = new ByteArrayOutputStream();
 
 		connector = new WebConnector(true, HTTP_PORT, false, 1000);
@@ -168,8 +114,6 @@ public class GamificationVisualizationServiceTest {
 		connector.start(node);
 		Thread.sleep(1000); // wait a second for the connector to become ready
 
-//		connector.updateServiceList();
-		
 		c1 = new MiniClient();
 		c1.setConnectorEndpoint(connector.getHttpEndpoint());
 		c1.setLogin(user1.getIdentifier(), "adamspass");
@@ -181,21 +125,6 @@ public class GamificationVisualizationServiceTest {
 		c3 = new MiniClient();
 		c3.setConnectorEndpoint(connector.getHttpEndpoint());
 		c3.setLogin(user3.getIdentifier(), "evespass");
-
-//		ac = new MiniClient();
-//		ac.setConnectorEndpoint(connector.getHttpEndpoint());
-		
-		
-// legacy		
-//		// avoid timing errors: wait for the repository manager to get all services before continuing
-//		try
-//		{
-//			System.out.println("waiting..");
-//			Thread.sleep(10000);
-//		} catch (InterruptedException e)
-//		{
-//			e.printStackTrace();
-//		}
 
 	}
 
@@ -1220,17 +1149,4 @@ public class GamificationVisualizationServiceTest {
 //		}
 //	}
 //	
-	
-//legacy	
-//	/**
-//	 * Test the TemplateService for valid rest mapping.
-//	 * Important for development.
-//	 */
-//	@Test
-//	public void testDebugMapping()
-//	{
-//		GamificationVisualizationService cl = new GamificationVisualizationService();
-//		assertTrue(cl.debugMapping());
-//	}
-
 }

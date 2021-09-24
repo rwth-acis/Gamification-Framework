@@ -1,10 +1,8 @@
 package i5.las2peer.services.gamificationQuestService;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,16 +12,12 @@ import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.api.p2p.ServiceNameVersion;
-import i5.las2peer.api.security.ServiceAgent;
 import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.gamificationQuestService.GamificationQuestService;
 import i5.las2peer.testing.MockAgentFactory;
@@ -41,22 +35,16 @@ import net.minidev.json.JSONObject;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GamificationQuestServiceTest {
 
-	private static final String HTTP_ADDRESS = "http://127.0.0.1";
-//	private static final int HTTP_PORT = WebConnector.DEFAULT_HTTP_PORT;
 	private static final int HTTP_PORT = 8081;
 	
 	private static LocalNode node;
 	private static WebConnector connector;
 	private static ByteArrayOutputStream logStream;
 
-	private static MiniClient c1, c2, c3, ac;
+	private static MiniClient c1, c2, c3;
 
-	private static UserAgentImpl user1, user2, user3;// anon;
-	
-//	// during testing, the specified service version does not matter
-//	private static final ServiceNameVersion testGamificationQuestService = new ServiceNameVersion(GamificationQuestService.class.getCanonicalName(),"0.1");
+	private static UserAgentImpl user1, user2, user3;
 
-	
 	private static String gameId = "test";
 	private static String achievementId = "achievement1";
 	private static String actionId = "actionquestid";
@@ -69,6 +57,7 @@ public class GamificationQuestServiceTest {
 	String searchParam = "";
 	
 	String unitName = "dollar";
+	
 	/**
 	 * Called before the tests start.
 	 * 
@@ -88,40 +77,18 @@ public class GamificationQuestServiceTest {
 		user1 = MockAgentFactory.getAdam();
 		user2 = MockAgentFactory.getAbel();
 		user3 = MockAgentFactory.getEve();
-//		anon = MockAgentFactory.getAnonymous();
 		
-		user1.unlock("adamspass"); // agent must be unlocked in order to be stored 
+		// agent must be unlocked in order to be stored 
+		user1.unlock("adamspass");
 		user2.unlock("abelspass");
 		user3.unlock("evespass");
-		
-//		JSONObject user1Data = new JSONObject();
-//		user1Data.put("given_name", "Adam");
-//		user1Data.put("family_name", "Jordan");
-//		user1Data.put("email", "adam@example.com");
-//		user1.setUserData(user1Data);
-//		
-//		JSONObject user2Data = new JSONObject();
-//		user2Data.put("given_name", "Abel");
-//		user2Data.put("family_name", "leba");
-//		user2Data.put("email", "abel@example.com");
-//		user2.setUserData(user2Data);
-//		
-//		JSONObject user3Data = new JSONObject();
-//		user3Data.put("given_name", "Eve");
-//		user3Data.put("family_name", "vev");
-//		user3Data.put("email", "eve@example.com");
-//		user3.setUserData(user3Data);
 		
 		node.storeAgent(user1);
 		node.storeAgent(user2);
 		node.storeAgent(user3);
 
-//		ServiceAgent testService = ServiceAgent.createServiceAgent(testGamificationQuestService, "a pass");
-//		testService.unlockPrivateKey("a pass");
-//		node.registerReceiver(testService);
 		node.startService(new ServiceNameVersion(GamificationQuestService.class.getName(), "0.1"), "a pass");
 
-		// start connector
 		logStream = new ByteArrayOutputStream();
 
 		connector = new WebConnector(true, HTTP_PORT, false, 1000);
@@ -129,8 +96,6 @@ public class GamificationQuestServiceTest {
 		connector.start(node);
 		Thread.sleep(1000); // wait a second for the connector to become ready
 
-//		connector.updateServiceList();
-		
 		c1 = new MiniClient();
 		c1.setConnectorEndpoint(connector.getHttpEndpoint());
 		c1.setLogin(user1.getIdentifier(), "adamspass");
@@ -142,22 +107,6 @@ public class GamificationQuestServiceTest {
 		c3 = new MiniClient();
 		c3.setConnectorEndpoint(connector.getHttpEndpoint());
 		c3.setLogin(user3.getIdentifier(), "evespass");
-
-//		ac = new MiniClient();
-//		ac.setConnectorEndpoint(connector.getHttpEndpoint());
-		
-		
-// legacy		
-//		// avoid timing errors: wait for the repository manager to get all services before continuing
-//		try
-//		{
-//			System.out.println("waiting..");
-//			Thread.sleep(10000);
-//		} catch (InterruptedException e)
-//		{
-//			e.printStackTrace();
-//		}
-
 	}
 
 	/**
@@ -184,7 +133,6 @@ public class GamificationQuestServiceTest {
 	}
 
 
-	// quest Test
 	@Test
 	public void testF1_createNewQuest(){
 		System.out.println("Test --- Create New Quest");
@@ -258,12 +206,10 @@ public class GamificationQuestServiceTest {
 		try
 		{
 			JSONArray actionids = new JSONArray();
-//			for(int i = 0; i < 5; i++){
-				JSONObject o = new JSONObject();
-				o.put("action", actionId);
-				o.put("times", 5);
-				actionids.add(o);
-//			}
+			JSONObject o = new JSONObject();
+			o.put("action", actionId);
+			o.put("times", 5);
+			actionids.add(o);
 			JSONObject obj = new JSONObject();
 			obj.put("questid", questId);
 			obj.put("questname", "quest_name");
@@ -298,11 +244,6 @@ public class GamificationQuestServiceTest {
 		}
 	}
 	
-	/**
-	 * 
-	 * get action list
-	 * 
-	 */
 	@Test
 	public void testF2_getQuestList()
 	{
@@ -321,7 +262,6 @@ public class GamificationQuestServiceTest {
 	}
 	
 
-	//------- CLEAN UP --------------
 	@Test
 	public void testZ3_deleteQuest(){
 		try
@@ -335,18 +275,4 @@ public class GamificationQuestServiceTest {
 			System.exit(0);
 		}
 	}
-	
-	
-// legacy	
-//	/**
-//	 * Test the TemplateService for valid rest mapping.
-//	 * Important for development.
-//	 */
-//	@Test
-//	public void testDebugMapping()
-//	{
-//		GamificationQuestService cl = new GamificationQuestService();
-//		assertTrue(cl.debugMapping());
-//	}
-
 }
