@@ -16,7 +16,7 @@ import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.api.p2p.ServiceNameVersion;
 import i5.las2peer.security.UserAgentImpl;
-import i5.las2peer.services.gamificationPointService.GamificationPointService;
+//import i5.las2peer.services.gamificationPointService.GamificationPointService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.connectors.webConnector.WebConnector;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
@@ -126,7 +126,6 @@ public class GamificationPointServiceTest {
 		System.out.println("Test --- Change Unit Name");
 		try
 		{
-			String memberId = user1.getLoginName();
 			ClientResponse result = c1.sendRequest("PUT", mainPath + ""+gameId+"/name/"+unitName, ""); // testInput is
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());

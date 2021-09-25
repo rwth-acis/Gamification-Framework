@@ -70,7 +70,6 @@ public abstract class RepositoryHelper {
    * @throws GitHubException if anything goes wrong during this creation process
    * 
    */
-  @SuppressWarnings("unchecked")
   public static Repository generateNewRepository(String name, String gitHubOrganization,
       String gitHubUser, String gitHubPassword) throws GitHubException {
 

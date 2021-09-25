@@ -11,11 +11,9 @@ import javax.imageio.ImageIO;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
-//import i5.las2peer.execution.L2pServiceException;
-//import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.api.execution.InternalServiceException;
 import i5.las2peer.api.security.AgentNotFoundException;
 import i5.las2peer.p2p.TimeoutException;
-//import i5.las2peer.security.L2pSecurityException;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 
@@ -104,12 +102,13 @@ public class StorageManagerGamification {
 	 * @param description description of the badge image
 	 * @throws IOException IO Exception
 	 * @throws AgentNotFoundException AgentNotFoundException
+	 * @throws InternalServiceException InternalServiceException
 	 * @throws InterruptedException InterruptedException
 	 * @throws TimeoutException TimeoutException
 	 * @throws IOException IOException
 	 */
 	
-	public static void storeBadgeData(String gameId, String badgeId, String filename, byte[] filecontent, String mimeType, String description) throws AgentNotFoundException, /*L2pServiceException, L2pSecurityException,*/ InterruptedException, TimeoutException, IOException{
+	public static void storeBadgeData(String gameId, String badgeId, String filename, byte[] filecontent, String mimeType, String description) throws AgentNotFoundException, InternalServiceException, InterruptedException, TimeoutException, IOException{
 			// RMI call without parameters
 		File gameFolder = new File("../GamificationBadgeService/files/"+gameId);
 		if(!gameFolder.exists()){

@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -68,7 +67,6 @@ import net.minidev.json.JSONValue;
  * the entire ApiInfo annotation should be removed.
  * 
  */
-
 @Api( value = "/gamification/achievements", authorizations = {
 @Authorization(value = "achievements_auth")
 })
@@ -129,9 +127,8 @@ public class GamificationAchievementService extends RESTService {
 		private Response unauthorizedMessage(){
 			JSONObject objResponse = new JSONObject();
 			objResponse.put("message", "You are not authorized");
-			L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 			return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-//			return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 		}
 		
 		
@@ -174,7 +171,7 @@ public class GamificationAchievementService extends RESTService {
 				@ApiParam(value = "Achievement detail in multiple/form-data type", required = true) byte[] formData)  {
 			
 			// Request log
-			L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "POST " + "gamification/achievements/"+gameId);
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/achievements/"+gameId, true);
 			long randomLong = new Random().nextLong(); //To be able to match 
 			
 			// parse given multipart form data
@@ -197,21 +194,21 @@ public class GamificationAchievementService extends RESTService {
 			try {
 				conn = dbm.getConnection();
 				
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_14,Context.getCurrent().getMainAgent(), ""+randomLong);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong, true);
 				
 				// Check the existence of game ID
 				try {
 					if(!achievementAccess.isGameIdExist(conn,gameId)){
 						logger.info("Game not found >> ");
 						objResponse.put("message", "Cannot create achievement. Game not found");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));						
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));						
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 					objResponse.put("message", "Cannot create achievement. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
 				
@@ -224,7 +221,7 @@ public class GamificationAchievementService extends RESTService {
 					if(achievementAccess.isAchievementIdExist(conn,gameId, achievementid)){
 						// Achievement id already exist
 						objResponse.put("message", "Cannot create achievement. Failed to add the achievement. achievement ID already exist!");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					FormDataPart partAchievementName = parts.get("achievementname");
@@ -274,21 +271,21 @@ public class GamificationAchievementService extends RESTService {
 						objResponse.put("message", "Achievement upload success (" + achievementid +")");
 						
 						// Mobsos Logger
-						L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_15,Context.getCurrent().getMainAgent(), ""+randomLong);
-						L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_24,Context.getCurrent().getMainAgent(), ""+name);
-						L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25,Context.getCurrent().getMainAgent(), ""+gameId);
+						Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong, true);
+						Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_24, ""+name, true);
+						Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25, ""+gameId, true);
 						return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						
 					} catch (SQLException e) {
 						e.printStackTrace();
 						objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 				}
 				else{
 					objResponse.put("message", "Cannot create achievement. Achievement ID cannot be null!");
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
 				
@@ -296,26 +293,26 @@ public class GamificationAchievementService extends RESTService {
 			} catch (MalformedStreamException e) {
 				// the stream failed to follow required syntax
 				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 			} catch (IOException e) {
 				// a read or write error occurred
 				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 			} catch (SQLException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 			}
 			catch (NullPointerException e){
 				e.printStackTrace();
 				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 			}
 			 // always close connections
@@ -360,7 +357,7 @@ public class GamificationAchievementService extends RESTService {
 		{
 			
 			// Request log
-			L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/achievements/"+gameId+"/"+achievementId);
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/achievements/"+gameId+"/"+achievementId, true);
 			long randomLong = new Random().nextLong(); //To be able to match 
 			
 			
@@ -375,32 +372,31 @@ public class GamificationAchievementService extends RESTService {
 			}
 			try {
 				conn = dbm.getConnection();
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_16,Context.getCurrent().getMainAgent(), ""+randomLong);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong, true);
 				
 				try {
 					
 					try {
 						if(!achievementAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot get achievement detail. Game not found");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot get achievement detail. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					if(!achievementAccess.isAchievementIdExist(conn,gameId, achievementId)){
 						objResponse.put("message", "Cannot get achievement detail. Achievement not found");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					achievement = achievementAccess.getAchievementWithId(conn,gameId, achievementId);
 					if(achievement == null){
 						objResponse.put("message", "Achievement Null, Cannot find achievement with " + achievementId);
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					ObjectMapper objectMapper = new ObjectMapper();
@@ -408,15 +404,15 @@ public class GamificationAchievementService extends RESTService {
 			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 			    	
 			    	String achievementString = objectMapper.writeValueAsString(achievement);
-			    	L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_17,Context.getCurrent().getMainAgent(), ""+randomLong);
-			    	L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_26,Context.getCurrent().getMainAgent(), ""+name);
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_27,Context.getCurrent().getMainAgent(), ""+gameId);
+			    	Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong, true);
+			    	Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_26, ""+name, true);
+			    	Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_27, ""+gameId, true);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(achievementString).type(MediaType.APPLICATION_JSON).build();
 				} 
 				catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get achievement detail. DB Error. " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 				}
@@ -424,12 +420,12 @@ public class GamificationAchievementService extends RESTService {
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot get achievement detail. JSON processing error. " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build();
 			} catch (SQLException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot get achievement. Failed to fetch " + achievementId + ". " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 			}		 // always close connections
@@ -479,7 +475,7 @@ public class GamificationAchievementService extends RESTService {
 				byte[] formData)  {
 			
 			// Request log
-			L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "PUT " + "gamification/achievements/"+gameId+"/"+achievementId);
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/achievements/"+gameId+"/"+achievementId, true);
 			long randomLong = new Random().nextLong(); //To be able to match 
 					
 			
@@ -501,13 +497,13 @@ public class GamificationAchievementService extends RESTService {
 			}
 			try {
 				conn = dbm.getConnection();
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_18,Context.getCurrent().getMainAgent(), ""+randomLong);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong, true);
 				
 				Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 				
 				if (achievementId == null) {
 					objResponse.put("message", "Cannot update achievement. Achievement ID cannot be null");
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
 				
@@ -515,18 +511,18 @@ public class GamificationAchievementService extends RESTService {
 					try {
 						if(!achievementAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot update achievement. Game not found");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot update achievement. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					if(!achievementAccess.isAchievementIdExist(conn,gameId, achievementId)){
 						objResponse.put("message", "Cannot update achievement. Achievement not found");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					
@@ -535,7 +531,7 @@ public class GamificationAchievementService extends RESTService {
 					if(currentAchievement == null){
 						// currentAchievement is null
 						objResponse.put("message", "Cannot update achievement. Achievement not found in database");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					
@@ -593,15 +589,15 @@ public class GamificationAchievementService extends RESTService {
 					}
 					achievementAccess.updateAchievement(conn,gameId, currentAchievement);
 					objResponse.put("message", "Achievement updated");
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_19,Context.getCurrent().getMainAgent(), ""+randomLong);
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_28,Context.getCurrent().getMainAgent(), ""+name);
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_29,Context.getCurrent().getMainAgent(), ""+gameId);
+					Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong, true);
+					Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_28, ""+name, true);
+					Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_29, ""+gameId,true);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot update achievement. DB Error. " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 				}
@@ -609,17 +605,17 @@ public class GamificationAchievementService extends RESTService {
 			} catch (MalformedStreamException e) {
 				// the stream failed to follow required syntax
 				objResponse.put("message", "Cannot update achievement. Failed to upload " + achievementId + ". "+e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 			} catch (IOException e) {
 				// a read or write error occurred
 				objResponse.put("message", "Cannot update achievement. Failed to upload " + achievementId + ".");
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 			} catch (SQLException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot update achievement. DB Error. " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 			}
@@ -656,7 +652,7 @@ public class GamificationAchievementService extends RESTService {
 		{
 			
 			// Request log
-			L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "DELETE " + "gamification/achievements/"+gameId+"/"+achievementId);		
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/achievements/"+gameId+"/"+achievementId, true);		
 			long randomLong = new Random().nextLong(); //To be able to match 
 
 			Connection conn = null;
@@ -668,38 +664,38 @@ public class GamificationAchievementService extends RESTService {
 			}
 			try {
 				conn = dbm.getConnection();
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_20,Context.getCurrent().getMainAgent(), ""+randomLong);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong, true);
 				
 				try {
 					if(!achievementAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot delete achievement. Game not found");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 					objResponse.put("message", "Cannot delete achievement. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
 				if(!achievementAccess.isAchievementIdExist(conn,gameId, achievementId)){
 					objResponse.put("message", "Cannot delete achievement. Achievement not found");
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
 				achievementAccess.deleteAchievement(conn,gameId, achievementId);
 				
 				objResponse.put("message", "Cannot delete achievement. Achievement Deleted");
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_21,Context.getCurrent().getMainAgent(), ""+randomLong);
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_30,Context.getCurrent().getMainAgent(), ""+name);
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_31,Context.getCurrent().getMainAgent(), ""+gameId);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong, true);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_30, ""+name, true);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_31, ""+gameId, true);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 			} catch (SQLException e) {
 				
 				e.printStackTrace();
 				objResponse.put("message", "Cannot delete achievement. Cannot delete Achievement. " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 			}
 			 // always close connections
@@ -741,7 +737,7 @@ public class GamificationAchievementService extends RESTService {
 		{
 			
 			// Request log
-			L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/achievements/"+gameId);		
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/achievements/"+gameId, true);		
 			long randomLong = new Random().nextLong(); //To be able to match 
 
 			List<AchievementModel> achs = null;
@@ -754,18 +750,18 @@ public class GamificationAchievementService extends RESTService {
 			}
 			try {
 				conn = dbm.getConnection();
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_46,Context.getCurrent().getMainAgent(), ""+randomLong);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_46, ""+randomLong, true);
 				
 				try {
 					if(!achievementAccess.isGameIdExist(conn,gameId)){
 						objResponse.put("message", "Cannot get achievements. Game not found");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 					objResponse.put("message", "Cannot get achievements. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
 				int offset = (currentPage - 1) * windowSize;
@@ -790,21 +786,21 @@ public class GamificationAchievementService extends RESTService {
 				objResponse.put("rows", achievementArray);
 				objResponse.put("total", totalNum);
 				
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_47,Context.getCurrent().getMainAgent(), ""+randomLong);
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_48,Context.getCurrent().getMainAgent(), ""+name);
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_49,Context.getCurrent().getMainAgent(), ""+gameId);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_47, ""+randomLong, true);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_48, ""+name, true);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_49, ""+gameId, true);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				
 			} catch (SQLException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot get achievements. Database error. " + e.getMessage());
 				// return HTTP Response on error
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot get achievements. JSON processing error. " + e.getMessage());
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build();
 
 			}

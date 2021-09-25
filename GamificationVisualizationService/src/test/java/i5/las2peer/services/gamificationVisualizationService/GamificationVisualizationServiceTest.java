@@ -18,16 +18,15 @@ import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.gamificationAchievementService.GamificationAchievementService;
 import i5.las2peer.services.gamificationActionService.GamificationActionService;
 import i5.las2peer.services.gamificationBadgeService.GamificationBadgeService;
-import i5.las2peer.services.gamificationGameService.GamificationGameService;
+//import i5.las2peer.services.gamificationGameService.GamificationGameService;
 import i5.las2peer.services.gamificationLevelService.GamificationLevelService;
 import i5.las2peer.services.gamificationPointService.GamificationPointService;
 import i5.las2peer.services.gamificationQuestService.GamificationQuestService;
-import i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService;
+//import i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.connectors.webConnector.WebConnector;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
 import i5.las2peer.connectors.webConnector.client.MiniClient;
-import net.minidev.json.JSONObject;
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.

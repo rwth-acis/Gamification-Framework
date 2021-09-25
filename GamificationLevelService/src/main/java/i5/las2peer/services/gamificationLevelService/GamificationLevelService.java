@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -71,7 +70,6 @@ import net.minidev.json.JSONValue;
  * 
  */
 
-//@Path("/gamification/levels")
 @Api( value = "/levels", authorizations = {
 		@Authorization(value = "levels_auth",
 		scopes = {
@@ -128,16 +126,6 @@ public class GamificationLevelService extends RESTService {
 
 	}
 
-//	@Override
-//	  protected void initResources() {
-//	    //getResourceConfig().register(Resource.class);
-//		 System.out.println("jojojoj");
-//	  }
-//
-//	  @Path("/") // this is the root resource
-//	  public static class Resource {
-//	    // put here all your service methods
-//		  
 		  /**
 			 * Function to return http unauthorized message
 			 * @return HTTP Response unauthorized
@@ -145,9 +133,8 @@ public class GamificationLevelService extends RESTService {
 			private Response unauthorizedMessage(){
 				JSONObject objResponse = new JSONObject();
 				objResponse.put("message", "You are not authorized");
-				L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-				//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_UNAUTHORIZED);
 			}
 			
 			
@@ -197,7 +184,7 @@ public class GamificationLevelService extends RESTService {
 					@ApiParam(value = "Level detail in multiple/form-data type", required = true) byte[] formData)  {
 				
 				// Request log
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "POST " + "gamification/levels/"+gameId);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/levels/"+gameId, true);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				// parse given multipart form data
@@ -218,21 +205,19 @@ public class GamificationLevelService extends RESTService {
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_14,Context.getCurrent().getMainAgent(), ""+randomLong);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong, true);
 					
 					try {
 						if(!levelAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot create level. Game not found");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot create level. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 					FormDataPart partNum = parts.get("levelnum");
@@ -241,9 +226,8 @@ public class GamificationLevelService extends RESTService {
 						if(levelAccess.isLevelNumExist(conn,gameId, levelnum)){
 							// level id already exist
 							objResponse.put("message", "Cannot create level. Failed to add the level. levelnum already exist!");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 						}
 						FormDataPart partName = parts.get("levelname");
@@ -275,25 +259,22 @@ public class GamificationLevelService extends RESTService {
 						try{
 							levelAccess.addNewLevel(conn,gameId, model);
 							objResponse.put("message", "Level upload success (" + levelnum +")");
-							L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_15,Context.getCurrent().getMainAgent(), ""+randomLong);
-							L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_24,Context.getCurrent().getMainAgent(), ""+name);
-							L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25,Context.getCurrent().getMainAgent(), ""+gameId);
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong, true);
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_24, ""+name, true);
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25, ""+gameId, true);
 							return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_CREATED);
 
 						} catch (SQLException e) {
 							e.printStackTrace();
 							objResponse.put("message", "Cannot create level. Failed to upload " + levelnum + ". " + e.getMessage());
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 					}
 					else{
 						objResponse.put("message", "Cannot create level. Level number cannot be null!");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 					}
 					
@@ -301,31 +282,27 @@ public class GamificationLevelService extends RESTService {
 				} catch (MalformedStreamException e) {
 					// the stream failed to follow required syntax
 					objResponse.put("message", "Cannot create level. Failed to upload. " + levelnum + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_BAD_REQUEST);
 
 				} catch (IOException e) {
 					// a read or write error occurred
 					objResponse.put("message", "Cannot create level. Failed to upload " + levelnum + ". " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot create level. Failed to upload " + levelnum + ". " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}
 				catch (NullPointerException e){
 					e.printStackTrace();
 					objResponse.put("message", "Cannot create level. Failed to upload " + levelnum + ". " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(),HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}		 
 				// always close connections
 			    finally {
@@ -360,7 +337,7 @@ public class GamificationLevelService extends RESTService {
 			{
 				
 				// Request log
-				L2pLogger.logEvent( MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/levels/"+gameId+"/"+levelNum);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+gameId+"/"+levelNum, true);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				LevelModel level = null;
@@ -375,27 +352,24 @@ public class GamificationLevelService extends RESTService {
 				try {
 					conn = dbm.getConnection();
 					try {
-						L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_16,Context.getCurrent().getMainAgent(), ""+randomLong);
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_16, ""+randomLong, true);
 						
 						try {
 							if(!levelAccess.isGameIdExist(conn,gameId)){
 								objResponse.put("message", "Cannot fetched level. Game not found");
-								L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 							}
 						} catch (SQLException e1) {
 							e1.printStackTrace();
 							objResponse.put("message", "Cannot fetched level. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						if(!levelAccess.isLevelNumExist(conn,gameId, levelNum)){
 							objResponse.put("message", "Cannot fetched level. level not found");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 						level = levelAccess.getLevelWithNumber(conn,gameId, levelNum);
 						if(level != null){
@@ -404,40 +378,35 @@ public class GamificationLevelService extends RESTService {
 					    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 					    	
 					    	String levelString = objectMapper.writeValueAsString(level);
-					    	L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_17,Context.getCurrent().getMainAgent(), ""+randomLong);
-					    	L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_26,Context.getCurrent().getMainAgent(), ""+name);
-							L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_27,Context.getCurrent().getMainAgent(), ""+gameId);
+					    	Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_17, ""+randomLong, true);
+					    	Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_26, ""+name, true);
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_27, ""+gameId, true);
 							return Response.status(HttpURLConnection.HTTP_OK).entity(levelString).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(levelString, HttpURLConnection.HTTP_OK);
 						}
 						else{
 							objResponse.put("message", "Cannot fetched level. Cannot find level with " + levelNum);
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 						}
 					} catch (SQLException e) {
 						e.printStackTrace();
 						objResponse.put("message", "Cannot fetched level. DB Error. " + e.getMessage());
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 					}
 					
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot fetched level. JSON processing error. " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(e.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot fetched level. DB Error. " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 				}	 
 				// always close connections
@@ -484,7 +453,7 @@ public class GamificationLevelService extends RESTService {
 					@ApiParam(value = "Level detail in multiple/form-data type", required = true) byte[] formData)  {
 				
 				// Request log
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "PUT " + "gamification/levels/"+gameId+"/"+levelNum);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/levels/"+gameId+"/"+levelNum, true);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				
@@ -506,27 +475,24 @@ public class GamificationLevelService extends RESTService {
 				try {
 					conn = dbm.getConnection();
 					try {
-						L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_18,Context.getCurrent().getMainAgent(), ""+randomLong);
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong, true);
 						
 						try {
 							if(!levelAccess.isGameIdExist(conn,gameId)){
 								objResponse.put("message", "Cannot update level. Game not found");
-								L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 							}
 						} catch (SQLException e1) {
 							e1.printStackTrace();
 							objResponse.put("message", "Cannot update level. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 						}
 						if(!levelAccess.isLevelNumExist(conn,gameId, levelNum)){
 							objResponse.put("message", "Cannot update level. Level not found");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 						}
 						
@@ -534,9 +500,8 @@ public class GamificationLevelService extends RESTService {
 						
 						if (levelNum == 0 ) {
 							objResponse.put("message", "Cannot update level. Level ID cannot be null");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 						}
 							
@@ -575,54 +540,47 @@ public class GamificationLevelService extends RESTService {
 							try{
 								levelAccess.updateLevel(conn,gameId, model);
 								objResponse.put("message", "Level updated");
-								L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_19,Context.getCurrent().getMainAgent(), ""+randomLong);
-								L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_28,Context.getCurrent().getMainAgent(), ""+name);
-								L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_29,Context.getCurrent().getMainAgent(), ""+gameId);
+								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong, true);
+								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_28, ""+name, true);
+								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_29, ""+gameId, true);
 								return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 							} catch (SQLException e) {
 								e.printStackTrace();
 								objResponse.put("message", "Cannot update level. Cannot connect to database. " + e.getMessage());
-								L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-								//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 							}
 						}
 						else{
 							// model is null
 							objResponse.put("message", "Cannot update level. Level not found in database");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot update level. DB Error " + e1.getMessage());
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					
 				} catch (MalformedStreamException e) {
 					// the stream failed to follow required syntax
 					objResponse.put("message", "Cannot update level. Failed to upload " + levelNum + ". "+e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 				} catch (IOException e) {
 					// a read or write error occurred
 					objResponse.put("message", "Cannot update level. Failed to upload " + levelNum + ". " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 					objResponse.put("message", "Cannot update level. DB Error " + e1.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}	 
 				// always close connections
 			    finally {
@@ -658,7 +616,7 @@ public class GamificationLevelService extends RESTService {
 			{
 				
 				// Request log
-				L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "DELETE " + "gamification/levels/"+gameId+"/"+levelNum);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "DELETE " + "gamification/levels/"+gameId+"/"+levelNum, true);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				
@@ -672,45 +630,40 @@ public class GamificationLevelService extends RESTService {
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_20,Context.getCurrent().getMainAgent(), ""+randomLong);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_20, ""+randomLong, true);
 					
 					try {
 						if(!levelAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot delete level. Game not found");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot delete level. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					if(!levelAccess.isLevelNumExist(conn,gameId, levelNum)){
 						objResponse.put("message", "Cannot delete level. Level not found");
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 
 					}
 					
 					levelAccess.deleteLevel(conn,gameId, levelNum);
 					objResponse.put("message", "Level Deleted");
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_21,Context.getCurrent().getMainAgent(), ""+randomLong);
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_30,Context.getCurrent().getMainAgent(), ""+name);
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_31,Context.getCurrent().getMainAgent(), ""+gameId);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_21, ""+randomLong, true);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_30, ""+name, true);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_31, ""+gameId, true);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 
 				} catch (SQLException e) {
 					
 					e.printStackTrace();
 					objResponse.put("message", "Cannot delete level. Cannot delete level. " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				}		 
 				// always close connections
 			    finally {
@@ -752,7 +705,7 @@ public class GamificationLevelService extends RESTService {
 			{
 				
 				// Request log
-				L2pLogger.logEvent( MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,Context.getCurrent().getMainAgent(), "GET " + "gamification/levels/"+gameId);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/levels/"+gameId, true);
 				long randomLong = new Random().nextLong(); //To be able to match 
 
 				
@@ -767,21 +720,19 @@ public class GamificationLevelService extends RESTService {
 				}
 				try {
 					conn = dbm.getConnection();
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_46,Context.getCurrent().getMainAgent(), ""+randomLong);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_46, ""+randomLong, true);
 					
 					try {
 						if(!levelAccess.isGameIdExist(conn,gameId)){
 							objResponse.put("message", "Cannot get levels. Game not found");
-							L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_BAD_REQUEST);
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 						objResponse.put("message", "Cannot get levels. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-						L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 					}
 					int offset = (currentPage - 1) * windowSize;
 					
@@ -805,25 +756,22 @@ public class GamificationLevelService extends RESTService {
 					objResponse.put("rows", modelArray);
 					objResponse.put("total", totalNum);
 
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_47,Context.getCurrent().getMainAgent(), ""+randomLong);
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_48,Context.getCurrent().getMainAgent(), ""+name);
-					L2pLogger.logEvent(MonitoringEvent.SERVICE_CUSTOM_MESSAGE_49,Context.getCurrent().getMainAgent(), ""+gameId);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_47, ""+randomLong, true);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_48, ""+name, true);
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_49, ""+gameId, true);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_OK);
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
 					// return HTTP Response on error
 					objResponse.put("message", "Cannot get levels. Database error. " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get levels. JSON processing error. " + e.getMessage());
-					L2pLogger.logEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					//return new HttpResponse(objResponse.toJSONString(), HttpURLConnection.HTTP_INTERNAL_ERROR);
 
 				}		 
 				// always close connections

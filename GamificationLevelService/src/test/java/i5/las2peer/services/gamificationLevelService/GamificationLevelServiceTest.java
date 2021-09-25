@@ -24,12 +24,11 @@ import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.api.p2p.ServiceNameVersion;
 import i5.las2peer.security.UserAgentImpl;
-import i5.las2peer.services.gamificationLevelService.GamificationLevelService;
+//import i5.las2peer.services.gamificationLevelService.GamificationLevelService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.connectors.webConnector.WebConnector;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
 import i5.las2peer.connectors.webConnector.client.MiniClient;
-import net.minidev.json.JSONObject;
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.

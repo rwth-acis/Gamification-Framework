@@ -19,17 +19,14 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.api.p2p.ServiceNameVersion;
 import i5.las2peer.security.UserAgentImpl;
-import i5.las2peer.services.gamificationBadgeService.GamificationBadgeService;
+//import i5.las2peer.services.gamificationBadgeService.GamificationBadgeService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.connectors.webConnector.WebConnector;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;

@@ -16,7 +16,7 @@ import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.api.p2p.ServiceNameVersion;
 import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.gamificationActionService.GamificationActionService;
-import i5.las2peer.services.gamificationGamifierService.GamificationGamifierService;
+//import i5.las2peer.services.gamificationGamifierService.GamificationGamifierService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.connectors.webConnector.WebConnector;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
