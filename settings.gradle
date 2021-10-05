@@ -1,0 +1,10 @@
+rootProject.name = 'Gamification-Framework'
+include('GamificationAchievementService')
+include('GamificationActionService')
+include('GamificationBadgeService')
+include('GamificationGameService')
+include('GamificationGamifierService')
+include('GamificationLevelService')
+include('GamificationPointService')
+include('GamificationQuestService')
+include('GamificationVisualizationService')
