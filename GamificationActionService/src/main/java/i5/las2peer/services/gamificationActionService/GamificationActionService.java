@@ -102,10 +102,10 @@ public class GamificationActionService extends RESTService {
 	 * Database configuration
 	 */
 	private String jdbcDriverClassName;
-	private String jdbcLogin;
-	private String jdbcPass;
 	private String jdbcUrl;
 	private String jdbcSchema;
+	private String jdbcLogin;
+	private String jdbcPass;
 	private DatabaseManager dbm;
 	
 	private ActionDAO actionAccess;
@@ -122,6 +122,11 @@ public class GamificationActionService extends RESTService {
 		// read and set properties values
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		setFieldValues();
+		jdbcDriverClassName="org.postgresql.Driver";
+		jdbcUrl="jdbc:postgresql://127.0.0.1:5432/";
+		jdbcSchema="gamification";
+		jdbcLogin="gamification";
+		jdbcPass="gamification";
 		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.actionAccess = new ActionDAO();
 	}
@@ -826,21 +831,25 @@ public class GamificationActionService extends RESTService {
 
 					try {
 						conn = dbm.getConnection();
-						
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-1");
 						int offset = 0;
 						int totalNum = actionAccess.getNumberOfActions(conn,gameId);
 						int windowSize = totalNum;
 
-						
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-2");
 						achs = actionAccess.getActionsWithOffsetAndSearchPhrase(conn,gameId, offset, windowSize, "");
-
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-3");
 						ObjectMapper objectMapper = new ObjectMapper();
 				    	//Set pretty printing of json
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMIgetActionsRMI-4");
 				    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-				    	
+				    	Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-5");
 				    	String actionString;
+				    	Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-6");
 						try {
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-7");
 							actionString = objectMapper.writeValueAsString(achs);
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-8");
 							return actionString;
 						} catch (JsonProcessingException e) {
 							e.printStackTrace();
@@ -853,7 +862,9 @@ public class GamificationActionService extends RESTService {
 					 // always close connections
 				    finally {
 				      try {
-				    	conn.close();
+				    	  if(conn != null) {
+				    		  conn.close();
+				    	  }
 				      } 
 				      catch (SQLException e) {
 				        logger.printStackTrace(e);
