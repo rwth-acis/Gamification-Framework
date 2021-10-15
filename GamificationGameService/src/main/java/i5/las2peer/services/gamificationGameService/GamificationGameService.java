@@ -214,14 +214,16 @@ public class GamificationGameService extends RESTService {
 				long randomLong = new Random().nextLong(); //To be able to match 
 
 				JSONObject objResponse = new JSONObject();
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
+				String name = null;
 				String gameid = null;
 				String gamedesc = null;
 				String commtype = null;
 				Connection conn = null;
-
 				
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+				
+	
 				if(name.equals("anonymous")){
 					return unauthorizedMessage();
 				}
@@ -698,42 +700,11 @@ public class GamificationGameService extends RESTService {
 					if(name.equals("anonymous")){
 						return unauthorizedMessage();
 					}
-					
-					// try to fetch firstname/lastname from user data received from OpenID
-//					Serializable userData = userAgent.getUserData();
-					
 					if (name != "" && email != "") {//userData != null
-//						Object jsonUserData = JSONValue.parse(userData.toString());
 						if (name != "" && email != ""){//jsonUserData instanceof JSONObject
-//							JSONObject obj = (JSONObject) jsonUserData;
-//							Object firstnameObj = obj.get("given_name");
-//							Object lastnameObj = obj.get("family_name");
-//							Object emailObj = obj.get("email");
-//							String firstname,lastname,email;
-//							if (firstnameObj != null) {
-//								firstname = ((String) firstnameObj);
-//							}
-//							else{
-//								firstname = "";
-//							}
-//							
-//							if (lastnameObj != null) {
-//								lastname = ((String) lastnameObj);
-//							}
-//							else{
-//								lastname = "";
-//							}
-//							
-//							if (emailObj != null) {
-//								email = ((String) emailObj);
-//							}
-//							else{
-//								email = "";
-//							}
 							String lastname ="";
 							String firstname ="";
 							member = new MemberModel(name,firstname,lastname,email);
-							//logger.info(member.getId()+" "+member.getFullName()+" "+member.getEmail());
 							try {
 								conn = dbm.getConnection();
 								if(!gameAccess.isMemberRegistered(conn,member.getId())){
