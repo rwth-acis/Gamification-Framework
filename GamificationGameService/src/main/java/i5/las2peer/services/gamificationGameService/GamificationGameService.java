@@ -30,7 +30,9 @@ import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.security.Agent;
 import i5.las2peer.api.security.AgentNotFoundException;
+import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.api.execution.InternalServiceException;
@@ -129,7 +131,6 @@ public class GamificationGameService extends RESTService {
 				try {
 					result = Context.getCurrent().invoke("i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1", "cleanStorageRMI", new Serializable[] { gameId });
 				} catch (Exception e) {
-					// TODO: handle exception
 					e.printStackTrace();
 				}
 				if (result != null) {
@@ -220,12 +221,16 @@ public class GamificationGameService extends RESTService {
 				String commtype = null;
 				Connection conn = null;
 				
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				name = userAgent.getLoginName();
-				
-	
-				if(name.equals("anonymous")){
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				
 				Map<String, FormDataPart> parts;
@@ -334,12 +339,13 @@ public class GamificationGameService extends RESTService {
 						
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
-
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				
+				
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
 				}
+				
 				
 				try {
 					conn = dbm.getConnection();
@@ -404,11 +410,17 @@ public class GamificationGameService extends RESTService {
 						
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
-
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 
 				try {
@@ -486,10 +498,17 @@ public class GamificationGameService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				ObjectMapper objectMapper = new ObjectMapper();
 		    	//Set pretty printing of json
@@ -519,7 +538,7 @@ public class GamificationGameService extends RESTService {
 				
 			}
 
-			// TODO Other games functions ----------------------------------
+			
 			/**
 			 * Remove a member from the game
 			 * @param gameId gameId
@@ -548,11 +567,12 @@ public class GamificationGameService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
 				}
+				
 				try {
 					conn = dbm.getConnection();
 					if(!gameAccess.isGameIdExist(conn,gameId)){
@@ -624,11 +644,12 @@ public class GamificationGameService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
 				}
+				
 				try {
 					conn = dbm.getConnection();
 					if(!gameAccess.isGameIdExist(conn,gameId)){
@@ -691,15 +712,22 @@ public class GamificationGameService extends RESTService {
 					
 					MemberModel member;
 					Connection conn = null;
-
-					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-					// take username as default name
-					String name = userAgent.getLoginName();
-					String email = userAgent.getEmail();
-					System.out.println("User name : " + name);
-					if(name.equals("anonymous")){
+					
+					String name = null;
+					String email = null;
+					Agent agent = Context.getCurrent().getMainAgent();
+					if (agent instanceof AnonymousAgent) {
 						return unauthorizedMessage();
 					}
+					else if (agent instanceof UserAgent) {
+						UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+						name = userAgent.getLoginName();
+						email = userAgent.getEmail();
+					}
+					else {
+						name = agent.getIdentifier();
+					}
+
 					if (name != "" && email != "") {//userData != null
 						if (name != "" && email != ""){//jsonUserData instanceof JSONObject
 							String lastname ="";

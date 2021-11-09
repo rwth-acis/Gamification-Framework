@@ -26,6 +26,8 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.security.UserAgent;
 //import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.restMapper.RESTService;
@@ -140,11 +142,12 @@ public class GamificationGamifierService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
 			public Response getActions(@ApiParam(value = "Game ID")@PathParam("gameId") String gameId){
 				JSONObject objResponse = new JSONObject();
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+			
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
 				}
+				
 
 					// RMI call with parameters
 					Object result =null;

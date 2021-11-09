@@ -34,6 +34,8 @@ import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationLevelService.database.LevelDAO;
 import i5.las2peer.services.gamificationLevelService.database.LevelModel;
@@ -146,8 +148,7 @@ public class GamificationLevelService extends RESTService {
 			// //////////////////////////////////////////////////////////////////////////////////////
 			// Level PART --------------------------------------
 			// //////////////////////////////////////////////////////////////////////////////////////
-			
-			// TODO Basic Single CRUD
+		
 			
 			/**
 			 * Post a new level.
@@ -198,10 +199,17 @@ public class GamificationLevelService extends RESTService {
 				Connection conn = null;
 
 				
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				try {
 					conn = dbm.getConnection();
@@ -344,10 +352,17 @@ public class GamificationLevelService extends RESTService {
 				Connection conn = null;
 
 				JSONObject objResponse = new JSONObject();
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				try {
 					conn = dbm.getConnection();
@@ -467,10 +482,17 @@ public class GamificationLevelService extends RESTService {
 				Connection conn = null;
 
 				
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				try {
 					conn = dbm.getConnection();
@@ -623,10 +645,17 @@ public class GamificationLevelService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				try {
 					conn = dbm.getConnection();
@@ -676,7 +705,7 @@ public class GamificationLevelService extends RESTService {
 			}
 
 			
-			// TODO Batch Processing
+		
 			/**
 			 * Get a list of levels from database
 			 * @param gameId Game ID obtained from Gamification Game Service
@@ -713,10 +742,17 @@ public class GamificationLevelService extends RESTService {
 				Connection conn = null;
 
 				JSONObject objResponse = new JSONObject();
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				try {
 					conn = dbm.getConnection();

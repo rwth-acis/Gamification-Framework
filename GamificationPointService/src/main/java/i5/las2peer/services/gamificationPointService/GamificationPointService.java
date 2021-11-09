@@ -21,6 +21,8 @@ import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.services.gamificationPointService.database.PointDAO;
 import i5.las2peer.services.gamificationPointService.database.DatabaseManager;
@@ -271,10 +273,17 @@ public class GamificationPointService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				try {
 					conn = dbm.getConnection();
@@ -356,10 +365,17 @@ public class GamificationPointService extends RESTService {
 				JSONObject objResponse = new JSONObject();
 				Connection conn = null;
 
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				String name = userAgent.getLoginName();
-				if(name.equals("anonymous")){
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				if (agent instanceof AnonymousAgent) {
 					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+				}
+				else {
+					name = agent.getIdentifier();
 				}
 				try {
 					conn = dbm.getConnection();

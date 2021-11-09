@@ -43,7 +43,9 @@ import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.logging.MonitoringEvent;
+import i5.las2peer.api.security.Agent;
 import i5.las2peer.api.security.AgentNotFoundException;
+import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.api.execution.InternalServiceException;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
@@ -296,10 +298,17 @@ public class GamificationBadgeService extends RESTService {
 			Connection conn = null;
 
 			
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -511,10 +520,17 @@ public class GamificationBadgeService extends RESTService {
 			Connection conn = null;
 
 			
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -692,10 +708,17 @@ public class GamificationBadgeService extends RESTService {
 			Connection conn = null;
 
 			JSONObject objResponse = new JSONObject();
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -778,10 +801,17 @@ public class GamificationBadgeService extends RESTService {
 			JSONObject objResponse = new JSONObject();
 			Connection conn = null;
 
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -877,10 +907,17 @@ public class GamificationBadgeService extends RESTService {
 			Connection conn = null;
 
 			JSONObject objResponse = new JSONObject();
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -980,10 +1017,17 @@ public class GamificationBadgeService extends RESTService {
 			JSONObject objResponse = new JSONObject();
 			Connection conn = null;
 
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -1009,8 +1053,8 @@ public class GamificationBadgeService extends RESTService {
 				}
 				byte[] filecontent = getBadgeImageMethod(gameId, badgeId);
 
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25, "Badge image fetched : " + badgeId + " : " + gameId + " : " + userAgent, true);
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.ARTIFACT_RECEIVED, "Badge image fetched : " + badgeId + " : " + gameId + " : " + userAgent);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25, "Badge image fetched : " + badgeId + " : " + gameId + " : " + name, true);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.ARTIFACT_RECEIVED, "Badge image fetched : " + badgeId + " : " + gameId + " : " + name);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(filecontent).type(MediaType.APPLICATION_JSON).build();
 			} catch (SQLException e) {
 				e.printStackTrace();

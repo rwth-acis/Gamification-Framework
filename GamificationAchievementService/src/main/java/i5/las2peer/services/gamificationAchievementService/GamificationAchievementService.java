@@ -30,6 +30,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.logging.MonitoringEvent;
@@ -186,10 +188,17 @@ public class GamificationAchievementService extends RESTService {
 			String achievementnotifmessage = null;
 			Connection conn = null;
 			
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -365,10 +374,17 @@ public class GamificationAchievementService extends RESTService {
 			Connection conn = null;
 			
 			JSONObject objResponse = new JSONObject();
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -490,10 +506,17 @@ public class GamificationAchievementService extends RESTService {
 			String achievementnotifmessage = null;
 			Connection conn = null;
 			
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -657,10 +680,17 @@ public class GamificationAchievementService extends RESTService {
 
 			Connection conn = null;
 			JSONObject objResponse = new JSONObject();
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
@@ -708,7 +738,7 @@ public class GamificationAchievementService extends RESTService {
 		    }
 		}
 		
-		// TODO Batch Processing  --------------------------------------
+		
 		/**
 		 * Get a list of achievements from database, support the features to do pagination and search
 		 * @param gameId Game ID obtained from Gamification Game Service
@@ -743,10 +773,17 @@ public class GamificationAchievementService extends RESTService {
 			List<AchievementModel> achs = null;
 			Connection conn = null;
 			JSONObject objResponse = new JSONObject();
-			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-			String name = userAgent.getLoginName();
-			if(name.equals("anonymous")){
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
 				return unauthorizedMessage();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
 			}
 			try {
 				conn = dbm.getConnection();
