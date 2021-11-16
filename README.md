@@ -2,7 +2,7 @@
 =======
 # Gamification-Framework
 
-## prerequisites
+## Prerequisites
 - Java 14 (or newer)
 - Gradle 6.8 (exactly)
 - PostgreSQL
