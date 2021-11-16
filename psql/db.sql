@@ -121,6 +121,7 @@ BEGIN
 	      REFERENCES ' || new_schema || '.quest (quest_id) ON UPDATE CASCADE ON DELETE CASCADE
 	, CHECK (point_value >= 0)
 	);';
+	
 
 	EXECUTE 'CREATE TABLE ' || new_schema || '.level (
 	  level_num integer NOT NULL
@@ -205,7 +206,7 @@ BEGIN
 	, CONSTRAINT quest_id FOREIGN KEY (quest_id)
 	      REFERENCES ' || new_schema || '.quest (quest_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
 	);';
-
+	
 
 	-- m to m
 	-- not unique relation (member,action)
@@ -251,7 +252,7 @@ BEGIN
 --, CONSTRAINT action_id FOREIGN KEY (action_id)
 --	      REFERENCES ' || new_schema || '.quest_action (action_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
 
-	EXECUTE 'CREATE TYPE ' || new_schema || '.notification_type AS ENUM (''BADGE'',''ACHIEVEMENT'',''QUEST'',''LEVEL'');';
+	EXECUTE 'CREATE TYPE ' || new_schema || '.notification_type AS ENUM (''BADGE'',''ACHIEVEMENT'',''QUEST'',''LEVEL'',''STREAK'');';
 	EXECUTE 'CREATE TABLE ' || new_schema || '.notification (
 	  member_id character varying(20) NOT NULL
 	, type ' || new_schema || '.notification_type
@@ -273,6 +274,45 @@ BEGIN
 	      REFERENCES manager.member_info (member_id) ON UPDATE CASCADE ON DELETE CASCADE
 	, CHECK (point_value >= 0)
 	);';
+	
+	
+	-- TODO
+	  active := 'ACTIVE';
+	  paused := 'PAUSED';
+	  failed := 'FAILED';
+
+	EXECUTE 'CREATE TYPE ' || new_schema || '.streak_status AS ENUM ('|| quote_literal(active) ||','|| quote_literal(paused) ||','|| quote_literal(failed) ||');';
+	
+	EXECUTE 'CREATE TABLE ' || new_schema || '.streak (
+	  streak_id character varying(20) NOT NULL
+	, name character varying(20) NOT NULL
+	, description character varying(100)
+	, status ' || new_schema || '.streak_status DEFAULT ''ACTIVE''
+	, achievement_id character varying(20)
+	, point_flag boolean DEFAULT false
+	, point_value integer DEFAULT 0
+	, use_notification boolean
+	, notif_message character varying
+	, CONSTRAINT streak_id PRIMARY KEY (streak_id)
+	, CONSTRAINT achievement_id FOREIGN KEY (achievement_id)
+	      REFERENCES ' || new_schema || '.achievement (achievement_id) ON UPDATE CASCADE ON DELETE CASCADE
+	, CHECK (point_value >= 0)
+	);';
+	
+	
+	-- TODO
+	-- m to m
+	-- unique relation (member, streak)
+	EXECUTE 'CREATE TABLE ' || new_schema || '.member_streak (
+	  member_id character varying(20) NOT NULL
+	, streak_id character varying(20) NOT NULL
+	, status ' || new_schema || '.streak_status DEFAULT ''ACTIVE''
+	, CONSTRAINT member_streak_pkey PRIMARY KEY (member_id, streak_id)
+	, CONSTRAINT member_id FOREIGN KEY (member_id)
+	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
+	, CONSTRAINT streak_id FOREIGN KEY (streak_id)
+	      REFERENCES ' || new_schema || '.streak (streak_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
+	);';
 
 
 	-- trigger
@@ -286,6 +326,8 @@ BEGIN
 	EXECUTE 'SELECT create_trigger_global_leaderboard_table_update(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_update_quest_constraint(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_update_quest_action_constraint(' || quote_literal(new_schema) || ');';
+	-- TODO
+	EXECUTE 'SELECT create_trigger_streak_observer(' || quote_literal(new_schema) || ');';
 
 END;
 $BODY$
@@ -451,6 +493,11 @@ BEGIN
 	EXECUTE 'INSERT INTO '|| game_id ||'.member_quest_action
 		WITH newtab as (SELECT * FROM '|| game_id ||'.quest_action CROSS JOIN '|| game_id ||'.member)
 		SELECT member_id, quest_id, action_id FROM newtab WHERE member_id='|| quote_literal(member_id) ||' ORDER BY member_id ;';
+		
+	EXECUTE 'INSERT INTO '|| game_id ||'.member_streak (member_id, streak_id, status)
+	WITH tab1 as (SELECT * FROM '|| game_id ||'.member CROSS JOIN '|| game_id ||'.quest WHERE member_id='|| quote_literal(member_id) ||')
+	SELECT  member_id, quest_id, status FROM tab1;
+ 	';
 
 	-- Clean up notification initialization
 	EXECUTE 'DELETE FROM '|| game_id ||'.notification WHERE type_id = ''0'';';
@@ -476,6 +523,7 @@ BEGIN
 	EXECUTE 'DELETE FROM '|| game_id ||'.member_level WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| game_id ||'.member_point WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| game_id ||'.member_quest WHERE member_id = '|| quote_literal(member_id) ||';';
+	EXECUTE 'DELETE FROM '|| game_id ||'.member_streak WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| game_id ||'.member_quest_action WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| game_id ||'.member WHERE member_id = '|| quote_literal(member_id) ||';';
 	EXECUTE 'DELETE FROM '|| game_id ||'.notification WHERE member_id = '|| quote_literal(member_id) ||';';
@@ -636,6 +684,21 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+--TODO
+
+CREATE OR REPLACE FUNCTION create_trigger_streak_observer(game_id text) RETURNS void AS
+$BODY$
+BEGIN
+	EXECUTE 'CREATE TRIGGER streak_observer
+		AFTER INSERT ON '|| game_id ||'.member_streak
+		FOR EACH ROW
+		EXECUTE PROCEDURE update_streak_status_with_action();';
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+-- TODO gives rewards when streak increased
+
 -- Trigger if a quest completed then the achievement rewards are given as well as notification
 
 CREATE OR REPLACE FUNCTION give_rewards_when_quest_completed() RETURNS trigger AS
@@ -696,6 +759,8 @@ BEGIN
 		AFTER UPDATE ON '|| game_id ||'.member_quest
 		FOR EACH ROW
 		EXECUTE PROCEDURE give_rewards_when_quest_completed();';
+		
+		-- TODO execute funtion strek- rewards
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
