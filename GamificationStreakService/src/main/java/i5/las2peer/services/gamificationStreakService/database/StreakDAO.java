@@ -5,8 +5,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.postgresql.util.PGInterval;
+
+import i5.las2peer.services.gamificationStreakService.database.StreakModel.StreakSatstus;
 
 public class StreakDAO {
 	private PreparedStatement stmt;
@@ -57,9 +67,40 @@ public class StreakDAO {
 	 */
 	public void addNewStreak(Connection conn, String gameId, StreakModel streak) throws SQLException {
 		stmt = conn.prepareStatement("INSERT INTO " + gameId
-				+ ".streak (streak_id, name, description, status, achievement_id, streak_flag, streak_id_completed, point_flag, point_value, use_notification , notif_message)  VALUES (?, ?, ?, ?::"
-				+ gameId + ".streak_status, ?, ?, ?, ?, ?, ?, ?)");
+				+ ".streak (streak_id, name, description, streak_level, status, action_id, point_th, locked_date, due_date, period, use_notification, notif_message)  VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
+		stmt.setString(1, streak.getStreakId());
+		stmt.setString(2, streak.getName());
+		stmt.setString(3, streak.getDescription());
+		stmt.setInt(4, streak.getStreakLevel());
+		stmt.setObject(5, streak.getStatus().toString(), Types.OTHER);
+		stmt.setString(6, streak.getActionId());
+		stmt.setInt(7, streak.getPointThreshold());
+		stmt.setObject(8, streak.getLockedDate());
+		stmt.setObject(9, streak.getDueDate());
+		stmt.setObject(10, parsePeriodToInterval(streak.getPeriod()));
+		stmt.setBoolean(11, streak.isNotificationCheck());
+		stmt.setString(12, streak.getNotificationMessage());
+		stmt.executeUpdate();
 
+		if (streak.getBadges() != null && !(streak.getBadges().isEmpty())) {
+			stmt = conn.prepareStatement("INSERT INTO " + gameId + ".streak_badges (streak_level, badge_id, streak_id) VALUES(?,?,?)");
+			for (Entry<Integer, String> entry : streak.getBadges().entrySet()) {
+				stmt.setInt(1, entry.getKey());
+				stmt.setString(2, entry.getValue());
+				stmt.setString(3, streak.getStreakId());
+				stmt.executeUpdate();
+			}
+		}
+		
+		if (streak.getAchievements() != null && !(streak.getAchievements().isEmpty())) {
+			stmt = conn.prepareStatement("INSERT INTO " + gameId + ".streak_achievements (streak_level, achievement_id, streak_id) VALUES(?,?,?)");
+			for (Entry<Integer, String> entry : streak.getAchievements().entrySet()) {
+				stmt.setInt(1, entry.getKey());
+				stmt.setString(2, entry.getValue());
+				stmt.setString(3, streak.getStreakId());
+				stmt.executeUpdate();
+			}
+		}
 	}
 
 	/**
@@ -77,8 +118,45 @@ public class StreakDAO {
 
 		stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak WHERE streak_id = ?");
 		stmt.setString(1, streakId);
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) {
+			StreakModel streak = new StreakModel();
+			streak.setStreakId(rs.getString("streak_id"));
+			streak.setName(rs.getString("name"));
+			streak.setDescription(rs.getString("description"));
+			streak.setStreakLevel(rs.getInt("streak_level"));
+			streak.setStatus(StreakSatstus.valueOf(rs.getString("status"))); 
+			streak.setActionId(rs.getString("action_id"));
+			streak.setPointThreshold(rs.getInt("point_th"));
+			streak.setLockedDate(rs.getObject("locked_date", LocalDateTime.class));
+			streak.setDueDate(rs.getObject("due_date", LocalDateTime.class));
+			streak.setPeriod(parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)));
+			streak.setNotificationCheck(rs.getBoolean("use_notification"));
+			streak.setNotificationMessage("notif_message");
+			
+			Map<Integer, String> badges = new HashMap<Integer, String>();
+			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_badges WHERE streak_id = ?");
+			stmt.setString(1, streakId);
+			ResultSet rs2 = stmt.executeQuery();
+			while (rs2.next()) {
+				badges.put(rs2.getInt("streak_level"), rs2.getString("badge_id"));
+			}
+			streak.setBadges(badges);
+			
+			Map<Integer, String> achievements = new HashMap<Integer, String>();
+			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_achievements WHERE streak_id = ?");
+			stmt.setString(1, streakId);
+			ResultSet rs3 = stmt.executeQuery();
+			while (rs3.next()) {
+				achievements.put(rs3.getInt("streak_level"), rs3.getString("achievement_id"));
+			}
+			streak.setAchievements(achievements);
+			return streak;
+		}
 		return null;
 	}
+
+	
 
 	/**
 	 * Get streaks with search parameter
@@ -94,8 +172,50 @@ public class StreakDAO {
 	 */
 	public List<StreakModel> getStreaksWithOffsetAndSearchPhrase(Connection conn, String gameId, int offset,
 			int window_size, String searchPhrase) throws SQLException, IOException {
-		List<StreakModel> qs = new ArrayList<StreakModel>();
-		return qs;
+		List<StreakModel> streaks = new ArrayList<StreakModel>();
+		
+		String pattern = "%"+searchPhrase+"%";
+		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".streak WHERE streak_id LIKE '"+pattern+"' ORDER BY streak_id LIMIT "+window_size+" OFFSET "+offset);
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			StreakModel streak = new StreakModel();
+			streak.setStreakId(rs.getString("streak_id"));
+			streak.setName(rs.getString("name"));
+			streak.setDescription(rs.getString("description"));
+			streak.setStreakLevel(rs.getInt("streak_level"));
+			streak.setActionId(rs.getString("action_id"));
+			streak.setPointThreshold(rs.getInt("point_th"));
+			streak.setLockedDate(rs.getObject("locked_date", LocalDateTime.class));
+			streak.setDueDate(rs.getObject("due_date", LocalDateTime.class));
+			streak.setPeriod(parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)));
+			streak.setNotificationCheck(rs.getBoolean("use_notification"));
+			streak.setNotificationMessage("notif_message");
+			streak.setStatus(StreakSatstus.valueOf(rs.getString("status"))); 
+			streaks.add(streak);
+		}
+		if(streaks.equals(null)){
+			throw new IOException("Streak Model is null");
+		}
+		for(StreakModel streak : streaks){
+			Map<Integer, String> badges = new HashMap<Integer, String>();
+			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_badges WHERE streak_id = ?");
+			stmt.setString(1, streak.getStreakId());
+			ResultSet rs2 = stmt.executeQuery();
+			while (rs2.next()) {
+				badges.put(rs2.getInt("streak_level"), rs2.getString("badge_id"));
+			}
+			streak.setBadges(badges);
+			
+			Map<Integer, String> achievements = new HashMap<Integer, String>();
+			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_achievements WHERE streak_id = ?");
+			stmt.setString(1, streak.getStreakId());
+			ResultSet rs3 = stmt.executeQuery();
+			while (rs3.next()) {
+				achievements.put(rs3.getInt("streak_level"), rs3.getString("achievement_id"));
+			}
+			streak.setAchievements(achievements);
+		}
+		return streaks;
 	}
 
 	/**
@@ -107,7 +227,6 @@ public class StreakDAO {
 	 * @throws SQLException
 	 */
 	public int getNumberOfStreaks(Connection conn, String gameId) throws SQLException {
-
 		stmt = conn.prepareStatement("SELECT count(*) FROM " + gameId + ".streak");
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()) {
@@ -126,8 +245,49 @@ public class StreakDAO {
 	 * @throws SQLException
 	 */
 	public void updateStreak(Connection conn, String gameId, StreakModel streak) throws SQLException {
-		stmt = conn.prepareStatement("UPDATE " + gameId + ".streak SET name = ?, description = ?, status = ?::" + gameId
-				+ ".streak_status, achievement_id = ?, streak_flag = ?, streak_id_completed = ?, point_flag = ?, point_value = ?, use_notification = ?, notif_message = ? WHERE streak_id = ?");
+		stmt = conn.prepareStatement("UPDATE " + gameId + ".streak SET name = ?, description = ?, streak_level = ? ,status = ?,  action_id = ?, point_th = ?, locked_date = ?, due_date = ?, period = ?, use_notification = ?, notif_message = ? WHERE streak_id = ?");
+		stmt.setString(1, streak.getName());
+		stmt.setString(2, streak.getDescription());
+		stmt.setInt(3, streak.getStreakLevel());
+		stmt.setObject(4, streak.getStatus().toString(), Types.OTHER);
+		stmt.setString(5, streak.getActionId());
+		stmt.setInt(6, streak.getPointThreshold());
+		stmt.setObject(7, streak.getLockedDate());
+		stmt.setObject(8, streak.getDueDate());
+		stmt.setObject(9, parsePeriodToInterval(streak.getPeriod()));
+		stmt.setBoolean(10, streak.isNotificationCheck());
+		stmt.setString(11, streak.getNotificationMessage());
+		stmt.setString(12, streak.getStreakId());
+		stmt.executeUpdate();
+
+		if (streak.getBadges() != null && !(streak.getBadges().isEmpty())) {
+			stmt= conn.prepareStatement("DELETE FROM " + gameId + " .streak_badges WHERE streak_id = ?");
+			stmt.setString(1, streak.getStreakId());
+			stmt.executeUpdate();
+			
+			stmt = conn.prepareStatement("INSERT INTO " + gameId + ".streak_badges (streak_level, badge_id, streak_id) VALUES(?,?,?)");
+			for (Entry<Integer, String> entry : streak.getBadges().entrySet()) {
+				stmt.setInt(1, entry.getKey());
+				stmt.setString(2, entry.getValue());
+				stmt.setString(3, streak.getStreakId());
+				stmt.executeUpdate();
+			}
+		}
+		
+		if (streak.getAchievements() != null && !(streak.getAchievements().isEmpty())) {
+			stmt= conn.prepareStatement("DELETE FROM " + gameId + " .streak_achievements WHERE streak_id = ?");
+			stmt.setString(1, streak.getStreakId());
+			stmt.executeUpdate();
+			
+			
+			stmt = conn.prepareStatement("INSERT INTO " + gameId + ".streak_achievements (streak_level, achievement_id, streak_id) VALUES(?,?,?)");
+			for (Entry<Integer, String> entry : streak.getAchievements().entrySet()) {
+				stmt.setInt(1, entry.getKey());
+				stmt.setString(2, entry.getValue());
+				stmt.setString(3, streak.getStreakId());
+				stmt.executeUpdate();
+			}
+		}
 	}
 
 	/**
@@ -135,12 +295,28 @@ public class StreakDAO {
 	 * 
 	 * @param conn      database connection
 	 * @param gameId    game id
-	 * @param streak_id streak id
+	 * @param streakId streak id
 	 * @throws SQLException
 	 */
-	public void deleteStreak(Connection conn, String gameId, String streak_id) throws SQLException {
-		stmt = conn.prepareStatement("DELETE FROM " + gameId + ".streak WHERE streak_id = ?");
-		stmt.setString(1, streak_id);
+	public void deleteStreak(Connection conn, String gameId, String streakId) throws SQLException {
+		stmt= conn.prepareStatement("DELETE FROM " + gameId + " .streak_badges WHERE streak_id = ?");
+		stmt.setString(1, streakId);
 		stmt.executeUpdate();
+		
+		stmt= conn.prepareStatement("DELETE FROM " + gameId + " .streak_achievements WHERE streak_id = ?");
+		stmt.setString(1, streakId);
+		stmt.executeUpdate();
+		
+		stmt = conn.prepareStatement("DELETE FROM " + gameId + ".streak WHERE streak_id = ?");
+		stmt.setString(1, streakId);
+		stmt.executeUpdate();
+	}
+	
+	private PGInterval parsePeriodToInterval(Period period) {
+		return new PGInterval(period.getYears(), period.getMonths(), period.getDays(), 0, 0, 0);
+	}
+	
+	private Period parseIntervaltoPeriod(PGInterval interval) {
+		return Period.of(interval.getYears(), interval.getMonths(), interval.getDays());
 	}
 }

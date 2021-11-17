@@ -25,7 +25,7 @@ dependencies {
     // Add service dependencies here
 	
 	implementation group: 'org.json', name: 'json', version: '20210307'
-	implementation "org.postgresql:postgresql:9.4-1200-jdbc41"
+	implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.24'
 	implementation "org.apache.commons:commons-pool2:2.2"
 	implementation "org.apache.commons:commons-dbcp2:2.0"
 	implementation "commons-logging:commons-logging:1.1.3"

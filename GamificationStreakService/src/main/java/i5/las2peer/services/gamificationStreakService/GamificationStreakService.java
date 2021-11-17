@@ -4,7 +4,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import javax.ws.rs.Consumes;
@@ -36,7 +41,7 @@ import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.services.gamificationStreakService.database.DatabaseManager;
 import i5.las2peer.services.gamificationStreakService.database.StreakDAO;
 import i5.las2peer.services.gamificationStreakService.database.StreakModel;
-
+import i5.las2peer.services.gamificationStreakService.database.StreakModel.StreakSatstus;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -123,7 +128,7 @@ public class GamificationStreakService extends RESTService {
 	@ApiOperation(value = "createNewStreak", notes = "A method to store a new streak with details")
 	public Response createNewStreak(
 			@ApiParam(value = "Game ID to store a new streak", required = true) @PathParam("gameId") String gameId,
-			@ApiParam(value = "Streak detail in JSON", required = true) StreakModel streak) {
+			@ApiParam(value = "Streak detail in JSON", required = true) byte[] content) {
 
 		// Request log
 		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,
@@ -150,7 +155,7 @@ public class GamificationStreakService extends RESTService {
 
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_14, "" + randomLong, true);
 
-			if (streak == null) {
+			if (content == null) {
 				objResponse.put("message", "Cannot create streak. No data received");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
@@ -177,6 +182,47 @@ public class GamificationStreakService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
+			JSONObject obj = null;
+			StreakModel streak = null;
+			try {
+				obj = new JSONObject(new String(content));
+				streak = new StreakModel();
+				streak.setStreakId(obj.getString("streakId"));
+				streak.setName(obj.getString("name"));
+				streak.setDescription(obj.getString("description"));
+				streak.setStreakLevel(obj.getInt("streakLevel"));
+				streak.setStatus(StreakSatstus.valueOf(obj.getString("status")));
+				streak.setActionId(obj.getString("actionId"));
+				streak.setPointThreshold(obj.getInt("pointThreshold"));
+				streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
+				streak.setDueDate(LocalDateTime.parse(obj.getString("dueDate")));
+				streak.setPeriod(Period.parse(obj.getString("period")));
+				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
+				streak.setNotificationMessage(obj.getString("notificationMessage"));
+				
+				Map<Integer, String> badges = new HashMap<Integer, String>();
+				for (Entry<String, Object>  entry: obj.getJSONObject("badges").toMap().entrySet()) {
+					badges.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
+				}
+				streak.setBadges(badges);
+				
+				Map<Integer, String> achievements = new HashMap<Integer, String>();
+				for (Entry<String, Object>  entry: obj.getJSONObject("achievements").toMap().entrySet()) {
+					achievements.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
+				}
+				streak.setAchievements(achievements);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				objResponse.put("message",
+						"Cannot create streak. Cannot process input data"
+								+ e.getMessage());
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			
 			streakId = streak.getStreakId();
 			if (streakAccess.isStreakIdExist(conn, gameId, streakId)) {
 				objResponse.put("message", "Cannot create streak. Failed to add the streak. Streak ID already exist! ");
@@ -355,7 +401,7 @@ public class GamificationStreakService extends RESTService {
 	public Response updateStreak(
 			@ApiParam(value = "Game ID to store a new streak", required = true) @PathParam("gameId") String gameId,
 			@ApiParam(value = "Streak ID") @PathParam("streakId") String streakId,
-			@ApiParam(value = "Streak detail in JSON", required = true) StreakModel streak) {
+			@ApiParam(value = "Streak detail in JSON", required = true) byte[] content) {
 
 		// Request log
 		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,
@@ -364,7 +410,7 @@ public class GamificationStreakService extends RESTService {
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
 		
-		if (streak == null) {
+		if (content == null) {
 			objResponse.put("message", "Cannot update streak. No data received");
 
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -418,6 +464,47 @@ public class GamificationStreakService extends RESTService {
 
 			if (!streakAccess.isStreakIdExist(conn, gameId, streakId)) {
 				objResponse.put("message", "Cannot update streak. Failed to update the streak. Streak ID is not exist!");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			
+			JSONObject obj = null;
+			StreakModel streak = null;
+			try {
+				obj = new JSONObject(new String(content));
+				streak = new StreakModel();
+				streak.setStreakId(streakId);
+				streak.setName(obj.getString("name"));
+				streak.setDescription(obj.getString("description"));
+				streak.setStreakLevel(obj.getInt("streakLevel"));
+				streak.setStatus(StreakSatstus.valueOf(obj.getString("status")));
+				streak.setActionId(obj.getString("actionId"));
+				streak.setPointThreshold(obj.getInt("pointThreshold"));
+				streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
+				streak.setDueDate(LocalDateTime.parse(obj.getString("dueDate")));
+				streak.setPeriod(Period.parse(obj.getString("period")));
+				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
+				streak.setNotificationMessage(obj.getString("notificationMessage"));
+				
+				Map<Integer, String> badges = new HashMap<Integer, String>();
+				for (Entry<String, Object>  entry: obj.getJSONObject("badges").toMap().entrySet()) {
+					badges.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
+				}
+				streak.setBadges(badges);
+				
+				Map<Integer, String> achievements = new HashMap<Integer, String>();
+				for (Entry<String, Object>  entry: obj.getJSONObject("achievements").toMap().entrySet()) {
+					achievements.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
+				}
+				streak.setAchievements(achievements);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				objResponse.put("message",
+						"Cannot create streak. Cannot process input data"
+								+ e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())

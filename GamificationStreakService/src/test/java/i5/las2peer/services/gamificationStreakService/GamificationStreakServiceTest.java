@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
+import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +25,7 @@ import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.gamificationStreakService.database.StreakModel;
+import i5.las2peer.services.gamificationStreakService.database.StreakModel.StreakSatstus;
 import i5.las2peer.testing.MockAgentFactory;
 
 import org.json.JSONObject;
@@ -42,6 +45,7 @@ private static final int HTTP_PORT = 8081;
 
 	private static String gameId = "test";
 	private static String streakId = "streakTest";
+	private static String actionId =  "action5";
 
 	private static final String mainPath = "gamification/streaks/";
 	
@@ -64,9 +68,6 @@ private static final int HTTP_PORT = 8081;
 	 */
 	@Before
 	public void startServer() throws Exception {
-
-		// start node
-		//node = LocalNode.newNode();
 		
 		node = new LocalNodeManager().newNode();
 		node.launch();
@@ -106,8 +107,33 @@ private static final int HTTP_PORT = 8081;
 		c3.setConnectorEndpoint(connector.getHttpEndpoint());
 		c3.setLogin(user3.getIdentifier(), "evespass");
 		
-		//TODO create streak with infos
 		streak = new StreakModel();
+		streak.setStreakId(streakId);
+		streak.setStreakLevel(1);
+		streak.setName("testName");
+		streak.setDescription("testDesc");
+		streak.setStatus(StreakSatstus.valueOf("FAILED"));
+		streak.setActionId(actionId );
+		streak.setNotificationCheck(true);
+		streak.setNotificationMessage("Some test notification");
+		streak.setLockedDate(LocalDateTime.of(2021, 12, 18, 12, 0));
+		streak.setDueDate(LocalDateTime.of(2021, 12, 20, 12, 0));
+		streak.setPeriod(Period.ofDays(1));
+		streak.setPointThreshold(10);
+		
+		Map<Integer,String> badges = new HashMap<Integer, String>();
+		badges.put(1, "badge1");
+		badges.put(2, "badge3");
+		badges.put(3, "badge5");
+		
+		streak.setBadges(badges);
+		
+		Map<Integer,String> achievements = new HashMap<Integer, String>();
+		achievements.put(1,"achievement1");
+		achievements.put(2,"achievement3");
+		achievements.put(5,"achievement4");
+		
+		streak.setAchievements(achievements);
 		
 		headers = new HashMap<>();
 		
@@ -137,13 +163,6 @@ private static final int HTTP_PORT = 8081;
 			logStream = null;
 		}
 	}
-	
-	@Test
-	public void test() {
-		fail("Not yet implemented");
-	}
-
-	
 
 	@Test
 	public void testH1_createNewStreak(){
@@ -195,6 +214,7 @@ private static final int HTTP_PORT = 8081;
 		System.out.println("Test --- Update Streak");
 		try
 		{
+			streak.setName("Updated Name");
 			JSONObject body = new JSONObject(streak);
 			
 			ClientResponse result = c1.sendRequest("PUT", mainPath + "" + gameId +"/"+ streakId, body.toString(), "application/json", "*/*", headers);

@@ -275,7 +275,7 @@ BEGIN
 	, CHECK (point_value >= 0)
 	);';
 	
-	
+	----------------------------STREAKS
 	-- TODO
 	  active := 'ACTIVE';
 	  paused := 'PAUSED';
@@ -287,20 +287,39 @@ BEGIN
 	  streak_id character varying(20) NOT NULL
 	, name character varying(20) NOT NULL
 	, description character varying(100)
+	, streak_level integer NOT NULL DEFAULT 1
 	, status ' || new_schema || '.streak_status DEFAULT ''ACTIVE''
-	, achievement_id character varying(20)
-	, point_flag boolean DEFAULT false
-	, point_value integer DEFAULT 0
+	, action_id character varying(20)
+	, point_th integer NOT NULL
+	, locked_date TIMESTAMP WITHOUT TIME ZONE NOT NULL
+	, due_date TIMESTAMP WITHOUT TIME ZONE NOT NULL
+	, period INTERVAL NOT NULL
 	, use_notification boolean
 	, notif_message character varying
 	, CONSTRAINT streak_id PRIMARY KEY (streak_id)
-	, CONSTRAINT achievement_id FOREIGN KEY (achievement_id)
-	      REFERENCES ' || new_schema || '.achievement (achievement_id) ON UPDATE CASCADE ON DELETE CASCADE
+	, CONSTRAINT action_id FOREIGN KEY (action_id)
+	      REFERENCES ' || new_schema || '.action (action_id) ON UPDATE CASCADE ON DELETE CASCADE
 	, CHECK (point_value >= 0)
 	);';
 	
+	EXECUTE 'CREATE TABLE ' || new_schema || '.streak_badges (
+	  streak_id character varying(20) NOT NULL
+	, streak_level integer NOT NULL DEFAULT 1
+	, badge_id character varying(20)
+	, CONSTRAINT streak_level_b_pkey PRIMARY KEY (streak_id, streak_level)
+	, CONSTRAINT badge_id FOREIGN KEY (badge_id)
+	      REFERENCES ' || new_schema || '.badge (badge_id) ON UPDATE CASCADE ON DELETE CASCADE
+	);';
 	
-	-- TODO
+	EXECUTE 'CREATE TABLE ' || new_schema || '.streak_achievements (
+	  streak_id character varying(20) NOT NULL
+	, streak_level integer NOT NULL DEFAULT 1
+	, achievement_id character varying(20)
+	, CONSTRAINT streak_level_a_pkey PRIMARY KEY (streak_id, streak_level)
+	, CONSTRAINT achievement_id FOREIGN KEY (achievement_id)
+	      REFERENCES ' || new_schema || '.achievement (achievement_id) ON UPDATE CASCADE ON DELETE CASCADE
+	);';
+	
 	-- m to m
 	-- unique relation (member, streak)
 	EXECUTE 'CREATE TABLE ' || new_schema || '.member_streak (
@@ -313,7 +332,7 @@ BEGIN
 	, CONSTRAINT streak_id FOREIGN KEY (streak_id)
 	      REFERENCES ' || new_schema || '.streak (streak_id) ON UPDATE CASCADE ON DELETE CASCADE   -- explicit pk
 	);';
-
+	-----------------------------STREAKS END
 
 	-- trigger
 
@@ -494,9 +513,11 @@ BEGIN
 		WITH newtab as (SELECT * FROM '|| game_id ||'.quest_action CROSS JOIN '|| game_id ||'.member)
 		SELECT member_id, quest_id, action_id FROM newtab WHERE member_id='|| quote_literal(member_id) ||' ORDER BY member_id ;';
 		
+	--TODO?
+	-- Cross join member_id with (streak_ids and statuses)
 	EXECUTE 'INSERT INTO '|| game_id ||'.member_streak (member_id, streak_id, status)
-	WITH tab1 as (SELECT * FROM '|| game_id ||'.member CROSS JOIN '|| game_id ||'.quest WHERE member_id='|| quote_literal(member_id) ||')
-	SELECT  member_id, quest_id, status FROM tab1;
+	WITH tab1 as (SELECT * FROM '|| game_id ||'.member CROSS JOIN '|| game_id ||'.streak WHERE member_id='|| quote_literal(member_id) ||')
+	SELECT  member_id, streak_id, status FROM tab1;
  	';
 
 	-- Clean up notification initialization
