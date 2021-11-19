@@ -3,6 +3,7 @@ package i5.las2peer.services.gamificationStreakService.database;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unused")
@@ -21,8 +22,8 @@ public class StreakModel {
 	private Map<Integer, String> achievements;
 	//how is a range of streakLevels represented
 	private Map<Integer, String> badges;
-	//the action of a streak
-	private String actionId;
+	//the actions of a streak
+	private List<String> actions;
 	//the value to pass in order to increase the streak
 	private int pointThreshold;
 	// in format yyyy/MM/dd hh:mm
@@ -117,17 +118,18 @@ public class StreakModel {
 	public void setBadges(Map<Integer, String> badges) {
 		this.badges = badges;
 	}
+	
 	/**
-	 * @return the actionId
+	 * @return the actions
 	 */
-	public String getActionId() {
-		return actionId;
+	public List<String> getActions() {
+		return actions;
 	}
 	/**
-	 * @param actionId the actionId to set
+	 * @param actions the actions to set
 	 */
-	public void setActionId(String actionId) {
-		this.actionId = actionId;
+	public void setActions(List<String> actions) {
+		this.actions = actions;
 	}
 	/**
 	 * @return the pointThreshold

@@ -7,7 +7,9 @@ import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -113,7 +115,6 @@ private static final int HTTP_PORT = 8081;
 		streak.setName("testName");
 		streak.setDescription("testDesc");
 		streak.setStatus(StreakSatstus.valueOf("FAILED"));
-		streak.setActionId(actionId );
 		streak.setNotificationCheck(true);
 		streak.setNotificationMessage("Some test notification");
 		streak.setLockedDate(LocalDateTime.of(2021, 12, 18, 12, 0));
@@ -134,6 +135,11 @@ private static final int HTTP_PORT = 8081;
 		achievements.put(5,"achievement4");
 		
 		streak.setAchievements(achievements);
+		
+		List<String> actions = new ArrayList<String>();
+		actions.add(actionId);
+		
+		streak.setActions(actions);
 		
 		headers = new HashMap<>();
 		

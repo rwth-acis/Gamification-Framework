@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -192,13 +193,27 @@ public class GamificationStreakService extends RESTService {
 				streak.setDescription(obj.getString("description"));
 				streak.setStreakLevel(obj.getInt("streakLevel"));
 				streak.setStatus(StreakSatstus.valueOf(obj.getString("status")));
-				streak.setActionId(obj.getString("actionId"));
 				streak.setPointThreshold(obj.getInt("pointThreshold"));
 				streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
 				streak.setDueDate(LocalDateTime.parse(obj.getString("dueDate")));
 				streak.setPeriod(Period.parse(obj.getString("period")));
 				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
 				streak.setNotificationMessage(obj.getString("notificationMessage"));
+				
+				if (streak.getDueDate().isBefore(streak.getLockedDate()) || streak.getDueDate().isEqual(streak.getLockedDate())) {
+					objResponse.put("message",
+							"Cannot create streak. Due date cannot be less or equal to locked date.");
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+							(String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+							.type(MediaType.APPLICATION_JSON).build();
+				}
+				
+				List<String> actions = new ArrayList<String>();
+				for (Object entry : obj.getJSONArray("actions").toList()) {
+					actions.add(entry.toString());
+				}
+				streak.setActions(actions);
 				
 				Map<Integer, String> badges = new HashMap<Integer, String>();
 				for (Entry<String, Object>  entry: obj.getJSONObject("badges").toMap().entrySet()) {
@@ -480,13 +495,27 @@ public class GamificationStreakService extends RESTService {
 				streak.setDescription(obj.getString("description"));
 				streak.setStreakLevel(obj.getInt("streakLevel"));
 				streak.setStatus(StreakSatstus.valueOf(obj.getString("status")));
-				streak.setActionId(obj.getString("actionId"));
 				streak.setPointThreshold(obj.getInt("pointThreshold"));
 				streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
 				streak.setDueDate(LocalDateTime.parse(obj.getString("dueDate")));
 				streak.setPeriod(Period.parse(obj.getString("period")));
 				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
 				streak.setNotificationMessage(obj.getString("notificationMessage"));
+				
+				if (streak.getDueDate().isBefore(streak.getLockedDate()) || streak.getDueDate().isEqual(streak.getLockedDate())) {
+					objResponse.put("message",
+							"Cannot create streak. Due date cannot be less or equal to locked date.");
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+							(String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+							.type(MediaType.APPLICATION_JSON).build();
+				}
+				
+				List<String> actions = new ArrayList<String>();
+				for (Object entry : obj.getJSONArray("actions").toList()) {
+					actions.add(entry.toString());
+				}
+				streak.setActions(actions);
 				
 				Map<Integer, String> badges = new HashMap<Integer, String>();
 				for (Entry<String, Object>  entry: obj.getJSONObject("badges").toMap().entrySet()) {
