@@ -369,8 +369,8 @@ BEGIN
 	, CONSTRAINT member_streak_badge_pkey PRIMARY KEY (member_id, streak_id, badge_id)
 	, CONSTRAINT member_id FOREIGN KEY (member_id)
 	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
-	, CONSTRAINT streak_badge_id FOREIGN KEY (streak_id, badge_id, streak_level)
-	      REFERENCES ' || new_schema || '.streak_badge (streak_id, badge_id, streak_level) ON UPDATE CASCADE ON DELETE CASCADE
+	, CONSTRAINT streak_badge_id FOREIGN KEY (streak_id, streak_level)
+	      REFERENCES ' || new_schema || '.streak_badge (streak_id, streak_level) ON UPDATE CASCADE ON DELETE CASCADE
 	);';
 	
 	
@@ -385,8 +385,8 @@ BEGIN
 	, CONSTRAINT member_streak_achievement_pkey PRIMARY KEY (member_id, streak_id, achievement_id)
 	, CONSTRAINT member_id FOREIGN KEY (member_id)
 	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
-	, CONSTRAINT streak_achievement_id FOREIGN KEY (streak_id, achievement_id, streak_level)
-	      REFERENCES ' || new_schema || '.streak_achievement (streak_id, achievement_id, streak_level) ON UPDATE CASCADE ON DELETE CASCADE
+	, CONSTRAINT streak_achievement_id FOREIGN KEY (streak_id, streak_level)
+	      REFERENCES ' || new_schema || '.streak_achievement (streak_id, streak_level) ON UPDATE CASCADE ON DELETE CASCADE
 	);';
 	-----------------------------STREAK TABLES END------------------------------------------------------------------------------------------------------------
 
@@ -683,7 +683,7 @@ $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 ------------------------------------------------------------------------------------------------STREAK FUNCTIONS STARTS------------------------------------------------------------------------------------------------------
-
+-- FUNK
 -- function to validate streak_action activation
 CREATE OR REPLACE FUNCTION update_member_streak_action_status() RETURNS trigger AS
 $BODY$
@@ -710,10 +710,10 @@ BEGIN
 		EXECUTE 'SELECT LOCALTIMESTAMP(0):' INTO now;
 		
 		IF locked_date <= now AND now <= due_date then
-		    EXECUTE 'UPDATE ' || game_id || '.member_streak_action SET completed=true WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||' AND action_id = '|| quote_literal(NEW.action_id) ||';'
+		    EXECUTE 'UPDATE ' || game_id || '.member_streak_action SET completed=true WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||' AND action_id = '|| quote_literal(NEW.action_id) ||';';
 	    -- if action performed after due_date, it means, the action has not performed in time and the streak is failed
 		ELSIF due_date < now THEN
-		    EXECUTE 'UPDATE ' || game_id || '.member_streak SET status=''FAILED'' WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||';'
+		    EXECUTE 'UPDATE ' || game_id || '.member_streak SET status=''FAILED'' WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||';';
 		END IF;
 	END LOOP;
 	
@@ -722,7 +722,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 -- Action observer for streaks
 CREATE OR REPLACE FUNCTION create_trigger_streak_action_observer(game_id text) RETURNS void AS
 $BODY$
@@ -735,7 +735,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 -- function to validate streak_completion
 CREATE OR REPLACE FUNCTION update_member_streak_status() RETURNS trigger AS
 $BODY$
@@ -763,7 +763,7 @@ BEGIN
 	EXECUTE 'SELECT point_th FROM ' || game_id ||'.streak WHERE streak_id= '|| quote_literal(NEW.streak_id) ||';' INTO threshold;
 	
 	IF current_point >= threshold THEN
-		EXECUTE 'UPDATE ' || game_id || '.member_streak SET status=''UPDATED'' WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND  streak_id = '|| quote_literal(NEW.streak_id) ||';'
+		EXECUTE 'UPDATE ' || game_id || '.member_streak SET status=''UPDATED'' WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND  streak_id = '|| quote_literal(NEW.streak_id) ||';';
 	END IF;
 	
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
@@ -771,7 +771,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 -- Action observer for streaks
 CREATE OR REPLACE FUNCTION create_trigger_member_streak_action_observer(game_id text) RETURNS void AS
 $BODY$
@@ -784,24 +784,26 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+-- FUNK
 CREATE OR REPLACE FUNCTION handle_dates(game_id text, streak_id text, member_id text) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'UPDATE ' || game_id || '.member_streak  SET status=''ACTIVE'', locked_date=due_date, due_date=due_date + period WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||';'
+	EXECUTE 'UPDATE ' || game_id || '.member_streak  SET status=''ACTIVE'', locked_date=due_date, due_date=due_date + period WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||';';
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 CREATE OR REPLACE FUNCTION handle_representation(game_id text, streak_id text, member_id text, st_level integer) RETURNS void AS
 $BODY$
 BEGIN
-	EXECUTE 'UPDATE ' || game_id || '.member_streak_badge SET status=flase WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND status=true;'
-	EXECUTE 'UPDATE ' || game_id || '.member_streak_badge SET status=true WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND status=true;'
+	EXECUTE 'UPDATE ' || game_id || '.member_streak_badge SET status=flase WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND status=true;';
+	EXECUTE 'UPDATE ' || game_id || '.member_streak_badge SET status=true WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND streal_level= (SELECT MAX(streak_level) FROM ' ||game_id||'.member_streak_badge WHERE streak_id='||streak_id||' AND member_id= '||member_id||' AND streak_level <= '||st_level||');';
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+-- FUNK
 CREATE OR REPLACE FUNCTION handle_rewards(game_id text, streak_id text, member_id text, st_level integer) RETURNS void AS
 $BODY$
 DECLARE
@@ -845,11 +847,12 @@ BEGIN
 			END IF;
 
 		END LOOP;
-	EXECUTE 'UPDATE ' || game_id || '.member_streak_achievement SET unlocked=true WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND streak_level <= '|| st_level||';'
+	EXECUTE 'UPDATE ' || game_id || '.member_streak_achievement SET unlocked=true WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND streak_level <= '|| st_level||';';
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+-- NICHT FUNK
 -- function to handle streak_updates
 CREATE OR REPLACE FUNCTION update_member_streak() RETURNS trigger AS
 $BODY$
@@ -866,18 +869,21 @@ BEGIN
 		
 	-- Loop over all these streaks and execute funtions based on new state
 	LOOP
-		IF || quote_literal(streak.streak_id) ||'.status' = ''PAUSED''::streak_status THEN
-		    EXECUTE PROCEDURE handle_dates(game_id, || quote_literal(NEW.streak_id) ||, || quote_literal(NEW.member_id) ||);
-		ELSIF || quote_literal(streak.streak_id) ||'.status' = ''UPDATED''::streak_status THEN
-		    EXECUTE PROCEDURE handle_dates(game_id, || quote_literal(NEW.streak_id) ||, || quote_literal(NEW.member_id) ||);
-			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET highest_streak_level = GREATEST(current_streak_level, highest_streak_level), current_streak_level = current_streak_level + 1 WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';'
-			EXECUTE PROCEDURE handle_representation(game_id, || quote_literal(NEW.streak_id) ||, || quote_literal(NEW.member_id) || , || quote_literal(NEW.current_streak_level) ||);
-			EXECUTE PROCEDURE handle_rewards(game_id, || quote_literal(NEW.streak_id) ||, || quote_literal(NEW.member_id) || , || quote_literal(NEW.current_streak_level) ||);
-		ELSIF || quote_literal(streak.streak_id) ||'.status' = ''FAILED''::streak_status THEN
-		    EXECUTE PROCEDURE handle_dates(game_id, || quote_literal(NEW.streak_id) ||, || quote_literal(NEW.member_id) ||);
-			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET current_streak_level=1 WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';'
-			EXECUTE PROCEDURE handle_representation(game_id, || quote_literal(NEW.streak_id) ||, || quote_literal(NEW.member_id) || , || quote_literal(NEW.current_streak_level) ||);
-		ELSIF || quote_literal(streak.streak_id) ||'.status' = ''ACTIVE''::streak_status THEN
+		IF || quote_literal(streak.streak_id) ||'.status' = 'PAUSED' THEN
+		    EXECUTE PROCEDURE 'handle_dates('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+			
+		ELSIF || quote_literal(streak.streak_id) ||'.status' = 'UPDATED' THEN
+		    EXECUTE PROCEDURE 'handle_dates('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET highest_streak_level = GREATEST(current_streak_level, highest_streak_level), current_streak_level = current_streak_level + 1 WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';';
+			EXECUTE PROCEDURE 'handle_representation('||game_id||', '|| quote_literal(NEW.streak_id) ||', '|| quote_literal(NEW.member_id) ||' , '|| quote_literal(NEW.current_streak_level) ||');';
+			EXECUTE PROCEDURE 'handle_rewards(' ||game_id||', '|| quote_literal(NEW.streak_id) ||',' || quote_literal(NEW.member_id) || ',' || quote_literal(NEW.current_streak_level) ||');';
+			
+		ELSIF || quote_literal(streak.streak_id) ||'.status' = 'FAILED' THEN
+		    EXECUTE PROCEDURE 'handle_dates('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET current_streak_level=1 WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';';
+			EXECUTE PROCEDURE 'handle_representation('||game_id||', '|| quote_literal(NEW.streak_id) ||', '|| quote_literal(NEW.member_id) ||' , '|| quote_literal(NEW.current_streak_level) ||');';
+			
+		ELSIF || quote_literal(streak.streak_id) ||'.status' = 'ACTIVE' THEN
 		    -- do nothing
 		END IF;
 	END LOOP;
@@ -888,19 +894,19 @@ $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 
--- Action observer for streaks
 CREATE OR REPLACE FUNCTION create_trigger_member_streak_observer(game_id text) RETURNS void AS
 $BODY$
 BEGIN
 	EXECUTE 'CREATE TRIGGER member_streak_observer
 		AFTER UPDATE ON '|| game_id ||'.member_streak
 		FOR EACH ROW
-		EXECUTE PROCEDURE update_member_streak_status();';
+		EXECUTE PROCEDURE update_member_streak();';
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 
+-- FUNK
 -- function to initialize table member_streak_action
 CREATE OR REPLACE FUNCTION update_streak_action_constraint_function() RETURNS trigger AS
 $BODY$
@@ -919,7 +925,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 CREATE OR REPLACE FUNCTION create_trigger_update_streak_action_constraint(game_id text) RETURNS void AS
 $BODY$
 BEGIN
@@ -931,7 +937,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 -- function to initialize table member_streak_badge
 CREATE OR REPLACE FUNCTION update_streak_badge_constraint_function() RETURNS trigger AS
 $BODY$
@@ -950,7 +956,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 CREATE OR REPLACE FUNCTION create_trigger_update_streak_badge_constraint(game_id text) RETURNS void AS
 $BODY$
 BEGIN
@@ -962,7 +968,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 -- function to initialize table member_streak_achievement
 CREATE OR REPLACE FUNCTION update_streak_achievement_constraint_function() RETURNS trigger AS
 $BODY$
@@ -981,7 +987,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 CREATE OR REPLACE FUNCTION create_trigger_update_streak_achievement_constraint(game_id text) RETURNS void AS
 $BODY$
 BEGIN
@@ -993,7 +999,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-
+-- FUNK
 -- function to initialize table member_streak
 CREATE OR REPLACE FUNCTION update_streak_constraint_function() RETURNS trigger AS
 $BODY$
@@ -1014,6 +1020,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+-- FUNK
 CREATE OR REPLACE FUNCTION create_trigger_update_streak_constraint(game_id text) RETURNS void AS
 $BODY$
 BEGIN
@@ -1304,8 +1311,6 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
-DROP SCHEMA IF EXISTS test CASCADE;
-
 
 -- Updated for streak
 CREATE OR REPLACE FUNCTION add_mock_data(schema text) RETURNS void AS
@@ -1384,8 +1389,18 @@ BEGIN
 	INSERT INTO ' || schema || '.quest_action VALUES (''quest5'',''action4'',1);
 	INSERT INTO ' || schema || '.quest_action VALUES (''quest5'',''action5'',1);
 	
-	INSERT INTO ' || schema || '.streak VALUES (''streakTest'',''Streak 1'',''Streak to Test'','' 1 '', ''ACTIVE'', ''actionstreakid'', ''10'', ''2021-12-18 12:00:00.000'', ''2021-12-20 12:00:00.000'', ''1 day'', ''true'', ''Streak Message'');
-	INSERT INTO ' || schema || '.streak_action VALUES (''streakTest'',''actionstreakid'');';
+	INSERT INTO ' || schema || '.streak VALUES (''streak1'',''Streak 1'',''Streak to Test'','' 1 '', ''ACTIVE'', ''10'', ''2021-12-18 12:00:00.000'', ''2021-12-20 12:00:00.000'', ''1 day'', ''true'', ''Streak Message'');
+	INSERT INTO ' || schema || '.streak_action VALUES (''streak1'',''action4'');
+	INSERT INTO ' || schema || '.streak_action VALUES (''streak1'',''action5'');
+	
+
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''1'' ,''badge1'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''3'' ,''badge2'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''5'' ,''badge3'');
+
+	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''1'' ,''achievement1'');
+	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''3'' ,''achievement3'');
+	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''5'' ,''achievement5'');';
 	
 	
 	EXECUTE 'SELECT init_member_to_game(''user1'','|| quote_literal(schema) ||');';
@@ -1410,4 +1425,5 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
+DROP SCHEMA IF EXISTS test CASCADE;
 SELECT add_mock_data('test');

@@ -518,6 +518,7 @@ public class VisualizationDAO {
 		ACHIEVEMENT,
 		QUEST,
 		LEVEL,
+		STREAK,
 	}
 	
 	public JSONArray getMemberNotification(Connection conn,String gameId, String memberId) throws SQLException{

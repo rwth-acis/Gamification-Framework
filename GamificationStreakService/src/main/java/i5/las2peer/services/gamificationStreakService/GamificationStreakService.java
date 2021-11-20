@@ -114,7 +114,7 @@ public class GamificationStreakService extends RESTService {
 	 * Post a new streak. It consumes JSON data.
 	 * 
 	 * @param gameId   gameId
-	 * @param contentB content JSON
+	 * @param content content JSON
 	 * @return HTTP Response returned as JSON object
 	 */
 	@POST
@@ -401,7 +401,7 @@ public class GamificationStreakService extends RESTService {
 	 * 
 	 * @param gameId   gameId
 	 * @param streakId  streakId
-	 * @param streak JSON data
+	 * @param content JSON data
 	 * @return HTTP Response returned as JSON object
 	 */
 	@PUT

@@ -24,10 +24,10 @@ public class StreakDAO {
 	/**
 	 * Check whether the game id is already exist
 	 * 
-	 * @param conn    database connection
-	 * @param game_id game id
+	 * @param conn   database connection
+	 * @param gameId game id
 	 * @return true game_id is already exist
-	 * @throws SQLException
+	 * @throws SQLException SQLException
 	 */
 	public boolean isGameIdExist(Connection conn, String gameId) throws SQLException {
 		stmt = conn.prepareStatement("SELECT game_id FROM manager.game_info WHERE game_id=?");
@@ -42,10 +42,10 @@ public class StreakDAO {
 	/**
 	 * 
 	 * @param conn     database connection
-	 * @param gameId
-	 * @param streakId
+	 * @param gameId   gameId
+	 * @param streakId streakId
 	 * @return true if streak does exist in game
-	 * @throws SQLException
+	 * @throws SQLException SQLException
 	 */
 	public boolean isStreakIdExist(Connection conn, String gameId, String streakId) throws SQLException {
 		stmt = conn.prepareStatement("SELECT streak_id FROM " + gameId + ".streak WHERE streak_id=? LIMIT 1");
@@ -63,7 +63,7 @@ public class StreakDAO {
 	 * @param conn   database connection
 	 * @param gameId game id
 	 * @param streak streak model
-	 * @throws SQLException
+	 * @throws SQLException SQLException
 	 */
 	public void addNewStreak(Connection conn, String gameId, StreakModel streak) throws SQLException {
 		stmt = conn.prepareStatement("INSERT INTO " + gameId
@@ -81,19 +81,21 @@ public class StreakDAO {
 		stmt.setString(11, streak.getNotificationMessage());
 		stmt.executeUpdate();
 
-		List <String> actions = streak.getActions();
+		List<String> actions = streak.getActions();
 		if (actions != null && !actions.isEmpty()) {
-			stmt = conn.prepareStatement("INSERT INTO " + gameId + ".streak_action (streak_id,  action_id) VALUES(?,?)");
+			stmt = conn
+					.prepareStatement("INSERT INTO " + gameId + ".streak_action (streak_id,  action_id) VALUES(?,?)");
 			for (String action : actions) {
 				stmt.setString(1, streak.getStreakId());
 				stmt.setString(2, action);
 				stmt.executeUpdate();
 			}
 		}
-		
+
 		Map<Integer, String> badges = streak.getBadges();
 		if (badges != null && !(badges.isEmpty())) {
-			stmt = conn.prepareStatement("INSERT INTO " + gameId + ".streak_badge (streak_level, badge_id, streak_id) VALUES(?,?,?)");
+			stmt = conn.prepareStatement(
+					"INSERT INTO " + gameId + ".streak_badge (streak_level, badge_id, streak_id) VALUES(?,?,?)");
 			for (Entry<Integer, String> entry : badges.entrySet()) {
 				stmt.setInt(1, entry.getKey());
 				stmt.setString(2, entry.getValue());
@@ -101,10 +103,11 @@ public class StreakDAO {
 				stmt.executeUpdate();
 			}
 		}
-		
+
 		Map<Integer, String> achievements = streak.getAchievements();
 		if (achievements != null && !(achievements.isEmpty())) {
-			stmt = conn.prepareStatement("INSERT INTO " + gameId + ".streak_achievement (streak_level, achievement_id, streak_id) VALUES(?,?,?)");
+			stmt = conn.prepareStatement("INSERT INTO " + gameId
+					+ ".streak_achievement (streak_level, achievement_id, streak_id) VALUES(?,?,?)");
 			for (Entry<Integer, String> entry : achievements.entrySet()) {
 				stmt.setInt(1, entry.getKey());
 				stmt.setString(2, entry.getValue());
@@ -121,8 +124,8 @@ public class StreakDAO {
 	 * @param gameId   game id
 	 * @param streakId streak id
 	 * @return StreakModel
-	 * @throws IOException
-	 * @throws SQLException
+	 * @throws IOException  IOException
+	 * @throws SQLException SQLException
 	 */
 	public StreakModel getStreakWithId(Connection conn, String gameId, String streakId)
 			throws IOException, SQLException {
@@ -143,7 +146,7 @@ public class StreakDAO {
 			streak.setPeriod(parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)));
 			streak.setNotificationCheck(rs.getBoolean("use_notification"));
 			streak.setNotificationMessage("notif_message");
-			
+
 			Map<Integer, String> badges = new HashMap<Integer, String>();
 			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_badge WHERE streak_id = ?");
 			stmt.setString(1, streakId);
@@ -161,7 +164,6 @@ public class StreakDAO {
 				achievements.put(rs3.getInt("streak_level"), rs3.getString("achievement_id"));
 			}
 			streak.setAchievements(achievements);
-			
 
 			List<String> actions = new ArrayList<String>();
 			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_action WHERE streak_id = ?");
@@ -171,7 +173,7 @@ public class StreakDAO {
 				actions.add(rs4.getString("action_id"));
 			}
 			streak.setActions(actions);
-			
+
 			return streak;
 		}
 		return null;
@@ -186,8 +188,8 @@ public class StreakDAO {
 	 * @param window_size  windowSize
 	 * @param searchPhrase search phrase
 	 * @return list of streaks
-	 * @throws SQLException
-	 * @throws IOException
+	 * @throws SQLException SQLException
+	 * @throws IOException  IOException
 	 */
 	public List<StreakModel> getStreaksWithOffsetAndSearchPhrase(Connection conn, String gameId, int offset,
 			int window_size, String searchPhrase) throws SQLException, IOException {
@@ -233,7 +235,7 @@ public class StreakDAO {
 				achievements.put(rs3.getInt("streak_level"), rs3.getString("achievement_id"));
 			}
 			streak.setAchievements(achievements);
-			
+
 			List<String> actions = new ArrayList<String>();
 			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_action WHERE streak_id = ?");
 			stmt.setString(1, streak.getStreakId());
@@ -252,7 +254,7 @@ public class StreakDAO {
 	 * @param conn   database connection
 	 * @param gameId game id
 	 * @return total number of streak
-	 * @throws SQLException
+	 * @throws SQLException SQLException
 	 */
 	public int getNumberOfStreaks(Connection conn, String gameId) throws SQLException {
 		stmt = conn.prepareStatement("SELECT count(*) FROM " + gameId + ".streak");
@@ -270,7 +272,7 @@ public class StreakDAO {
 	 * @param conn   database connection
 	 * @param gameId game id
 	 * @param streak model to be updated
-	 * @throws SQLException
+	 * @throws SQLException SQLException
 	 */
 	public void updateStreak(Connection conn, String gameId, StreakModel streak) throws SQLException {
 		stmt = conn.prepareStatement("UPDATE " + gameId
@@ -288,7 +290,6 @@ public class StreakDAO {
 		stmt.setString(11, streak.getStreakId());
 		stmt.executeUpdate();
 
-		
 		Map<Integer, String> badges = streak.getBadges();
 		if (badges != null && !(badges.isEmpty())) {
 			stmt = conn.prepareStatement("DELETE FROM " + gameId + " .streak_badge WHERE streak_id = ?");
@@ -320,14 +321,15 @@ public class StreakDAO {
 				stmt.executeUpdate();
 			}
 		}
-		
-		List <String> actions = streak.getActions();
+
+		List<String> actions = streak.getActions();
 		if (actions != null && !actions.isEmpty()) {
 			stmt = conn.prepareStatement("DELETE FROM " + gameId + " .streak_action WHERE streak_id = ?");
 			stmt.setString(1, streak.getStreakId());
 			stmt.executeUpdate();
-			
-			stmt = conn.prepareStatement("INSERT INTO " + gameId + ".streak_action (streak_id,  action_id) VALUES(?,?)");
+
+			stmt = conn
+					.prepareStatement("INSERT INTO " + gameId + ".streak_action (streak_id,  action_id) VALUES(?,?)");
 			for (String action : actions) {
 				stmt.setString(1, streak.getStreakId());
 				stmt.setString(2, action);
@@ -342,7 +344,7 @@ public class StreakDAO {
 	 * @param conn     database connection
 	 * @param gameId   game id
 	 * @param streakId streak id
-	 * @throws SQLException
+	 * @throws SQLException SQLException
 	 */
 	public void deleteStreak(Connection conn, String gameId, String streakId) throws SQLException {
 		stmt = conn.prepareStatement("DELETE FROM " + gameId + " .streak_badge WHERE streak_id = ?");
@@ -352,7 +354,7 @@ public class StreakDAO {
 		stmt = conn.prepareStatement("DELETE FROM " + gameId + " .streak_achievement WHERE streak_id = ?");
 		stmt.setString(1, streakId);
 		stmt.executeUpdate();
-		
+
 		stmt = conn.prepareStatement("DELETE FROM " + gameId + " .streak_action WHERE streak_id = ?");
 		stmt.setString(1, streakId);
 		stmt.executeUpdate();
