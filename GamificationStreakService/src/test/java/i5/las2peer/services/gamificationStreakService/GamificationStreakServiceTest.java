@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,7 +118,8 @@ private static final int HTTP_PORT = 8081;
 		streak.setStatus(StreakSatstus.valueOf("FAILED"));
 		streak.setNotificationCheck(true);
 		streak.setNotificationMessage("Some test notification");
-		streak.setLockedDate(LocalDateTime.of(2021, 12, 18, 12, 0));
+		streak.setLockedDate(LocalDateTime.parse("2021-11-20 12:00:00", DateTimeFormatter.ofPattern ( "yyyy-MM-dd HH:mm:ss")));
+		//streak.setLockedDate(LocalDateTime.of(2021, 12, 18, 12, 0));
 		streak.setDueDate(LocalDateTime.of(2021, 12, 20, 12, 0));
 		streak.setPeriod(Period.ofDays(1));
 		streak.setPointThreshold(10);
@@ -177,9 +179,9 @@ private static final int HTTP_PORT = 8081;
 		{
 			
 			JSONObject body = new JSONObject(streak);
+			String bodyString = body.toString();
 			
-			
-			ClientResponse result = c1.sendRequest("POST", mainPath + "" + gameId, body.toString(), "application/json", "*/*", headers);
+			ClientResponse result = c1.sendRequest("POST", mainPath + "" + gameId, bodyString, "application/json", "*/*", headers);
 
 			System.out.println(result.getResponse());
 			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){

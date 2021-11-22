@@ -5,6 +5,9 @@ CREATE SCHEMA manager AUTHORIZATION gamification;
 CREATE SCHEMA global_leaderboard AUTHORIZATION gamification;
 GRANT ALL ON SCHEMA manager TO gamification;
 
+CREATE SCHEMA public AUTHORIZATION gamification;
+GRANT ALL ON SCHEMA public TO gamification;
+
 CREATE TABLE manager.game_info
 (
   game_id character varying(20) NOT NULL,
@@ -710,7 +713,7 @@ BEGIN
 		EXECUTE 'SELECT LOCALTIMESTAMP(0):' INTO now;
 		
 		IF locked_date <= now AND now <= due_date then
-		    EXECUTE 'UPDATE ' || game_id || '.member_streak_action SET completed=true WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||' AND action_id = '|| quote_literal(NEW.action_id) ||';';
+		    EXECUTE 'UPDATE ' || game_id || '.member_streak_action SET completed=true WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||' AND action_id = '|| quote_literal(NEW.action_id) ||' AND completed=false;';
 	    -- if action performed after due_date, it means, the action has not performed in time and the streak is failed
 		ELSIF due_date < now THEN
 		    EXECUTE 'UPDATE ' || game_id || '.member_streak SET status=''FAILED'' WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||';';
@@ -852,7 +855,16 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
--- NICHT FUNK
+
+CREATE OR REPLACE FUNCTION handle_streak_reset(game_id text, streak_id text, member_id text) RETURNS void AS
+$BODY$
+BEGIN
+	EXECUTE 'UPDATE ' || game_id || '.member_streak_action SET completed=false WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||';';
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+
 -- function to handle streak_updates
 CREATE OR REPLACE FUNCTION update_member_streak() RETURNS trigger AS
 $BODY$
@@ -875,11 +887,13 @@ BEGIN
 		ELSIF || quote_literal(streak.streak_id) ||'.status' = 'UPDATED' THEN
 		    EXECUTE PROCEDURE 'handle_dates('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
 			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET highest_streak_level = GREATEST(current_streak_level, highest_streak_level), current_streak_level = current_streak_level + 1 WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';';
+			EXECUTE PROCEDURE 'handle_streak_reset('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
 			EXECUTE PROCEDURE 'handle_representation('||game_id||', '|| quote_literal(NEW.streak_id) ||', '|| quote_literal(NEW.member_id) ||' , '|| quote_literal(NEW.current_streak_level) ||');';
 			EXECUTE PROCEDURE 'handle_rewards(' ||game_id||', '|| quote_literal(NEW.streak_id) ||',' || quote_literal(NEW.member_id) || ',' || quote_literal(NEW.current_streak_level) ||');';
 			
 		ELSIF || quote_literal(streak.streak_id) ||'.status' = 'FAILED' THEN
 		    EXECUTE PROCEDURE 'handle_dates('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+			EXECUTE PROCEDURE 'handle_streak_reset('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
 			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET current_streak_level=1 WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';';
 			EXECUTE PROCEDURE 'handle_representation('||game_id||', '|| quote_literal(NEW.streak_id) ||', '|| quote_literal(NEW.member_id) ||' , '|| quote_literal(NEW.current_streak_level) ||');';
 			

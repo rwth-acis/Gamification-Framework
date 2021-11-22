@@ -1,5 +1,6 @@
 package i5.las2peer.services.gamificationStreakService;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Random;
 
@@ -24,7 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,7 +58,6 @@ import io.swagger.annotations.SwaggerDefinition;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 
 /**
  * Gamification Streak Service
@@ -92,7 +92,21 @@ public class GamificationStreakService extends RESTService {
 	private StreakDAO streakAccess;
 
 	public GamificationStreakService() {
-		setFieldValues();
+		// setFieldValues();
+		Properties properties = new Properties();
+		try {
+			properties.load(new FileInputStream(
+					"./etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties"));
+			jdbcDriverClassName = properties.getProperty("jdbcDriverClassName");
+			jdbcUrl = properties.getProperty("jdbcUrl");
+			jdbcSchema = properties.getProperty("jdbcSchema");
+			jdbcLogin = properties.getProperty("jdbcLogin");
+			jdbcPass = properties.getProperty("jdbcPass");
+		} catch (Exception e) {
+			e.printStackTrace();
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+					"Could not load properties for StreakService" + e.getMessage());
+		}
 		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		streakAccess = new StreakDAO();
 	}
@@ -113,7 +127,7 @@ public class GamificationStreakService extends RESTService {
 	/**
 	 * Post a new streak. It consumes JSON data.
 	 * 
-	 * @param gameId   gameId
+	 * @param gameId  gameId
 	 * @param content content JSON
 	 * @return HTTP Response returned as JSON object
 	 */
@@ -199,8 +213,9 @@ public class GamificationStreakService extends RESTService {
 				streak.setPeriod(Period.parse(obj.getString("period")));
 				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
 				streak.setNotificationMessage(obj.getString("notificationMessage"));
-				
-				if (streak.getDueDate().isBefore(streak.getLockedDate()) || streak.getDueDate().isEqual(streak.getLockedDate())) {
+
+				if (streak.getDueDate().isBefore(streak.getLockedDate())
+						|| streak.getDueDate().isEqual(streak.getLockedDate())) {
 					objResponse.put("message",
 							"Cannot create streak. Due date cannot be less or equal to locked date.");
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
@@ -208,36 +223,34 @@ public class GamificationStreakService extends RESTService {
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 							.type(MediaType.APPLICATION_JSON).build();
 				}
-				
+
 				List<String> actions = new ArrayList<String>();
 				for (Object entry : obj.getJSONArray("actions").toList()) {
 					actions.add(entry.toString());
 				}
 				streak.setActions(actions);
-				
+
 				Map<Integer, String> badges = new HashMap<Integer, String>();
-				for (Entry<String, Object>  entry: obj.getJSONObject("badges").toMap().entrySet()) {
+				for (Entry<String, Object> entry : obj.getJSONObject("badges").toMap().entrySet()) {
 					badges.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
 				}
 				streak.setBadges(badges);
-				
+
 				Map<Integer, String> achievements = new HashMap<Integer, String>();
-				for (Entry<String, Object>  entry: obj.getJSONObject("achievements").toMap().entrySet()) {
+				for (Entry<String, Object> entry : obj.getJSONObject("achievements").toMap().entrySet()) {
 					achievements.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
 				}
 				streak.setAchievements(achievements);
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
-				objResponse.put("message",
-						"Cannot create streak. Cannot process input data"
-								+ e.getMessage());
+				objResponse.put("message", "Cannot create streak. Cannot process input data" + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-			
+
 			streakId = streak.getStreakId();
 			if (streakAccess.isStreakIdExist(conn, gameId, streakId)) {
 				objResponse.put("message", "Cannot create streak. Failed to add the streak. Streak ID already exist! ");
@@ -286,7 +299,7 @@ public class GamificationStreakService extends RESTService {
 	/**
 	 * Get a streak with specific ID from database
 	 * 
-	 * @param gameId  gameId
+	 * @param gameId   gameId
 	 * @param streakId streak id
 	 * @return HTTP Response returned as JSON object
 	 */
@@ -400,8 +413,8 @@ public class GamificationStreakService extends RESTService {
 	 * Update a streak.
 	 * 
 	 * @param gameId   gameId
-	 * @param streakId  streakId
-	 * @param content JSON data
+	 * @param streakId streakId
+	 * @param content  JSON data
 	 * @return HTTP Response returned as JSON object
 	 */
 	@PUT
@@ -424,7 +437,7 @@ public class GamificationStreakService extends RESTService {
 		long randomLong = new Random().nextLong();
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
-		
+
 		if (content == null) {
 			objResponse.put("message", "Cannot update streak. No data received");
 
@@ -478,13 +491,14 @@ public class GamificationStreakService extends RESTService {
 			}
 
 			if (!streakAccess.isStreakIdExist(conn, gameId, streakId)) {
-				objResponse.put("message", "Cannot update streak. Failed to update the streak. Streak ID is not exist!");
+				objResponse.put("message",
+						"Cannot update streak. Failed to update the streak. Streak ID is not exist!");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-			
+
 			JSONObject obj = null;
 			StreakModel streak = null;
 			try {
@@ -501,8 +515,9 @@ public class GamificationStreakService extends RESTService {
 				streak.setPeriod(Period.parse(obj.getString("period")));
 				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
 				streak.setNotificationMessage(obj.getString("notificationMessage"));
-				
-				if (streak.getDueDate().isBefore(streak.getLockedDate()) || streak.getDueDate().isEqual(streak.getLockedDate())) {
+
+				if (streak.getDueDate().isBefore(streak.getLockedDate())
+						|| streak.getDueDate().isEqual(streak.getLockedDate())) {
 					objResponse.put("message",
 							"Cannot create streak. Due date cannot be less or equal to locked date.");
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
@@ -510,36 +525,34 @@ public class GamificationStreakService extends RESTService {
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 							.type(MediaType.APPLICATION_JSON).build();
 				}
-				
+
 				List<String> actions = new ArrayList<String>();
 				for (Object entry : obj.getJSONArray("actions").toList()) {
 					actions.add(entry.toString());
 				}
 				streak.setActions(actions);
-				
+
 				Map<Integer, String> badges = new HashMap<Integer, String>();
-				for (Entry<String, Object>  entry: obj.getJSONObject("badges").toMap().entrySet()) {
+				for (Entry<String, Object> entry : obj.getJSONObject("badges").toMap().entrySet()) {
 					badges.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
 				}
 				streak.setBadges(badges);
-				
+
 				Map<Integer, String> achievements = new HashMap<Integer, String>();
-				for (Entry<String, Object>  entry: obj.getJSONObject("achievements").toMap().entrySet()) {
+				for (Entry<String, Object> entry : obj.getJSONObject("achievements").toMap().entrySet()) {
 					achievements.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
 				}
 				streak.setAchievements(achievements);
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
-				objResponse.put("message",
-						"Cannot create streak. Cannot process input data"
-								+ e.getMessage());
+				objResponse.put("message", "Cannot create streak. Cannot process input data" + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-			
+
 			streakAccess.updateStreak(conn, gameId, streak);
 			logger.info("Streak Updated ");
 			objResponse.put("message", "Streak updated " + streakId);
@@ -572,7 +585,7 @@ public class GamificationStreakService extends RESTService {
 	/**
 	 * Delete a streak with specified ID
 	 * 
-	 * @param gameId  gameId
+	 * @param gameId   gameId
 	 * @param streakId streakId
 	 * @return HTTP Response returned as JSON object
 	 */
@@ -626,7 +639,8 @@ public class GamificationStreakService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!streakAccess.isStreakIdExist(conn, gameId, streakId)) {
-				objResponse.put("message", "Cannot delete streak. Failed to delete the streak. Streak ID is not exist!");
+				objResponse.put("message",
+						"Cannot delete streak. Failed to delete the streak. Streak ID is not exist!");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
@@ -652,7 +666,7 @@ public class GamificationStreakService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				if(conn != null) {
+				if (conn != null) {
 					conn.close();
 				}
 			} catch (SQLException e) {
@@ -734,12 +748,12 @@ public class GamificationStreakService extends RESTService {
 			streaks = streakAccess.getStreaksWithOffsetAndSearchPhrase(conn, gameId, offset, windowSize, searchPhrase);
 
 			JSONArray streakArray = new JSONArray();
-			
+
 			for (StreakModel streak : streaks) {
 				JSONObject obj = new JSONObject(streak);
 				streakArray.put(obj);
 			}
-			
+
 			objResponse.put("current", currentPage);
 			objResponse.put("rowCount", windowSize);
 			objResponse.put("rows", streakArray);
