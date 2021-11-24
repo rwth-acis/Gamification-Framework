@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Map.Entry;
 import java.util.Random;
 
 import javax.ws.rs.Consumes;
@@ -30,6 +29,7 @@ import javax.ws.rs.core.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 
 import i5.las2peer.api.Context;
 import i5.las2peer.api.ManualDeployment;
@@ -71,6 +71,7 @@ import org.json.JSONObject;
  * should be removed.
  * 
  */
+@SuppressWarnings("deprecation")
 @Api(value = "/streaks", authorizations = { @Authorization(value = "streaks_auth", scopes = {
 		@AuthorizationScope(scope = "write:streaks", description = "modify streaks in your game"),
 		@AuthorizationScope(scope = "read:streaks", description = "read your streaks") }) }, tags = "streaks")
@@ -225,20 +226,27 @@ public class GamificationStreakService extends RESTService {
 				}
 
 				List<String> actions = new ArrayList<String>();
-				for (Object entry : obj.getJSONArray("actions").toList()) {
-					actions.add(entry.toString());
+				JSONArray actionArr = obj.getJSONArray("actions");
+				for(int i = 0; i < actionArr.length(); i++) {
+					actions.add(actionArr.getJSONObject(i).getString("actionId"));
 				}
 				streak.setActions(actions);
 
 				Map<Integer, String> badges = new HashMap<Integer, String>();
-				for (Entry<String, Object> entry : obj.getJSONObject("badges").toMap().entrySet()) {
-					badges.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
+				JSONArray badgeArr = obj.getJSONArray("badges");
+				for (int i = 0; i < badgeArr.length(); i++) {
+					int level = badgeArr.getJSONObject(i).getInt("streakLevel");
+					String badge = badgeArr.getJSONObject(i).getString("badgeId");
+					badges.put(level, badge);
 				}
 				streak.setBadges(badges);
 
 				Map<Integer, String> achievements = new HashMap<Integer, String>();
-				for (Entry<String, Object> entry : obj.getJSONObject("achievements").toMap().entrySet()) {
-					achievements.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
+				JSONArray achArr = obj.getJSONArray("achievements");
+				for (int i = 0; i < achArr.length(); i++) {
+					int level = achArr.getJSONObject(i).getInt("streakLevel");
+					String achievement = achArr.getJSONObject(i).getString("achievementId");
+					achievements.put(level, achievement);
 				}
 				streak.setAchievements(achievements);
 
@@ -373,6 +381,7 @@ public class GamificationStreakService extends RESTService {
 			ObjectMapper objectMapper = new ObjectMapper();
 			// Set pretty printing of json
 			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+			objectMapper.registerModule(new JSR310Module());
 
 			String streakString = objectMapper.writeValueAsString(streak);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_17, "" + randomLong, true);
@@ -527,23 +536,29 @@ public class GamificationStreakService extends RESTService {
 				}
 
 				List<String> actions = new ArrayList<String>();
-				for (Object entry : obj.getJSONArray("actions").toList()) {
-					actions.add(entry.toString());
+				JSONArray actionArr = obj.getJSONArray("actions");
+				for(int i = 0; i < actionArr.length(); i++) {
+					actions.add(actionArr.getJSONObject(i).getString("actionId"));
 				}
 				streak.setActions(actions);
 
 				Map<Integer, String> badges = new HashMap<Integer, String>();
-				for (Entry<String, Object> entry : obj.getJSONObject("badges").toMap().entrySet()) {
-					badges.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
+				JSONArray badgeArr = obj.getJSONArray("badges");
+				for (int i = 0; i < badgeArr.length(); i++) {
+					int level = badgeArr.getJSONObject(i).getInt("streakLevel");
+					String badge = badgeArr.getJSONObject(i).getString("badgeId");
+					badges.put(level, badge);
 				}
 				streak.setBadges(badges);
 
 				Map<Integer, String> achievements = new HashMap<Integer, String>();
-				for (Entry<String, Object> entry : obj.getJSONObject("achievements").toMap().entrySet()) {
-					achievements.put(Integer.valueOf(entry.getKey()), entry.getValue().toString());
+				JSONArray achArr = obj.getJSONArray("achievements");
+				for (int i = 0; i < achArr.length(); i++) {
+					int level = achArr.getJSONObject(i).getInt("streakLevel");
+					String achievement = achArr.getJSONObject(i).getString("achievementId");
+					achievements.put(level, achievement);
 				}
 				streak.setAchievements(achievements);
-
 			} catch (Exception e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot create streak. Cannot process input data" + e.getMessage());

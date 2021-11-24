@@ -5,6 +5,7 @@ CREATE SCHEMA manager AUTHORIZATION gamification;
 CREATE SCHEMA global_leaderboard AUTHORIZATION gamification;
 GRANT ALL ON SCHEMA manager TO gamification;
 
+drop schema if exists public CASCADE;
 CREATE SCHEMA public AUTHORIZATION gamification;
 GRANT ALL ON SCHEMA public TO gamification;
 
@@ -703,7 +704,7 @@ BEGIN
 	
 	-- get all streaks containing the new action
 	For streaks IN
-	  EXECUTE 'SELECT streak_id FROM '|| game_id ||'.member_streak_action WHERE action_id = '|| quote_literal(NEW.action_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||''
+	  EXECUTE 'SELECT streak_id FROM '|| game_id ||'.member_streak_action WHERE action_id = '|| quote_literal(NEW.action_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||
 	
 	-- check if the action activation was valid (streak.locked_date <= now <= streak.due_date) for each of those streaks for the member
 	LOOP
@@ -1335,13 +1336,13 @@ BEGIN
 	DELETE FROM manager.member_info WHERE member_id = 'user2';
 	DELETE FROM manager.member_info WHERE member_id = 'user3';
 	DELETE FROM manager.member_info WHERE member_id = 'user4';
-	DELETE FROM manager.member_info WHERE member_id = 'streakUser';
+	
 
 	DELETE FROM manager.member_game WHERE member_id = 'user1';
 	DELETE FROM manager.member_game WHERE member_id = 'user2';
 	DELETE FROM manager.member_game WHERE member_id = 'user3';
 	DELETE FROM manager.member_game WHERE member_id = 'user4';
-	DELETE FROM manager.member_info WHERE member_id = 'streakUser';
+	
 
 	DELETE FROM manager.game_info WHERE game_id = 'test';
 
@@ -1349,7 +1350,6 @@ BEGIN
 	INSERT INTO manager.member_info VALUES ('user2','User','One','user1@example.com');
 	INSERT INTO manager.member_info VALUES ('user3','User','One','user1@example.com');
 	INSERT INTO manager.member_info VALUES ('user4','User','One','user1@example.com');
-	INSERT INTO manager.member_info VALUES ('streakUser','User','One','user1@example.com');
 
 	INSERT INTO manager.game_info VALUES ('test','desc','commtype');
 
@@ -1380,7 +1380,6 @@ BEGIN
 	INSERT INTO '|| schema ||'.action VALUES (''action4'',''action4'',''The action number 4'',4,true,''action4messagethisis'');
 	INSERT INTO '|| schema ||'.action VALUES (''action5'',''action5'',''The action number 5'',5,false,''action5messagethisis'');
 	INSERT INTO '|| schema ||'.action VALUES (''actionquestid'',''actionquestid'',''The action quest id'',5,false,''the action quest id notification'');
-	INSERT INTO '|| schema ||'.action VALUES (''actionstreakid'',''actionstreakid'',''The action streak id'',5,false,''the action streak id notification'');
 
 	INSERT INTO ' || schema || '.quest VALUES (''quest1'',''Quest 1'',''The quest number 1'',''COMPLETED'',''achievement1'',false,NULL,false,5,true,''quest1messagethisis'');
 	INSERT INTO ' || schema || '.quest VALUES (''quest2'',''Quest 2'',''The quest number 2'',''HIDDEN'',''achievement2'',true,''quest1'',true,10,true,''quest2messagethisis'');
@@ -1421,7 +1420,6 @@ BEGIN
 	EXECUTE 'SELECT init_member_to_game(''user2'','|| quote_literal(schema) ||');';
 	EXECUTE 'SELECT init_member_to_game(''user3'','|| quote_literal(schema) ||');';
 	EXECUTE 'SELECT init_member_to_game(''user4'','|| quote_literal(schema) ||');';
-	EXECUTE 'SELECT init_member_to_game(''streakUser'','|| quote_literal(schema) ||');';
 
 	EXECUTE '
 	INSERT INTO ' || schema || '.member_achievement VALUES (''user1'',''achievement1'');

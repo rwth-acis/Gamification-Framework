@@ -48,6 +48,7 @@ dependencies {
 	implementation project(':GamificationLevelService')
 	implementation project(':GamificationPointService')
 	implementation project(':GamificationQuestService')
+	implementation project(':GamificationStreakService')
 
 }
 
@@ -139,6 +140,7 @@ task importProperties(type: Copy){
 	from "$rootDir/GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties"
 	from "$rootDir/GamificationLevelService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties"
 	from "$rootDir/GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties"
+	from "$rootDir/GamificationStreakService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties"
 	into "$projectDir/etc"
 }
 

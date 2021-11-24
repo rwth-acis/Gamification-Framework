@@ -135,6 +135,7 @@ task importProperties(type: Copy){
 	from "$rootDir/GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties"
 	from "$rootDir/GamificationVisualizationService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties"
 	from "$rootDir/GamificationGamifierService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties"
+	from "$rootDir/GamificationStreakService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties"
 	into "$projectDir/etc"
 }
 

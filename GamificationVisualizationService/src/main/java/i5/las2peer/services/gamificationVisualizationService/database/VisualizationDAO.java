@@ -551,6 +551,7 @@ public class VisualizationDAO {
 	/**
 	 * 
 	 * @param conn     database connection
+	 * @param memberId memberId
 	 * @param gameId   gameId
 	 * @param streakId streakId
 	 * @return true if streak does exist in game
@@ -567,12 +568,12 @@ public class VisualizationDAO {
 		return false;
 	}
 	
-	/**
+	/** Returns streak details for all streaks of a member in this game
 	 * 
 	 * @param conn dbConnection
 	 * @param gameId gameId to prrocess
 	 * @param memberId memberId of Member
-	 * @return
+	 * @return streak information in JSON
 	 * @throws SQLException SQLException
 	 * @throws IOException IOException
 	 */
@@ -621,7 +622,7 @@ public class VisualizationDAO {
 			streak.setAchievements(achievements);
 
 			List<String> actions = new ArrayList<String>();
-			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_action WHERE streak_id = ? AND member_id =?");
+			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".member_streak_action WHERE streak_id = ? AND member_id =?");
 			stmt.setString(1, streak.getStreakId());
 			stmt.setString(2,memberId);
 			ResultSet rs4 = stmt.executeQuery();
@@ -643,13 +644,14 @@ public class VisualizationDAO {
 	 * @param gameId gameId
 	 * @param memberId memberId
 	 * @param streakId streakId
-	 * @return
+	 * @return streak progress details of member in JSON
 	 * @throws SQLException SQLException
 	 * @throws IOException  IOException
 	 */
 	public JSONObject getMemberStreakProgress(Connection conn, String gameId, String memberId, String streakId) throws SQLException, IOException{
-		stmt =conn.prepareStatement("WITH stk AS (SELECT streak_id, due_date , locked_date, current_streak_level, highest_streak_level, status FROM "+gameId+".member_streak where member_id =?) SELECT stk.streak_id, stk.due_date , stk.locked_date, current_streak_level, highest_streak_level, name, description, use_notification, notif_message, point_th, stk.status, period FROM stk INNER JOIN "+gameId+".streak ON ("+gameId+".streak.streak_id = stk.streak_id);");
+		stmt =conn.prepareStatement("WITH stk AS (SELECT streak_id, due_date , locked_date, current_streak_level, highest_streak_level, status FROM "+gameId+".member_streak where member_id =? AND streak_id=?) SELECT stk.streak_id, stk.due_date , stk.locked_date, current_streak_level, highest_streak_level, name, description, use_notification, notif_message, point_th, stk.status, period FROM stk INNER JOIN "+gameId+".streak ON ("+gameId+".streak.streak_id = stk.streak_id);");
 		stmt.setString(1, memberId);
+		stmt.setString(2, streakId);
 		ResultSet rs = stmt.executeQuery();
 		JSONObject obj = new JSONObject();
 		while (rs.next()) {
@@ -670,9 +672,11 @@ public class VisualizationDAO {
 		stmt.setString(1, streakId);
 		stmt.setString(2, memberId);
 		ResultSet rs2 = stmt.executeQuery();
-		List<String> actions = new ArrayList<String>();
+		JSONArray actions = new JSONArray();
 		while (rs2.next()) {
-			actions.add(rs2.getString("action_id"));
+			JSONObject actionObj= new JSONObject();
+			actionObj.put("actionId", rs2.getString("action_id"));
+			actions.add(actionObj);
 		}
 		obj.put("actions", actions);
 
@@ -680,27 +684,32 @@ public class VisualizationDAO {
 		stmt.setString(1, streakId);
 		stmt.setString(2, memberId);
 		ResultSet rs3 = stmt.executeQuery();
-		List<String> completedActions = new ArrayList<String>();
+		JSONArray completedActions = new JSONArray();
 		while (rs3.next()) {
-			completedActions.add(rs3.getString("action_id"));
+			JSONObject actionObj= new JSONObject();
+			actionObj.put("actionId", rs3.getString("action_id"));
+			completedActions.add(actionObj);
 		}
 		obj.put("completedActions", completedActions);
 		stmt = conn. prepareStatement("SELECT badge_id FROM "+ gameId + ".member_streak_badge WHERE streak_id =? AND member_id = ? AND active = true;");
 		stmt.setString(1, streakId);
 		stmt.setString(2,memberId);
 		ResultSet rs4 = stmt.executeQuery();
-		while (rs4.next()) {
+		if(rs4.next()) {
 			obj.put("currentBadge",rs4.getString("badge_id"));
 		}
 		stmt = conn.prepareStatement("SELECT streak_level, achievement_id FROM "+ gameId+".member_streak_achievement WHERE streak_id =? AND member_id =? AND unlocked=false;");
 		stmt.setString(1, streakId);
 		stmt.setString(2,memberId);
-		JSONObject obj2 = new JSONObject();
+		JSONArray lockedAchievements = new JSONArray();
 		ResultSet rs5 = stmt.executeQuery();
 		while (rs5.next()) {
-			obj2.put(String.valueOf(rs5.getInt("streak_level")), rs5.getString("achievement_id"));
+			JSONObject achObj = new JSONObject();
+			achObj.put("streakLevel", rs5.getInt("streak_level"));
+			achObj.put("achievementId", rs5.getString("achievement_id"));
+			lockedAchievements.add(achObj);
 		}
-		obj.put("lockedAchievements", obj2);
-		 return obj;
+		obj.put("lockedAchievements", lockedAchievements);
+		return obj;
 	}
 }

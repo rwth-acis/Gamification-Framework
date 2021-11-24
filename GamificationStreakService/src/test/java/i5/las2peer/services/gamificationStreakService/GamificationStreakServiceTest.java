@@ -5,14 +5,8 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,10 +21,9 @@ import i5.las2peer.connectors.webConnector.client.MiniClient;
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.security.UserAgentImpl;
-import i5.las2peer.services.gamificationStreakService.database.StreakModel;
-import i5.las2peer.services.gamificationStreakService.database.StreakModel.StreakSatstus;
 import i5.las2peer.testing.MockAgentFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -48,11 +41,11 @@ private static final int HTTP_PORT = 8081;
 
 	private static String gameId = "test";
 	private static String streakId = "streakTest";
-	private static String actionId =  "action5";
+	
+	private static JSONObject streakObj;
 
 	private static final String mainPath = "gamification/streaks/";
 	
-	private StreakModel streak;
 	
 	private Map<String, String> headers;
 	
@@ -110,38 +103,58 @@ private static final int HTTP_PORT = 8081;
 		c3.setConnectorEndpoint(connector.getHttpEndpoint());
 		c3.setLogin(user3.getIdentifier(), "evespass");
 		
-		streak = new StreakModel();
-		streak.setStreakId(streakId);
-		streak.setStreakLevel(1);
-		streak.setName("testName");
-		streak.setDescription("testDesc");
-		streak.setStatus(StreakSatstus.valueOf("FAILED"));
-		streak.setNotificationCheck(true);
-		streak.setNotificationMessage("Some test notification");
-		streak.setLockedDate(LocalDateTime.parse("2021-11-20 12:00:00", DateTimeFormatter.ofPattern ( "yyyy-MM-dd HH:mm:ss")));
-		//streak.setLockedDate(LocalDateTime.of(2021, 12, 18, 12, 0));
-		streak.setDueDate(LocalDateTime.of(2021, 12, 20, 12, 0));
-		streak.setPeriod(Period.ofDays(1));
-		streak.setPointThreshold(10);
+		streakObj = new JSONObject();
+		streakObj.put("streakId", streakId);
+		streakObj.put("streakLevel", 1);
+		streakObj.put("name", "TestName");
+		streakObj.put("description", "testSesc");
+		streakObj.put("status", "FAILED");
+		streakObj.put("pointThreshold", 5);
+		streakObj.put("period", "P1D");
+		streakObj.put("notificationCheck", true);
+		streakObj.put("notificationMessage","Test message");
+		streakObj.put("lockedDate", "2021-11-20T12:00:00");
+		streakObj.put("dueDate", "2021-11-25T12:00:00");
 		
-		Map<Integer,String> badges = new HashMap<Integer, String>();
-		badges.put(1, "badge1");
-		badges.put(2, "badge3");
-		badges.put(3, "badge5");
+		JSONArray badges = new JSONArray();
+		JSONObject badge = new JSONObject();
+		badge.put("streakLevel", 1);
+		badge.put("badgeId", "badge1");
+		badges.put(badge);
+		badge = new JSONObject();
+		badge.put("streakLevel", 2);
+		badge.put("badgeId", "badge2");
+		badges.put(badge);
+		badge = new JSONObject();
+		badge.put("streakLevel", 3);
+		badge.put("badgeId", "badge3");
+		badges.put(badge);
+		streakObj.put("badges", badges);
 		
-		streak.setBadges(badges);
+		JSONArray achievements = new JSONArray();
+		JSONObject achievement = new JSONObject();
+		achievement.put("streakLevel", 1);
+		achievement.put("achievementId", "achievement1");
+		achievements.put(achievement);
+		achievement = new JSONObject();
+		achievement.put("streakLevel", 2);
+		achievement.put("achievementId", "achievement2");
+		achievements.put(achievement);
+		achievement = new JSONObject();
+		achievement.put("streakLevel", 3);
+		achievement.put("achievementId", "achievement3");
+		achievements.put(achievement);
+		streakObj.put("achievements", achievements);
 		
-		Map<Integer,String> achievements = new HashMap<Integer, String>();
-		achievements.put(1,"achievement1");
-		achievements.put(2,"achievement3");
-		achievements.put(5,"achievement4");
+		JSONArray actions = new JSONArray();
+		JSONObject action = new JSONObject();
+		action.put("actionId", "action1");
+		actions.put(action);
+		action = new JSONObject();
+		action.put("actionId", "action2");
+		actions.put(action);
 		
-		streak.setAchievements(achievements);
-		
-		List<String> actions = new ArrayList<String>();
-		actions.add(actionId);
-		
-		streak.setActions(actions);
+		streakObj.put("actions", actions);
 		
 		headers = new HashMap<>();
 		
@@ -178,10 +191,8 @@ private static final int HTTP_PORT = 8081;
 		try
 		{
 			
-			JSONObject body = new JSONObject(streak);
-			String bodyString = body.toString();
 			
-			ClientResponse result = c1.sendRequest("POST", mainPath + "" + gameId, bodyString, "application/json", "*/*", headers);
+			ClientResponse result = c1.sendRequest("POST", mainPath + "" + gameId, streakObj.toString(), "application/json", "*/*", headers);
 
 			System.out.println(result.getResponse());
 			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
@@ -222,10 +233,8 @@ private static final int HTTP_PORT = 8081;
 		System.out.println("Test --- Update Streak");
 		try
 		{
-			streak.setName("Updated Name");
-			JSONObject body = new JSONObject(streak);
 			
-			ClientResponse result = c1.sendRequest("PUT", mainPath + "" + gameId +"/"+ streakId, body.toString(), "application/json", "*/*", headers);
+			ClientResponse result = c1.sendRequest("PUT", mainPath + "" + gameId +"/"+ streakId, streakObj.toString(), "application/json", "*/*", headers);
 			
 			System.out.println(result.getResponse());
 			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());

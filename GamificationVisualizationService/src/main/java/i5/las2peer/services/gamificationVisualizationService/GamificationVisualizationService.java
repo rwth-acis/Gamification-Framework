@@ -69,7 +69,7 @@ import net.minidev.json.JSONObject;
 		@AuthorizationScope(scope = "read:members", description = "Get data about members") }) }, tags = "members")
 @SwaggerDefinition(info = @Info(title = "Members Service", version = "0.1", description = "Member Service for Gamification Framework", termsOfService = "http://your-terms-of-service-url.com", contact = @Contact(name = "Muhammad Abduh Arifin", url = "dbis.rwth-aachen.de", email = "arifin@dbis.rwth-aachen.de"), license = @License(name = "your software license name", url = "http://your-software-license-url.com")))
 @ManualDeployment
-@ServicePath("/visualization")
+@ServicePath("/gamification/visualization")
 public class GamificationVisualizationService extends RESTService {
 
 	// instantiate the logger class
@@ -93,9 +93,6 @@ public class GamificationVisualizationService extends RESTService {
 	public static final String HEADER_CONTENT_DESCRIPTION = "Content-Description";
 
 	public GamificationVisualizationService() {
-		// read and set properties values
-		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE
-		// CHANGED TOO!
 		setFieldValues();
 		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.visualizationAccess = new VisualizationDAO();

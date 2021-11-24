@@ -8,12 +8,24 @@
 	</classpathentry>
 	<classpathentry kind="src" output="bin/test" path="src/test/java">
 		<attributes>
+			<attribute name="test" value="true"/>
 			<attribute name="gradle_scope" value="test"/>
 			<attribute name="gradle_used_by_scope" value="test"/>
-			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-14/"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-14/">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
+	<classpathentry kind="lib" path="/media/sf_vm-share/Gamification-Framework/GamificationVisualizationService/lib/i5.las2peer.services.gamificationAchievementService-0.1.jar"/>
+	<classpathentry kind="lib" path="/media/sf_vm-share/Gamification-Framework/GamificationVisualizationService/lib/i5.las2peer.services.gamificationActionService-0.1.jar"/>
+	<classpathentry kind="lib" path="/media/sf_vm-share/Gamification-Framework/GamificationVisualizationService/lib/i5.las2peer.services.gamificationBadgeService-0.1.jar"/>
+	<classpathentry kind="lib" path="/media/sf_vm-share/Gamification-Framework/GamificationVisualizationService/lib/i5.las2peer.services.gamificationGameService-0.1.jar"/>
+	<classpathentry kind="lib" path="/media/sf_vm-share/Gamification-Framework/GamificationVisualizationService/lib/i5.las2peer.services.gamificationLevelService-0.1.jar"/>
+	<classpathentry kind="lib" path="/media/sf_vm-share/Gamification-Framework/GamificationVisualizationService/lib/i5.las2peer.services.gamificationPointService-0.1.jar"/>
+	<classpathentry kind="lib" path="/media/sf_vm-share/Gamification-Framework/GamificationVisualizationService/lib/i5.las2peer.services.gamificationQuestService-0.1.jar"/>
+	<classpathentry kind="lib" path="/media/sf_vm-share/Gamification-Framework/GamificationVisualizationService/lib/i5.las2peer.services.gamificationStreakService-0.1.jar"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
