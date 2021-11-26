@@ -19,6 +19,7 @@ public class ActionDAO {
 		ACHIEVEMENT,
 		QUEST,
 		LEVEL,
+		STREAK,
 	}
 	
 	PreparedStatement stmt;

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
 
@@ -27,9 +28,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 
 import i5.las2peer.api.Context;
 import i5.las2peer.api.ManualDeployment;
@@ -71,7 +69,6 @@ import org.json.JSONObject;
  * should be removed.
  * 
  */
-@SuppressWarnings("deprecation")
 @Api(value = "/streaks", authorizations = { @Authorization(value = "streaks_auth", scopes = {
 		@AuthorizationScope(scope = "write:streaks", description = "modify streaks in your game"),
 		@AuthorizationScope(scope = "read:streaks", description = "read your streaks") }) }, tags = "streaks")
@@ -378,16 +375,12 @@ public class GamificationStreakService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-			ObjectMapper objectMapper = new ObjectMapper();
-			// Set pretty printing of json
-			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-			objectMapper.registerModule(new JSR310Module());
-
-			String streakString = objectMapper.writeValueAsString(streak);
+			JSONObject streakObject = serializeStreak(streak);
+			
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_17, "" + randomLong, true);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_26, "" + name, true);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_27, "" + gameId, true);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(streakString).type(MediaType.APPLICATION_JSON)
+			return Response.status(HttpURLConnection.HTTP_OK).entity(streakObject.toString()).type(MediaType.APPLICATION_JSON)
 					.build();
 
 		} catch (SQLException e) {
@@ -765,7 +758,7 @@ public class GamificationStreakService extends RESTService {
 			JSONArray streakArray = new JSONArray();
 
 			for (StreakModel streak : streaks) {
-				JSONObject obj = new JSONObject(streak);
+				JSONObject obj = serializeStreak(streak);
 				streakArray.put(obj);
 			}
 
@@ -831,12 +824,8 @@ public class GamificationStreakService extends RESTService {
 			if (streak == null) {
 				return null;
 			}
-			ObjectMapper objectMapper = new ObjectMapper();
-			// Set pretty printing of json
-			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-			String streakString = objectMapper.writeValueAsString(streak);
-			return streakString;
+			JSONObject streakObject = serializeStreak(streak);
+			return streakObject.toString();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.warning("Get Streak with ID RMI failed. " + e.getMessage());
@@ -860,5 +849,47 @@ public class GamificationStreakService extends RESTService {
 				logger.printStackTrace(e);
 			}
 		}
+	}
+	
+	private JSONObject serializeStreak(StreakModel streak) {
+		JSONObject streakObject = new JSONObject();
+		streakObject.put("streakId", streak.getStreakId());
+		streakObject.put("name", streak.getName());
+		streakObject.put("description", streak.getDescription());
+		streakObject.put("streakLevel", streak.getStreakLevel());
+		streakObject.put("status", streak.getStatus().toString());
+		JSONArray achievements = new JSONArray();
+		for (Entry<Integer, String> entry : streak.getAchievements().entrySet()) {
+			JSONObject achievement = new JSONObject();
+			achievement.put("streakLevel", entry.getKey());
+			achievement.put("achievementId", entry.getValue());
+			achievements.put(achievement);
+		}
+		streakObject.put("achievements", achievements);
+		
+		JSONArray badges = new JSONArray();
+		for (Entry<Integer, String> entry : streak.getBadges().entrySet()) {
+			JSONObject badge = new JSONObject();
+			badge.put("streakLevel", entry.getKey());
+			badge.put("badgeId", entry.getValue());
+			badges.put(badge);
+		}
+		streakObject.put("badges", badges);
+		
+		JSONArray actions = new JSONArray();
+		for (String entry : streak.getActions()) {
+			JSONObject action = new JSONObject();
+			action.put("actionId", entry);
+			actions.put(action);
+		}
+		streakObject.put("actions", actions);
+		streakObject.put("pointThreshold", streak.getPointThreshold());
+		streakObject.put("lockedDate", streak.getLockedDate().toString());
+		streakObject.put("dueDate", streak.getDueDate().toString());
+		streakObject.put("period", streak.getPeriod().toString());
+		streakObject.put("notificationCheck", streak.isNotificationCheck());
+		streakObject.put("notificationMessage", streak.getNotificationMessage());
+		return streakObject;
+		
 	}
 }

@@ -87,13 +87,13 @@ BEGIN
 	);';
 
 	EXECUTE 'CREATE TABLE ' || new_schema || '.achievement (
-	  achievement_id character varying(20) NOT NULL
-	, name character varying(20) NOT NULL
+	  achievement_id character varying(50) NOT NULL
+	, name character varying(50) NOT NULL
 	, description character varying(100)
 	, point_value integer NOT NULL DEFAULT 0
-	, badge_id character varying(20)
+	, badge_id character varying(50)
 	, use_notification boolean
-	, notif_message character varying
+	, notif_message character varying(50)
 	, CONSTRAINT achievement_id PRIMARY KEY (achievement_id)
 	, CONSTRAINT badge_id FOREIGN KEY (badge_id)
 	      REFERENCES '|| new_schema ||'.badge (badge_id) ON UPDATE CASCADE ON DELETE CASCADE
@@ -264,7 +264,6 @@ BEGIN
 	, type_id character varying (20) NOT NULL
 	, use_notification boolean
 	, message character varying
-	, CONSTRAINT notification_pkey PRIMARY KEY (member_id , type_id)
 	, CONSTRAINT member_id FOREIGN KEY (member_id)
 	      REFERENCES ' || new_schema || '.member (member_id) ON UPDATE CASCADE ON DELETE CASCADE
 	);';
@@ -456,6 +455,9 @@ LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION init_member_to_game(member_id text, game_id text) RETURNS void AS
 $BODY$
+DECLARE
+st_level integer;
+streaks record;
 BEGIN
 	EXECUTE 'DELETE FROM manager.member_game WHERE member_id = '|| quote_literal(member_id) ||' AND game_id = '|| quote_literal(game_id) ||';';
 	EXECUTE 'DELETE FROM '|| game_id ||'.member WHERE member_id = '|| quote_literal(member_id) ||';';
@@ -501,7 +503,15 @@ BEGIN
 	EXECUTE 'INSERT INTO '|| game_id ||'.member_streak_badge
 	WITH newtab as (SELECT * FROM '|| game_id ||'.streak_badge CROSS JOIN '|| game_id ||'.member)
 	SELECT member_id, streak_id, badge_id, streak_level FROM newtab WHERE member_id='|| quote_literal(member_id) ||' ORDER BY member_id ;';
-
+	
+	For streaks in
+		EXECUTE 'SELECT streak_id, current_streak_level FROM ' ||game_id||'.member_streak WHERE member_id='|| quote_literal(member_id)|| ''
+		
+	LOOP
+		EXECUTE 'UPDATE ' ||game_id||'.member_streak_achievement SET unlocked=true WHERE member_id='|| quote_literal(member_id) ||' AND streak_id = ' ||quote_literal(streaks.streak_id)|| ' AND streak_level <= ' ||quote_literal(streaks.current_streak_level)||';';
+		EXECUTE 'UPDATE ' ||game_id||'.member_streak_badge SET active=true WHERE member_id='|| quote_literal(member_id) ||'  AND streak_id = ' ||quote_literal(streaks.streak_id)|| ' AND streak_level <= ' ||quote_literal(streaks.current_streak_level)||';';
+	END LOOP;
+	
 	-- Clean up notification initialization
 	EXECUTE 'DELETE FROM '|| game_id ||'.notification WHERE type_id = ''0'';';
 END;
@@ -693,31 +703,45 @@ CREATE OR REPLACE FUNCTION update_member_streak_action_status() RETURNS trigger 
 $BODY$
 DECLARE
 game_id character varying(20);
+streak_id character varying(20);
 streaks record;
-locked_date TIMESTAMP WITHOUT TIME ZONE;
-due_date TIMESTAMP WITHOUT TIME ZONE;
+l_date TIMESTAMP WITHOUT TIME ZONE;
+d_date TIMESTAMP WITHOUT TIME ZONE;
 now TIMESTAMP;
+lstring character varying(20);
+dstring character varying(20);
+nstring character varying(20);
 BEGIN
 	game_id = TG_TABLE_SCHEMA;
 
-	RAISE NOTICE 'ACTION TRIGGERED';
+	RAISE NOTICE 'MEMBER ACTION INSERT DETECTED';
+	RAISE NOTICE 'INSERT ACTION %' ,quote_literal(NEW.action_id);
+	RAISE NOTICE 'INSERT MEMBER %' ,quote_literal(NEW.member_id);
 	
 	-- get all streaks containing the new action
 	For streaks IN
-	  EXECUTE 'SELECT streak_id FROM '|| game_id ||'.member_streak_action WHERE action_id = '|| quote_literal(NEW.action_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||
+	  EXECUTE 'SELECT streak_id FROM '|| game_id ||'.member_streak_action WHERE action_id = '|| quote_literal(NEW.action_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||''
 	
-	-- check if the action activation was valid (streak.locked_date <= now <= streak.due_date) for each of those streaks for the member
-	LOOP
-	    -- get dates from member_streak
-		EXECUTE 'SELECT locked_date FROM '|| game_id || '.member_streak WHERE streak_id = '|| quote_literal(streak.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||' ;' INTO locked_date;
-		EXECUTE 'SELECT due_date FROM '|| game_id || '.member_streak WHERE streak_id = '|| quote_literal(streak.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||' ;' INTO due_date;
-		EXECUTE 'SELECT LOCALTIMESTAMP(0):' INTO now;
+	loop
+		raise notice 'CURRENT STREAK %', quote_literal(streaks.streak_id);
+		EXECUTE 'SELECT locked_date, due_date FROM '|| game_id || '.member_streak WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||''INTO l_date, d_date ;	
+		EXECUTE 'SELECT LOCALTIMESTAMP(0)' INTO now;
+		lstring := to_char(l_date, 'YYYY-MM-DD HH24:MI:SS');
+		dstring := to_char(d_date, 'YYYY-MM-DD HH24:MI:SS');
+		nstring := to_char(now, 'YYYY-MM-DD HH24:MI:SS');
+		RAISE NOTICE 'locked date is %', quote_literal(lstring);
+		RAISE NOTICE 'due date is %', quote_literal(dstring);
+		RAISE NOTICE 'now is %', quote_literal(nstring);
 		
-		IF locked_date <= now AND now <= due_date then
+		IF l_date <= now AND now <= d_date then
+			RAISE NOTICE 'VALID ACTION TIME';
 		    EXECUTE 'UPDATE ' || game_id || '.member_streak_action SET completed=true WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||' AND action_id = '|| quote_literal(NEW.action_id) ||' AND completed=false;';
 	    -- if action performed after due_date, it means, the action has not performed in time and the streak is failed
-		ELSIF due_date < now THEN
+		ELSIF d_date < now then
+			RAISE NOTICE 'INVALID ACTION TIME';
 		    EXECUTE 'UPDATE ' || game_id || '.member_streak SET status=''FAILED'' WHERE streak_id = '|| quote_literal(streaks.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||';';
+		else
+			RAISE NOTICE 'STREAK WITH ID % IS NOT READY TO BE PLAYED NOW. ACTION HAS NO EFFECT', quote_literal(streaks.streak_id);
 		END IF;
 	END LOOP;
 	
@@ -749,27 +773,50 @@ actions record;
 current_point integer;
 action_point integer;
 threshold integer;
+l_date TIMESTAMP WITHOUT TIME ZONE;
+d_date TIMESTAMP WITHOUT TIME ZONE;
+now TIMESTAMP;
+lstring character varying(20);
+dstring character varying(20);
+nstring character varying(20);
 BEGIN
 	game_id = TG_TABLE_SCHEMA;
 
-	RAISE NOTICE 'ACTION TRIGGERED';
-	current_point:=0;
+	RAISE NOTICE 'MEMEBER STREAK ACTION STATUS CHANGE DETECTED';
+	RAISE NOTICE 'UPDATED MEMBER %' ,quote_literal(NEW.member_id);
+	RAISE NOTICE 'UPDATED STREAK %' ,quote_literal(NEW.streak_id);
+	RAISE NOTICE 'UPDATED ACTION %' ,quote_literal(NEW.action_id);
+	EXECUTE 'SELECT locked_date, due_date FROM '|| game_id || '.member_streak WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' and member_id = '|| quote_literal(NEW.member_id) ||''INTO l_date, d_date ;	
+	EXECUTE 'SELECT LOCALTIMESTAMP(0)' INTO now;
+	lstring := to_char(l_date, 'YYYY-MM-DD HH24:MI:SS');
+	dstring := to_char(d_date, 'YYYY-MM-DD HH24:MI:SS');
+	nstring := to_char(now, 'YYYY-MM-DD HH24:MI:SS');
+	RAISE NOTICE 'locked date is %', quote_literal(lstring);
+	RAISE NOTICE 'due date is %', quote_literal(dstring);
+	RAISE NOTICE 'now is %', quote_literal(nstring);
 	
-	-- get all streaks containing the new action
-	for actions IN
-	    EXECUTE 'SELECT action_id FROM ' || game_id || '.member_streak_action WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND  streak_id = '|| quote_literal(NEW.streak_id) ||' AND completed=true;'
+	IF l_date <= now AND now <= d_date then
+		current_point:=0;
+	
+		-- get all streaks containing the new action
+		for actions IN
+			EXECUTE 'SELECT action_id FROM ' || game_id || '.member_streak_action WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND  streak_id = '|| quote_literal(NEW.streak_id) ||' AND completed=true;'
 		
-	LOOP
-	    EXECUTE 'SELECET point_value FROM '|| game_id || '.action WHERE action_id = '|| quote_literal(actions.action_id) ||';' INTO action_point;
-		current_point:=current_point + action_point;
-	END LOOP;
+		loop
+			RAISE NOTICE 'CURRENT STREAK %', quote_literal(NEW.streak_id);
+			RAISE NOTICE 'CURRENT ACTION %', quote_literal(actions.action_id);
+			RAISE NOTICE 'CURRENT MEMBER %', quote_literal(NEW.member_id);
+			EXECUTE 'SELECT point_value FROM '|| game_id || '.action WHERE action_id = '|| quote_literal(actions.action_id) ||';' INTO action_point;
+			current_point:=current_point + action_point;
+		END LOOP;
 	
-	EXECUTE 'SELECT point_th FROM ' || game_id ||'.streak WHERE streak_id= '|| quote_literal(NEW.streak_id) ||';' INTO threshold;
+		EXECUTE 'SELECT point_th FROM ' || game_id ||'.streak WHERE streak_id= '|| quote_literal(NEW.streak_id) ||';' INTO threshold;
 	
-	IF current_point >= threshold THEN
-		EXECUTE 'UPDATE ' || game_id || '.member_streak SET status=''UPDATED'' WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND  streak_id = '|| quote_literal(NEW.streak_id) ||';';
+		IF current_point >= threshold then
+			RAISE NOTICE 'ENOUGH POINT COLLECTED. NOW UPDATE STREAK STATUS';
+			EXECUTE 'UPDATE ' || game_id || '.member_streak SET status=''UPDATED'' WHERE member_id = '|| quote_literal(NEW.member_id) ||' AND  streak_id = '|| quote_literal(NEW.streak_id) ||';';
+		END IF;
 	END IF;
-	
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
 $BODY$
@@ -791,8 +838,25 @@ LANGUAGE plpgsql VOLATILE;
 -- FUNK
 CREATE OR REPLACE FUNCTION handle_dates(game_id text, streak_id text, member_id text) RETURNS void AS
 $BODY$
-BEGIN
-	EXECUTE 'UPDATE ' || game_id || '.member_streak  SET status=''ACTIVE'', locked_date=due_date, due_date=due_date + period WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||';';
+declare
+t_period interval;
+l_date TIMESTAMP WITHOUT TIME ZONE;
+d_date TIMESTAMP WITHOUT TIME ZONE;
+now TIMESTAMP;
+begin
+	RAISE NOTICE 'HANDLING DATE FUNKTION FOR STREAK %', quote_literal(streak_id);
+	EXECUTE 'SELECT period FROM ' || game_id || '.streak WHERE streak_id = '|| quote_literal(streak_id) ||'' into t_period;
+	EXECUTE 'SELECT locked_date FROM '|| game_id || '.member_streak WHERE streak_id = '|| quote_literal(streak_id) ||' and member_id = '|| quote_literal(member_id) ||''INTO l_date;
+	EXECUTE 'SELECT due_date FROM '|| game_id || '.member_streak WHERE streak_id = '|| quote_literal(streak_id) ||' and member_id = '|| quote_literal(member_id) ||'' INTO d_date;
+	l_date := d_date;
+	d_date := d_date + t_period;
+	EXECUTE 'SELECT LOCALTIMESTAMP(0)' INTO now;
+	while d_date <= now loop
+		l_date := d_date;
+		d_date := d_date + t_period;
+	end loop;
+	EXECUTE 'UPDATE ' || game_id || '.member_streak  SET status=''ACTIVE'', locked_date = '|| quote_literal(to_char(l_date, 'YYYY-MM-DD HH24:MI:SS')) ||' , due_date = ' || quote_literal(to_char(d_date, 'YYYY-MM-DD HH24:MI:SS')) || ' WHERE streak_id = '|| quote_literal(streak_id) ||' AND member_id = '|| quote_literal(member_id) ||';';
+	RAISE NOTICE 'UPDATED DATES FOR STREAK % ', quote_literal(streak_id);
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -800,9 +864,11 @@ LANGUAGE plpgsql VOLATILE;
 -- FUNK
 CREATE OR REPLACE FUNCTION handle_representation(game_id text, streak_id text, member_id text, st_level integer) RETURNS void AS
 $BODY$
-BEGIN
-	EXECUTE 'UPDATE ' || game_id || '.member_streak_badge SET status=flase WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND status=true;';
-	EXECUTE 'UPDATE ' || game_id || '.member_streak_badge SET status=true WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND streal_level= (SELECT MAX(streak_level) FROM ' ||game_id||'.member_streak_badge WHERE streak_id='||streak_id||' AND member_id= '||member_id||' AND streak_level <= '||st_level||');';
+begin
+	RAISE NOTICE 'HANDLING REPRESENTATION FUNKTION FOR STREAK %', quote_literal(streak_id);
+	EXECUTE 'UPDATE ' || game_id || '.member_streak_badge SET active=false WHERE streak_id = '|| quote_literal(streak_id) ||' AND member_id = '|| quote_literal(member_id) ||' AND active=true;';
+	EXECUTE 'UPDATE ' || game_id || '.member_streak_badge SET active=true WHERE streak_id = '|| quote_literal(streak_id) ||' AND member_id = '|| quote_literal(member_id) ||' AND streak_level= (SELECT MAX(streak_level) FROM ' ||game_id||'.member_streak_badge WHERE streak_id='||quote_literal(streak_id)||' AND member_id= '||quote_literal(member_id)||' AND streak_level <= '||st_level||');';
+	RAISE NOTICE 'HANDELED REPRESENTATION ';
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -816,42 +882,46 @@ comp_result integer;
 ach record;
 point_obtained integer;
 achievement_id character varying(20);
-game_id character varying(20);
 BEGIN
-
-	-- insert quest into notification table
+		RAISE NOTICE 'HANDLING REWARD FUNKTION FOR STREAK %', quote_literal(streak_id);
+		RAISE NOTICE 'GAME IS %', quote_literal(game_id);
+		
 		EXECUTE 'DROP TABLE IF EXISTS '|| game_id ||'.temp;';
 		EXECUTE 'CREATE TABLE '|| game_id ||'.temp (type '|| game_id ||'.notification_type);';
 		EXECUTE 'INSERT INTO '|| game_id ||'.temp VALUES(''STREAK'');';
+		
 		EXECUTE 'INSERT INTO '|| game_id ||'.notification (member_id, type_id, use_notification, message, type)
 			WITH res as (SELECT member_id, '|| game_id ||'.streak.streak_id,use_notification,notif_message FROM '|| game_id ||'.member_streak INNER JOIN '|| game_id ||'.streak
-			ON ('|| game_id ||'.member_streak.streak_id = '|| game_id ||'.streak.streak_id) WHERE member_id = '|| member_id ||' AND '|| game_id ||'.member_streak.streak_id = '|| streak_id ||') SELECT * FROM res CROSS JOIN '|| game_id ||'.temp ;';
+			ON ('|| game_id ||'.member_streak.streak_id = '|| game_id ||'.streak.streak_id) WHERE member_id = '|| quote_literal(member_id) ||' AND '|| game_id ||'.member_streak.streak_id = '|| quote_literal(streak_id) ||') SELECT * FROM res CROSS JOIN '|| game_id ||'.temp ;';
 		
 		-- Get the achievement, which have not been unlocked yet, belonging to to the member of the updated streak
+		
 		FOR ach IN
-			EXECUTE 'SELECT achievement_id FROM '|| game_id ||'.member_streak_achievement WHERE streak_id = '|| streak_id|| ' AND member_id = ' || member_id || ' AND unlocked=false AND streak_level <= ' ||st_level||
-
-		LOOP
+			EXECUTE 'SELECT achievement_id FROM '|| game_id ||'.member_streak_achievement WHERE streak_id = '|| quote_literal(streak_id) || ' AND member_id = ' || quote_literal(member_id) || ' AND unlocked=false AND streak_level <= ' || st_level
+		
+		loop
+			RAISE NOTICE 'CURRENT ACHIEVEMENT IS  %', quote_literal(ach.achievement_id);
 			-- insert to member_achievement
-			EXECUTE 'INSERT INTO '|| game_id ||'.member_achievement (member_id, achievement_id) VALUES ('|| member_id ||','|| quote_literal(ach.achievement_id) ||');';
+			EXECUTE 'INSERT INTO '|| game_id ||'.member_achievement (member_id, achievement_id) VALUES ('|| quote_literal(member_id) ||','|| quote_literal(ach.achievement_id) ||');';
 			-- insert to member_badge
 			EXECUTE 'INSERT INTO '|| game_id ||'.member_badge (member_id, badge_id) SELECT member_id,badge_id FROM '|| game_id ||'.member_achievement,'|| game_id ||'.achievement WHERE '|| game_id ||'.achievement.achievement_id = '|| quote_literal(ach.achievement_id) ||' AND '|| game_id ||'.achievement.badge_id IS NOT NULL
-			AND '|| game_id ||'.member_achievement.member_id = '|| member_id ||' AND '|| game_id ||'.member_achievement.achievement_id = '|| quote_literal(ach.achievement_id) ||';';
+			AND '|| game_id ||'.member_achievement.member_id = '|| quote_literal(member_id) ||' AND '|| game_id ||'.member_achievement.achievement_id = '|| quote_literal(ach.achievement_id) ||';';
 			-- get point obtained
 			EXECUTE 'SELECT point_value FROM '|| game_id ||'.achievement WHERE achievement_id = '|| quote_literal(ach.achievement_id) ||';' INTO point_obtained;
 			-- get current point value
-			EXECUTE 'SELECT point_value FROM '|| game_id ||'.member_point WHERE member_id = '|| member_id ||';' INTO current_point;
+			EXECUTE 'SELECT point_value FROM '|| game_id ||'.member_point WHERE member_id = '|| quote_literal(member_id) ||'' INTO current_point;
 			-- check point if less than 0
 			comp_result = current_point + point_obtained;
 			IF comp_result < 0 THEN
-				EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value = 0 WHERE member_id = '||member_id ||';';
+				EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value = 0 WHERE member_id = '||quote_literal(member_id) ||';';
     		ELSE
 			-- add point
-				EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value =  '|| comp_result ||' WHERE member_id = '|| member_id ||';';
+				EXECUTE 'UPDATE '|| game_id ||'.member_point SET point_value =  '|| comp_result ||' WHERE member_id = '|| quote_literal(member_id) ||';';
 			END IF;
 
 		END LOOP;
-	EXECUTE 'UPDATE ' || game_id || '.member_streak_achievement SET unlocked=true WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||' AND streak_level <= '|| st_level||';';
+	EXECUTE 'UPDATE ' || game_id || '.member_streak_achievement SET unlocked=true WHERE streak_id = '|| quote_literal(streak_id)  ||' AND member_id = '|| quote_literal(member_id) ||' AND streak_level <= '|| st_level||';';
+	RAISE NOTICE 'REWARDS UPDATED FOR STREAK %', quote_literal(streak_id);
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -859,8 +929,10 @@ LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION handle_streak_reset(game_id text, streak_id text, member_id text) RETURNS void AS
 $BODY$
-BEGIN
-	EXECUTE 'UPDATE ' || game_id || '.member_streak_action SET completed=false WHERE streak_id = '|| streak_id ||' AND member_id = '|| member_id ||';';
+begin
+	RAISE NOTICE 'HANDLING RESET FUNKTION FOR STREAK %', quote_literal(streak_id);
+	EXECUTE 'UPDATE ' || game_id || '.member_streak_action SET completed=false WHERE streak_id = '|| quote_literal(streak_id) ||' AND member_id = '|| quote_literal(member_id) ||';';
+	RAISE NOTICE 'HANDLED RESET';
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
@@ -872,34 +944,43 @@ $BODY$
 DECLARE
 game_id character varying(20);
 streaks record;
+curr integer;
+high integer;
 BEGIN
 	game_id = TG_TABLE_SCHEMA;
 
-	RAISE NOTICE 'ACTION TRIGGERED';
+	RAISE NOTICE 'MEMBER STREAK STATUS UPDATE DETECTED';
 	-- get all streaks, that have changed
 	FOR streaks IN
-	    EXECUTE 'SELECET streak_id FROM ' || game_id || '.member_streak WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';'
+	    EXECUTE 'SELECT streak_id, status FROM ' || game_id || '.member_streak WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';'
 		
 	-- Loop over all these streaks and execute funtions based on new state
-	LOOP
-		IF || quote_literal(streak.streak_id) ||'.status' = 'PAUSED' THEN
-		    EXECUTE PROCEDURE 'handle_dates('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+	loop
+	RAISE NOTICE 'CURRENT STREAK IS %', quote_literal(streaks.streak_id);
+	RAISE NOTICE 'CURRENT STREAK STATUS IS %', quote_literal(streaks.status);
+		IF  streaks.status = 'PAUSED' then
+		    EXECUTE 'SELECT handle_dates('||quote_literal(game_id)||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
 			
-		ELSIF || quote_literal(streak.streak_id) ||'.status' = 'UPDATED' THEN
-		    EXECUTE PROCEDURE 'handle_dates('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
-			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET highest_streak_level = GREATEST(current_streak_level, highest_streak_level), current_streak_level = current_streak_level + 1 WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';';
-			EXECUTE PROCEDURE 'handle_streak_reset('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
-			EXECUTE PROCEDURE 'handle_representation('||game_id||', '|| quote_literal(NEW.streak_id) ||', '|| quote_literal(NEW.member_id) ||' , '|| quote_literal(NEW.current_streak_level) ||');';
-			EXECUTE PROCEDURE 'handle_rewards(' ||game_id||', '|| quote_literal(NEW.streak_id) ||',' || quote_literal(NEW.member_id) || ',' || quote_literal(NEW.current_streak_level) ||');';
+		ELSIF  streaks.status = 'UPDATED' then
+			EXECUTE 'SELECT current_streak_level, highest_streak_level FROM ' || game_id || '.member_streak WHERE streak_id = ' || quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||'' into curr, high;
+		   	curr:=curr + 1;
+		   	high:=GREATEST(curr,high);
+			EXECUTE 'SELECT handle_streak_reset('||quote_literal(game_id)||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+		    EXECUTE 'SELECT handle_dates('||quote_literal(game_id)||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET highest_streak_level = ' || high ||' , current_streak_level = ' || curr ||' WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';';
+			EXECUTE 'SELECT handle_representation('||quote_literal(game_id)||', '|| quote_literal(NEW.streak_id) ||', '|| quote_literal(NEW.member_id) ||' , '|| quote_literal(curr) ||');';
+			EXECUTE 'SELECT handle_rewards(' ||quote_literal(game_id)||', '|| quote_literal(NEW.streak_id) ||',' || quote_literal(NEW.member_id) || ',' || quote_literal(curr) ||');';
 			
-		ELSIF || quote_literal(streak.streak_id) ||'.status' = 'FAILED' THEN
-		    EXECUTE PROCEDURE 'handle_dates('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
-			EXECUTE PROCEDURE 'handle_streak_reset('||game_id||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
-			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET current_streak_level=1 WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';';
-			EXECUTE PROCEDURE 'handle_representation('||game_id||', '|| quote_literal(NEW.streak_id) ||', '|| quote_literal(NEW.member_id) ||' , '|| quote_literal(NEW.current_streak_level) ||');';
+		ELSIF  streaks.status = 'FAILED' then
+			EXECUTE 'SELECT current_streak_level FROM ' || game_id || '.member_streak WHERE streak_id = ' || quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||'' into curr;
+			curr:=1;
+			EXECUTE 'SELECT handle_streak_reset('||quote_literal(game_id)||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+		    EXECUTE 'SELECT handle_dates('||quote_literal(game_id)||', '|| quote_literal(NEW.streak_id) || ', ' || quote_literal(NEW.member_id) ||');';
+			EXECUTE 'UPDATE ' || game_id || '.member_streak  SET current_streak_level= '|| curr || ' WHERE streak_id = '|| quote_literal(NEW.streak_id) ||' AND member_id = '|| quote_literal(NEW.member_id) ||';';
+			EXECUTE 'SELECT handle_representation('||quote_literal(game_id)||', '|| quote_literal(NEW.streak_id) ||', '|| quote_literal(NEW.member_id) ||' , '|| quote_literal(curr)||');';
 			
-		ELSIF || quote_literal(streak.streak_id) ||'.status' = 'ACTIVE' THEN
-		    -- do nothing
+		ELSIF  streaks.status = 'ACTIVE' then
+			RAISE NOTICE 'NOTHING TO BE DONE';
 		END IF;
 	END LOOP;
 	
@@ -954,10 +1035,12 @@ LANGUAGE plpgsql VOLATILE;
 
 -- FUNK
 -- function to initialize table member_streak_badge
+-- TODO
 CREATE OR REPLACE FUNCTION update_streak_badge_constraint_function() RETURNS trigger AS
 $BODY$
 DECLARE
 game_id character varying(20);
+st_level integer;
 BEGIN
 	game_id = TG_TABLE_SCHEMA;
 
@@ -965,6 +1048,10 @@ BEGIN
 	EXECUTE 'INSERT INTO '|| game_id ||'.member_streak_badge
 	WITH newtab as (SELECT * FROM '|| game_id ||'.streak_badge CROSS JOIN '|| game_id ||'.member)
 	SELECT member_id, streak_id, badge_id, streak_level FROM newtab WHERE streak_id='|| quote_literal(NEW.streak_id) ||' AND badge_id='|| quote_literal(NEW.badge_id) ||' ORDER BY member_id ;';
+	
+	EXECUTE 'SELECT streak_level FROM ' ||game_id||'.streak WHERE streak_id = '||quote_literal(NEW.streak_id) ||'' INTO st_level;
+	
+	EXECUTE 'UPDATE ' ||game_id||'.member_streak_badge SET active=true WHERE streak_id='|| quote_literal(NEW.streak_id) ||' AND streak_level <= ' ||st_level||';';
 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
@@ -989,6 +1076,7 @@ CREATE OR REPLACE FUNCTION update_streak_achievement_constraint_function() RETUR
 $BODY$
 DECLARE
 game_id character varying(20);
+st_level integer;
 BEGIN
 	game_id = TG_TABLE_SCHEMA;
 
@@ -996,6 +1084,10 @@ BEGIN
 	EXECUTE 'INSERT INTO '|| game_id ||'.member_streak_achievement
 	WITH newtab as (SELECT * FROM '|| game_id ||'.streak_achievement CROSS JOIN '|| game_id ||'.member)
 	SELECT member_id, streak_id, achievement_id, streak_level FROM newtab WHERE streak_id='|| quote_literal(NEW.streak_id) ||' AND achievement_id='|| quote_literal(NEW.achievement_id) ||' ORDER BY member_id ;';
+	
+	EXECUTE 'SELECT streak_level FROM ' ||game_id||'.streak WHERE streak_id = '||quote_literal(NEW.streak_id) ||'' INTO st_level;
+	
+	EXECUTE 'UPDATE ' ||game_id||'.member_streak_achievement SET unlocked=true WHERE streak_id='|| quote_literal(NEW.streak_id) ||' AND streak_level <= ' ||st_level||';';
 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
@@ -1028,7 +1120,7 @@ BEGIN
     -- initialize table member_streak ::after new streak was inserted
  	EXECUTE 'INSERT INTO '|| game_id ||'.member_streak (member_id, streak_id, status, locked_date, due_date, current_streak_level, highest_streak_level)
 	WITH tab1 as (SELECT * FROM '|| game_id ||'.member CROSS JOIN '|| game_id ||'.streak WHERE streak_id='|| quote_literal(NEW.streak_id) ||')
-	SELECT  member_id, streak_id, status, locked_date, due_date, streak_level, streak_level FROM tab1;';
+	SELECT  member_id, streak_id, status, locked_date, due_date, streak_level, streak_level FROM tab1 ORDER BY member_id;';
 
 	RETURN NULL;  -- result is ignored since this is an AFTER trigger
 END;
@@ -1362,11 +1454,32 @@ BEGIN
 	INSERT INTO '|| schema ||'.badge VALUES (''badge4'',''Badge 4'',''The badge number 4'',false,''badge4messagethisis'');
 	INSERT INTO '|| schema ||'.badge VALUES (''badge5'',''Badge 5'',''The badge number 5'',false,''badge5messagethisis'');
 
-	INSERT INTO '|| schema ||'.achievement VALUES (''achievement1'',''achievement 1'',''The achievement number 1'',1,''badge1'',false,''achievement1messagethisis'');
-	INSERT INTO '|| schema ||'.achievement VALUES (''achievement2'',''achievement 2'',''The achievement number 2'',2,''badge2'',false,''achievement2messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge1'',''stBadge 1'',''Streak Level 1'',true,''badge1messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge2'',''stBadge 2'',''Streak Level 2'',true,''badge2messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge3'',''stBadge 3'',''Streak Level 3'',true,''badge3messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge4'',''stBadge 4'',''Streak Level 4'',true,''badge4messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge5'',''stBadge 5'',''Streak Level 5'',true,''badge5messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge6'',''stBadge 6'',''Streak Level 6'',true,''badge6messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge7'',''stBadge 7'',''Streak Level 7'',true,''badge7messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge8'',''stBadge 8'',''Streak Level 8'',true,''badge8messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge9'',''stBadge 9'',''Streak Level 9'',true,''badge9messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge10'',''New Comer'',''Streak Level 10'',true,''badge5messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge11'',''Recruit'',''BadgeAch1'',true,''badge6messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge12'',''Expert'',''BadgeAch2'',true,''badge7messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge13'',''Infinite'',''BadgeAch3'',true,''badge8messagethisis'');
+	INSERT INTO '|| schema ||'.badge VALUES (''stbadge14'',''RandomBadge1'',''BadgeAch4'',true,''badge9messagethisis'');
+
+	INSERT INTO '|| schema ||'.achievement VALUES (''achievement1'',''achievement 1'',''The achievement number 1'',1,''badge1'',true,''achievement1messagethisis'');
+	INSERT INTO '|| schema ||'.achievement VALUES (''achievement2'',''achievement 2'',''The achievement number 2'',2,''badge2'',true,''achievement2messagethisis'');
 	INSERT INTO '|| schema ||'.achievement VALUES (''achievement3'',''achievement 3'',''The achievement number 3'',3,''badge3'',true,''achievement3messagethisis'');
 	INSERT INTO '|| schema ||'.achievement VALUES (''achievement4'',''achievement 4'',''The achievement number 4'',4,''badge4'',true,''achievement4messagethisis'');
 	INSERT INTO '|| schema ||'.achievement VALUES (''achievement5'',''achievement 5'',''The achievement number 5'',5,''badge5'',true,''achievement5messagethisis'');
+
+	INSERT INTO '|| schema ||'.achievement VALUES (''stachievement1'',''Hop on'',''Take part in beta testing'',1,''stbadge10'',true,''Welcome to Gamification Moodle'');
+	INSERT INTO '|| schema ||'.achievement VALUES (''stachievement2'',''Start the great journey'',''Increase your streak to level 2'',2,''stbadge11'',true,''Congratulation'');
+	INSERT INTO '|| schema ||'.achievement VALUES (''stachievement3'',''Forrunner'',''Get to streak level 5'',3,''stbadge12'',true,''Idol for all of us'');
+	INSERT INTO '|| schema ||'.achievement VALUES (''stachievement4'',''Some Hoola-Hoop'',''Our lucky number. Hidden Achievement'',4,''stbadge13'',true,''I am a momnument to all your sins'');
+	INSERT INTO '|| schema ||'.achievement VALUES (''stachievement5'',''astchievement 5'',''The achievement number 5'',5,''stbadge14'',true,''achievement5messagethisis'');
 
 	INSERT INTO '|| schema ||'.level VALUES (1,''level 1'', 1,true,''level1messagethisis'');
 	INSERT INTO '|| schema ||'.level VALUES (2,''level 2'', 2,false,''level2messagethisis'');
@@ -1379,7 +1492,12 @@ BEGIN
 	INSERT INTO '|| schema ||'.action VALUES (''action3'',''action3'',''The action number 3'',3,true,''action3messagethisis'');
 	INSERT INTO '|| schema ||'.action VALUES (''action4'',''action4'',''The action number 4'',4,true,''action4messagethisis'');
 	INSERT INTO '|| schema ||'.action VALUES (''action5'',''action5'',''The action number 5'',5,false,''action5messagethisis'');
-	INSERT INTO '|| schema ||'.action VALUES (''actionquestid'',''actionquestid'',''The action quest id'',5,false,''the action quest id notification'');
+	
+	INSERT INTO '|| schema ||'.action VALUES (''staction1'',''staction1'',''Action for submitting status reports'',1,true,''action1messagethisis'');
+	INSERT INTO '|| schema ||'.action VALUES (''staction2'',''staction2'',''The action number 2'',2,true,''action2messagethisis'');
+	INSERT INTO '|| schema ||'.action VALUES (''staction3'',''staction3'',''The action number 3'',3,true,''action3messagethisis'');
+	INSERT INTO '|| schema ||'.action VALUES (''staction4'',''staction4'',''The action number 4'',4,true,''action4messagethisis'');
+	INSERT INTO '|| schema ||'.action VALUES (''staction5'',''staction5'',''The action number 5'',5,true,''action5messagethisis'');
 
 	INSERT INTO ' || schema || '.quest VALUES (''quest1'',''Quest 1'',''The quest number 1'',''COMPLETED'',''achievement1'',false,NULL,false,5,true,''quest1messagethisis'');
 	INSERT INTO ' || schema || '.quest VALUES (''quest2'',''Quest 2'',''The quest number 2'',''HIDDEN'',''achievement2'',true,''quest1'',true,10,true,''quest2messagethisis'');
@@ -1402,19 +1520,24 @@ BEGIN
 	INSERT INTO ' || schema || '.quest_action VALUES (''quest5'',''action4'',1);
 	INSERT INTO ' || schema || '.quest_action VALUES (''quest5'',''action5'',1);
 	
-	INSERT INTO ' || schema || '.streak VALUES (''streak1'',''Streak 1'',''Streak to Test'','' 1 '', ''ACTIVE'', ''10'', ''2021-12-18 12:00:00.000'', ''2021-12-20 12:00:00.000'', ''1 day'', ''true'', ''Streak Message'');
-	INSERT INTO ' || schema || '.streak_action VALUES (''streak1'',''action4'');
-	INSERT INTO ' || schema || '.streak_action VALUES (''streak1'',''action5'');
-	
+	INSERT INTO ' || schema || '.streak VALUES (''streak1'',''Streak 1'',''Streak to Test'','' 1 '', ''ACTIVE'', ''1'', ''2021-12-13 12:00:00.000'', ''2021-12-13 12:03:00.000'', ''3 minutes'', ''true'', ''Streak Message'');
+	INSERT INTO ' || schema || '.streak_action VALUES (''streak1'',''staction1'');
 
-	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''1'' ,''badge1'');
-	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''3'' ,''badge2'');
-	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''5'' ,''badge3'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''1'' ,''stbadge1'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''2'' ,''stbadge2'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''3'' ,''stbadge3'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''4'' ,''stbadge4'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''5'' ,''stbadge5'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''6'' ,''stbadge6'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''7'' ,''stbadge7'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''8'' ,''stbadge8'');
+	INSERT INTO ' || schema || '.streak_badge VALUES (''streak1'', ''9'' ,''stbadge9'');
 
-	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''1'' ,''achievement1'');
-	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''3'' ,''achievement3'');
-	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''5'' ,''achievement5'');';
-	
+	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''1'' ,''stachievement1'');
+	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''2'' ,''stachievement2'');
+	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''5'' ,''stachievement3'');
+	INSERT INTO ' || schema || '.streak_achievement VALUES (''streak1'', ''7'' ,''stachievement4'');
+	';
 	
 	EXECUTE 'SELECT init_member_to_game(''user1'','|| quote_literal(schema) ||');';
 	EXECUTE 'SELECT init_member_to_game(''user2'','|| quote_literal(schema) ||');';
