@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function configure_function {
 	echo "[Configure]"
    	echo "Reading config"
