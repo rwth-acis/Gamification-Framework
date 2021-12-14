@@ -48,8 +48,8 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Member Service
@@ -107,7 +107,7 @@ public class GamificationVisualizationService extends RESTService {
 		JSONObject objResponse = new JSONObject();
 		objResponse.put("message", "You are not authorized");
 		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-		return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toJSONString())
+		return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED).entity(objResponse.toString())
 				.type(MediaType.APPLICATION_JSON).build();
 
 	}
@@ -151,7 +151,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -159,7 +159,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -167,13 +167,13 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			// Add Member to Game
 			Integer memberPoint = visualizationAccess.getMemberPoint(conn, gameId, memberId);
 			objResponse.put("message", memberPoint);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (SQLException e) {
 
@@ -182,7 +182,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -230,7 +230,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -238,7 +238,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -246,7 +246,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 
@@ -267,7 +267,7 @@ public class GamificationVisualizationService extends RESTService {
 			JSONObject obj = visualizationAccess.getMemberStatus(conn, gameId, memberId);
 			obj.put("pointUnitName", pointUnitName);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_33, "" + randomLong, true);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(obj.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_OK).entity(obj.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (SQLException e) {
 
@@ -276,7 +276,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -325,13 +325,13 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -339,7 +339,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			// Add Member to Game
@@ -357,7 +357,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -366,7 +366,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -418,7 +418,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -426,7 +426,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -434,7 +434,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			// Add Member to Game
@@ -448,7 +448,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Quest satus is not recognized");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -464,7 +464,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -473,14 +473,14 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.info("IOException >> " + e.getMessage());
 			objResponse.put("message", "Error when getting quests ");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -527,7 +527,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -535,7 +535,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -543,11 +543,11 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			JSONObject outObj = visualizationAccess.getMemberQuestProgress(conn, gameId, memberId, questId);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(outObj.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_OK).entity(outObj.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (SQLException e) {
 
@@ -556,7 +556,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -565,14 +565,14 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.info("IOException >> " + e.getMessage());
 			objResponse.put("message", "Error when getting quests ");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -622,7 +622,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -630,7 +630,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -638,7 +638,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			ach = visualizationAccess.getMemberAchievements(conn, gameId, memberId);
@@ -656,7 +656,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -665,7 +665,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -711,7 +711,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -719,7 +719,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -727,7 +727,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberHasBadge(conn, gameId, memberId, badgeId)) {
@@ -735,7 +735,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Error. member " + memberId + " does not have a badge " + badgeId + ".");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			// RMI call with parameters
@@ -754,14 +754,14 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Error cannot retrieve file " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			}
 			logger.info("Error cannot retrieve file ");
 			objResponse.put("message", "Error cannot retrieve file ");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		} catch (SQLException e) {
@@ -769,7 +769,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("Database error >>  " + e.getMessage());
 			objResponse.put("message", "Database error " + e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		}
@@ -816,7 +816,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -824,7 +824,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -832,13 +832,13 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberHasBadge(conn, gameId, memberId, badgeId)) {
 				logger.info("Error. member " + memberId + " does not have a badge " + badgeId + ".");
 				objResponse.put("message", "Error. member " + memberId + " does not have a badge " + badgeId + ".");
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			// RMI call with parameters
@@ -857,7 +857,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot find badge with " + badgeId);
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			} catch (Exception e) {
@@ -866,7 +866,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot find badge with " + badgeId + ". " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			}
@@ -875,7 +875,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("Database Error ");
 			objResponse.put("message", "Database Error ");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		}
@@ -923,7 +923,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -931,7 +931,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -939,7 +939,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			// RMI call with parameters
@@ -956,7 +956,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot find badge with " + questId);
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			} catch (Exception e) {
@@ -965,7 +965,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot find badge with " + questId + ". " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			}
@@ -974,7 +974,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		}
@@ -1023,7 +1023,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -1031,7 +1031,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -1039,7 +1039,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberHasAchievement(conn, gameId, memberId, achievementId)) {
@@ -1048,7 +1048,7 @@ public class GamificationVisualizationService extends RESTService {
 						"Member " + memberId + " does not have an achievement " + achievementId + ".");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			// RMI call with parameters
@@ -1069,7 +1069,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot find achievement with " + achievementId);
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			} catch (Exception e) {
@@ -1080,7 +1080,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot find achievement with " + achievementId + ". " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			}
@@ -1090,7 +1090,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		}
@@ -1143,7 +1143,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -1151,7 +1151,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -1159,7 +1159,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 
@@ -1183,7 +1183,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot trigger action " + actionId);
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			} catch (Exception e) {
@@ -1192,7 +1192,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot trigger action " + actionId + ". " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			}
@@ -1202,7 +1202,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		}
@@ -1257,7 +1257,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -1265,7 +1265,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -1273,7 +1273,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 
@@ -1295,9 +1295,9 @@ public class GamificationVisualizationService extends RESTService {
 			JSONArray arrResult = visualizationAccess.getMemberLocalLeaderboard(conn, gameId, offset, windowSize,
 					searchPhrase);
 
-			for (int i = 0; i < arrResult.size(); i++) {
+			for (int i = 0; i < arrResult.length() ; i++) {
 				JSONObject object = (JSONObject) arrResult.get(i);
-				object.replace("pointValue", object.get("pointValue") + " " + pointUnitName);
+				object.put("pointValue", object.get("pointValue") + " " + pointUnitName);
 			}
 
 			objResponse.put("current", currentPage);
@@ -1305,7 +1305,7 @@ public class GamificationVisualizationService extends RESTService {
 			objResponse.put("rows", arrResult);
 			objResponse.put("total", totalNum);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_35, "" + randomLong, true);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		} catch (SQLException e) {
@@ -1313,7 +1313,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -1365,7 +1365,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -1373,7 +1373,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -1381,7 +1381,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 
@@ -1395,7 +1395,7 @@ public class GamificationVisualizationService extends RESTService {
 			objResponse.put("rows", arrResult);
 			objResponse.put("total", totalNum);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_37, "" + randomLong, true);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		} catch (SQLException e) {
@@ -1403,7 +1403,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		}
@@ -1454,7 +1454,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -1462,7 +1462,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -1470,13 +1470,13 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 
 			JSONArray arrResult = visualizationAccess.getMemberNotification(conn, gameId, memberId);
 
-			return Response.status(HttpURLConnection.HTTP_OK).entity(arrResult.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_OK).entity(arrResult.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		} catch (SQLException e) {
@@ -1484,7 +1484,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		}
@@ -1519,7 +1519,6 @@ public class GamificationVisualizationService extends RESTService {
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
 
-		List<StreakModel> streaks = new ArrayList<StreakModel>();
 		Agent agent = Context.getCurrent().getMainAgent();
 		if (agent instanceof AnonymousAgent) {
 			return unauthorizedMessage();
@@ -1534,13 +1533,13 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -1548,23 +1547,19 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-			// Add Member to Game
-			streaks = visualizationAccess.getObtainedStreaks(conn, gameId, memberId);
-
-			ObjectMapper objectMapper = new ObjectMapper();
-			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-			String response = objectMapper.writeValueAsString(streaks);
+			
+			JSONArray arr = visualizationAccess.getStreakList(conn, gameId, memberId);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_39, "" + randomLong, true);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(response).type(MediaType.APPLICATION_JSON).build();
+			return Response.status(HttpURLConnection.HTTP_OK).entity(arr.toString()).type(MediaType.APPLICATION_JSON).build();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (JsonProcessingException e) {
 			
@@ -1572,14 +1567,14 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.info("IOException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -1627,7 +1622,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -1635,7 +1630,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -1643,7 +1638,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberHasStreak(conn, gameId, memberId, streakId)) {
@@ -1652,7 +1647,7 @@ public class GamificationVisualizationService extends RESTService {
 						"Member " + memberId + " does not have an streak " + streakId + ".");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			// RMI call with parameters
@@ -1673,7 +1668,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot find streak with " + streakId);
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			} catch (Exception e) {
@@ -1684,7 +1679,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Cannot find streak with " + streakId + ". " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 
 			}
@@ -1694,7 +1689,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("DB Error >> " + e.getMessage());
 			objResponse.put("message", "DB Error. " + e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 
 		}
@@ -1744,7 +1739,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Game not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
@@ -1752,7 +1747,7 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member ID not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
@@ -1760,11 +1755,11 @@ public class GamificationVisualizationService extends RESTService {
 				objResponse.put("message", "Member is not registered in Game");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString())
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			JSONObject outObj = visualizationAccess.getMemberStreakProgress(conn, gameId, memberId, streakId);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(outObj.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_OK).entity(outObj.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (SQLException e) {
 
@@ -1773,7 +1768,7 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Database Error");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (JsonProcessingException e) {
 			// Object mapper
@@ -1782,14 +1777,14 @@ public class GamificationVisualizationService extends RESTService {
 			logger.info("JsonProcessingException >> " + e.getMessage());
 			objResponse.put("message", "Failed to parse JSON internally");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.info("IOException >> " + e.getMessage());
 			objResponse.put("message", "Error when getting streaks ");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString())
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
 		}
 		// always close connections
@@ -1801,4 +1796,192 @@ public class GamificationVisualizationService extends RESTService {
 			}
 		}
 	}
+	
+	/**
+	 * Get accumulative information of a streak for a member, e.g  retruns all achievement info instead of achievementId
+	 * 
+	 * @param gameId   gameId
+	 * @param memberId member id
+	 * @param streakId  streak id
+	 * @return HTTP Response with the returnString
+	 */
+	@GET
+	@Path("/streaks/accumulative/{gameId}/{memberId}/{streakId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Game Selected"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Game not found"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad Request"), })
+	@ApiOperation(value = "", notes = "Select an Game")
+	public Response getTransitiveStreakProgress(
+			@ApiParam(value = "Game ID", required = true) @PathParam("gameId") String gameId,
+			@ApiParam(value = "Member ID", required = true) @PathParam("memberId") String memberId,
+			@ApiParam(value = "Streak ID", required = true) @PathParam("streakId") String streakId) {
+
+		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+
+		Agent agent = Context.getCurrent().getMainAgent();
+		if (agent instanceof AnonymousAgent) {
+			return unauthorizedMessage();
+		}
+		try {
+			conn = dbm.getConnection();
+			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!visualizationAccess.isMemberHasStreak(conn, gameId, memberId, streakId)) {
+				logger.info("Error. member " + memberId + " does not have a streak " + streakId + ".");
+				objResponse.put("message",
+						"Member " + memberId + " does not have an streak " + streakId + ".");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			JSONObject outObj = visualizationAccess.getAccumulativeStreakData(conn, gameId, memberId, streakId);
+			return Response.status(HttpURLConnection.HTTP_OK).entity(outObj.toString())
+					.type(MediaType.APPLICATION_JSON).build();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.info("SQLException >> " + e.getMessage());
+			objResponse.put("message", "Database Error");
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+					.type(MediaType.APPLICATION_JSON).build();
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.info("IOException >> " + e.getMessage());
+			objResponse.put("message", "Error when getting streaks ");
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+					.type(MediaType.APPLICATION_JSON).build();
+		}
+		// always close connections
+		finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				logger.printStackTrace(e);
+			}
+		}
+	}
+	
+	
+	@POST
+	@Path("/pause/{gameId}/{memberId}/{streakId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a streak"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getStreakWithId", notes = "Returns streak detail with specific ID", response = StreakModel.class)
+	public Response pauseUserStreak(
+			@ApiParam(value = "Game ID") @PathParam("gameId") String gameId,
+			@ApiParam(value = "Member ID") @PathParam("memberId") String memberId,
+			@ApiParam(value = "Streak ID") @PathParam("streakId") String streakId) {
+
+		// Request log
+		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99,
+				"POST " + "gamification/streaks/pause/" + gameId + "/" + memberId+ "/" + streakId, true);
+		long randomLong = new Random().nextLong(); // To be able to match
+
+		Connection conn = null;
+
+		JSONObject objResponse = new JSONObject();
+		Agent agent = Context.getCurrent().getMainAgent();
+		if (agent instanceof AnonymousAgent) {
+			return unauthorizedMessage();
+		}
+		try {
+			conn = dbm.getConnection();
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_16, "" + randomLong, true);
+
+			try {
+				if (!visualizationAccess.isGameIdExist(conn, gameId)) {
+					objResponse.put("message", "Cannot get streak. Game not found");
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+							(String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+							.type(MediaType.APPLICATION_JSON).build();
+				}
+				if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
+					logger.info("Member ID not found >> ");
+					objResponse.put("message", "Member ID not found");
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+							(String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+							.type(MediaType.APPLICATION_JSON).build();
+				}
+				if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
+					logger.info("Member is not registered in Game >> ");
+					objResponse.put("message", "Member is not registered in Game");
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+							(String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+							.type(MediaType.APPLICATION_JSON).build();
+				}
+				if (!visualizationAccess.isMemberHasStreak(conn, gameId, memberId, streakId)) {
+					logger.info("Error. member " + memberId + " does not have a streak " + streakId + ".");
+					objResponse.put("message",
+							"Member " + memberId + " does not have an streak " + streakId + ".");
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+							(String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+							.type(MediaType.APPLICATION_JSON).build();
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				objResponse.put("message",
+						"Cannot get streak. Cannot check whether game ID exist or not. Database error. "
+								+ e1.getMessage());
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			visualizationAccess.pauseStreak(conn, gameId, memberId, streakId);
+			return Response.status(HttpURLConnection.HTTP_OK).entity("Streak pasued successfully").type(MediaType.APPLICATION_JSON)
+					.build();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			objResponse.put("message", "Cannot get streak. DB Error. " + e.getMessage());
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+					.type(MediaType.APPLICATION_JSON).build();
+
+		}
+		// always close connections
+		finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				logger.printStackTrace(e);
+			}
+		}
+
+	}
+
 }

@@ -408,7 +408,6 @@ public class GamificationStreakService extends RESTService {
 				logger.printStackTrace(e);
 			}
 		}
-
 	}
 
 	/**

@@ -2,22 +2,24 @@ package i5.las2peer.services.gamificationVisualizationService.database;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.postgresql.util.PGInterval;
 
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel.QuestStatus;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
+import i5.las2peer.services.gamificationVisualizationService.database.StreakModel.StreakSatstus;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.time.Period;
 
@@ -179,8 +181,8 @@ public class VisualizationDAO {
 				resObj.put("memberLevel", currentLevel);
 				resObj.put("memberPoint", memberPoint);
 				resObj.put("memberLevelName", currentLevelName);
-				resObj.put("nextLevel", null);
-				resObj.put("nextLevelPoint", null);
+				resObj.put("nextLevel", "");
+				resObj.put("nextLevelPoint", "");
 				resObj.put("nextLevelName", "");
 				resObj.put("progress", 100);
 			}
@@ -349,10 +351,10 @@ public class VisualizationDAO {
 				truecount = truecount + totalTimesPerformed;
 			}
 			totalcount = totalcount + rs.getInt("times");
-			resArr.add(resObj);
+			resArr.put(resObj);
 		}
 		
-		System.out.println("arr " + resArr.toJSONString());
+		System.out.println("arr " + resArr.toString());
 		outObj.put("actionArray", resArr);
 		float progress = (float) (((float)truecount/(float)totalcount) * 100.0);
 		outObj.put("progress", Math.round(progress));
@@ -473,7 +475,7 @@ public class VisualizationDAO {
 			obj.put("rank", rs.getInt("row_number"));
 			obj.put("memberId", rs.getString("member_id"));
 			obj.put("pointValue", rs.getInt("point_value"));
-			arr.add(obj);
+			arr.put(obj);
 		}
 		
 		return arr;
@@ -511,7 +513,7 @@ public class VisualizationDAO {
 			obj.put("rank", rs.getInt("row_number"));
 			obj.put("memberId", rs.getString("member_id"));
 			obj.put("pointValue", rs.getInt("point_value"));
-			arr.add(obj);
+			arr.put(obj);
 		}
 		
 		return arr;
@@ -540,7 +542,7 @@ public class VisualizationDAO {
 				resObj.put("typeId", rs.getString("type_id"));
 				resObj.put("message", rs.getString("message"));
 				resObj.put("otherMessage", rs.getString("other_message"));
-				resArray.add(resObj);
+				resArray.put(resObj);
 			}
 		}
 		
@@ -577,65 +579,26 @@ public class VisualizationDAO {
 	 * @throws SQLException SQLException
 	 * @throws IOException IOException
 	 */
-	public List<StreakModel> getObtainedStreaks(Connection conn, String gameId, String memberId) throws SQLException, IOException{
-		stmt =  conn.prepareStatement("WITH stk AS (SELECT streak_id FROM " + gameId +".member_streak WHERE member_id = ?) SELECT " + gameId + ".streak.streak_id, name, description, use_notification, notif_message, streak_level, status, locked_date, due_date, period, point_th FROM " +gameId+ ".streak INNER JOIN stk ON (" + gameId+ ".streak.streak_id = stk.streak_id);");
+	public JSONArray getStreakList(Connection conn, String gameId, String memberId) throws SQLException, IOException{
+		stmt =  conn.prepareStatement("SELECT streak_id FROM " + gameId +".member_streak WHERE member_id = ?");
 		stmt.setString(1, memberId);
 		ResultSet rs = stmt.executeQuery();
-		List<StreakModel> streaks = new ArrayList<StreakModel>();
+		JSONArray arr = new JSONArray();
 		while (rs.next()) {
-			StreakModel streak = new StreakModel();
-			streak.setStreakId(rs.getString("streak_id"));
-			streak.setName(rs.getString("name"));
-			streak.setDescription(rs.getString("description"));
-			streak.setStreakLevel(rs.getInt("streak_level"));
-			streak.setPointThreshold(rs.getInt("point_th"));
-			streak.setLockedDate(rs.getObject("locked_date", LocalDateTime.class));
-			streak.setDueDate(rs.getObject("due_date", LocalDateTime.class));
-			streak.setPeriod(parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)));
-			streak.setNotificationCheck(rs.getBoolean("use_notification"));
-			streak.setNotificationMessage("notif_message");
-			streak.setStatus(i5.las2peer.services.gamificationVisualizationService.database.StreakModel.StreakSatstus.valueOf(rs.getString("status")));
-			streaks.add(streak);
+			JSONObject obj = new JSONObject();
+			obj.put("streakId", rs.getString("streak_id"));
+			arr.put(obj);
 		}
-		if (streaks.equals(null)) {
-			throw new IOException("Streak Model is null");
-		}
-		for (StreakModel streak : streaks) {
-			Map<Integer, String> badges = new HashMap<Integer, String>();
-			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".member_streak_badge WHERE streak_id = ? AND member_id =?");
-			stmt.setString(1, streak.getStreakId());
-			stmt.setString(2,memberId);
-			ResultSet rs2 = stmt.executeQuery();
-			while (rs2.next()) {
-				badges.put(rs2.getInt("streak_level"), rs2.getString("badge_id"));
-			}
-			streak.setBadges(badges);
-
-			Map<Integer, String> achievements = new HashMap<Integer, String>();
-			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".member_streak_achievement WHERE streak_id = ? AND member_id =?");
-			stmt.setString(1, streak.getStreakId());
-			stmt.setString(2,memberId);
-			ResultSet rs3 = stmt.executeQuery();
-			while (rs3.next()) {
-				achievements.put(rs3.getInt("streak_level"), rs3.getString("achievement_id"));
-			}
-			streak.setAchievements(achievements);
-
-			List<String> actions = new ArrayList<String>();
-			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".member_streak_action WHERE streak_id = ? AND member_id =?");
-			stmt.setString(1, streak.getStreakId());
-			stmt.setString(2,memberId);
-			ResultSet rs4 = stmt.executeQuery();
-			while (rs4.next()) {
-				actions.add(rs4.getString("action_id"));
-			}
-			streak.setActions(actions);
-		}
-		return streaks;
+		return arr;
 	}
 	
-	private Period parseIntervaltoPeriod(PGInterval interval) {
-		return Period.of(interval.getYears(), interval.getMonths(), interval.getDays());
+	/**
+	 * 
+	 * @param interval of type PGInterval
+	 * @return Period Object converted from PGInterval
+	 */
+	private String parseIntervaltoPeriod(PGInterval interval) {
+		return Period.of(interval.getYears(), interval.getMonths(), interval.getDays()).toString()+interval.getHours()+"H"+interval.getMinutes()+"M"+interval.getWholeSeconds()+"S";
 	}
 
 	/**
@@ -660,56 +623,111 @@ public class VisualizationDAO {
 			obj.put("description", rs.getString("description"));
 			obj.put("status", i5.las2peer.services.gamificationVisualizationService.database.StreakModel.StreakSatstus.valueOf(rs.getString("status")));
 			obj.put("pointTreshold", rs.getInt("point_th"));
-			obj.put("period", parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)));
+			obj.put("period", parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)).toString());
 			obj.put("lockedDate", rs.getObject("locked_date", LocalDateTime.class));
 			obj.put("dueDate", rs.getObject("due_date", LocalDateTime.class));
-			obj.put("notificationCheck", rs.getString("use_notification"));
+			obj.put("notificationCheck", rs.getBoolean("use_notification"));
 			obj.put("notificationMessage", rs.getString("notif_message"));
 			obj.put("currentStreakLevel", rs.getInt("current_streak_level"));
 			obj.put("highestStreakLevel", rs.getInt("highest_streak_level"));
 		}
-		stmt = conn.prepareStatement("SELECT action_id FROM " + gameId+ ".member_streak_action WHERE streak_id = ? AND member_id = ?");
+		
+		stmt = conn.prepareStatement("SELECT * FROM " + gameId+ ".member_streak_action WHERE streak_id = ? AND member_id = ?");
 		stmt.setString(1, streakId);
 		stmt.setString(2, memberId);
 		ResultSet rs2 = stmt.executeQuery();
-		JSONArray actions = new JSONArray();
+		JSONArray openActions = new JSONArray();
+		JSONArray completedActions = new JSONArray();
 		while (rs2.next()) {
 			JSONObject actionObj= new JSONObject();
 			actionObj.put("actionId", rs2.getString("action_id"));
-			actions.add(actionObj);
+			if(rs2.getBoolean("completed")) {
+				completedActions.put(actionObj);
+			}
+			else {
+				openActions.put(actionObj);
+			}
 		}
-		obj.put("actions", actions);
-
-		stmt = conn.prepareStatement("SELECT action_id FROM " + gameId+ ".member_streak_action WHERE streak_id = ? AND member_id = ? AND completed=true;");
-		stmt.setString(1, streakId);
-		stmt.setString(2, memberId);
-		ResultSet rs3 = stmt.executeQuery();
-		JSONArray completedActions = new JSONArray();
-		while (rs3.next()) {
-			JSONObject actionObj= new JSONObject();
-			actionObj.put("actionId", rs3.getString("action_id"));
-			completedActions.add(actionObj);
-		}
+		obj.put("openActions", openActions);
 		obj.put("completedActions", completedActions);
+		
 		stmt = conn. prepareStatement("SELECT badge_id FROM "+ gameId + ".member_streak_badge WHERE streak_id =? AND member_id = ? AND active = true;");
 		stmt.setString(1, streakId);
 		stmt.setString(2,memberId);
-		ResultSet rs4 = stmt.executeQuery();
-		if(rs4.next()) {
-			obj.put("currentBadge",rs4.getString("badge_id"));
+		ResultSet rs3 = stmt.executeQuery();
+		if(rs3.next()) {
+			obj.put("currentBadge",rs3.getString("badge_id"));
 		}
 		stmt = conn.prepareStatement("SELECT streak_level, achievement_id FROM "+ gameId+".member_streak_achievement WHERE streak_id =? AND member_id =? AND unlocked=false;");
 		stmt.setString(1, streakId);
 		stmt.setString(2,memberId);
 		JSONArray lockedAchievements = new JSONArray();
-		ResultSet rs5 = stmt.executeQuery();
-		while (rs5.next()) {
+		ResultSet rs4 = stmt.executeQuery();
+		while (rs4.next()) {
 			JSONObject achObj = new JSONObject();
-			achObj.put("streakLevel", rs5.getInt("streak_level"));
-			achObj.put("achievementId", rs5.getString("achievement_id"));
-			lockedAchievements.add(achObj);
+			achObj.put("streakLevel", rs4.getInt("streak_level"));
+			achObj.put("achievementId", rs4.getString("achievement_id"));
+			lockedAchievements.put(achObj);
 		}
 		obj.put("lockedAchievements", lockedAchievements);
 		return obj;
+	}
+	
+	
+	
+	public JSONObject getAccumulativeStreakData(Connection conn, String gameId, String memberId, String streakId) throws SQLException, IOException{
+		JSONObject streak = getMemberStreakProgress(conn, gameId, memberId, streakId);
+		
+		JSONArray openActions = streak.getJSONArray("openActions");
+		for (int i = 0; i < openActions.length(); i++) {
+			JSONObject action = openActions.getJSONObject(i);
+			stmt = conn.prepareStatement("SELECT point_value, name, description FROM " + gameId + ".action WHERE action_id =?");
+			stmt.setString(1, action.getString("actionId"));
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				action.put("pointValue", rs.getInt("point_value"));
+				action.put("name", rs.getString("name"));
+				action.put("description", rs.getString("description"));
+			}
+		}
+		
+		
+		JSONArray completedActions = streak.getJSONArray("completedActions");
+		int currentPoint = 0;
+		for (int i = 0; i < completedActions.length(); i++) {
+			JSONObject action = completedActions.getJSONObject(i);
+			stmt = conn.prepareStatement("SELECT point_value, name, description FROM " + gameId + ".action WHERE action_id =?");
+			stmt.setString(1, action.getString("actionId"));
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				action.put("pointValue", rs.getInt("point_value"));
+				action.put("name", rs.getString("name"));
+				action.put("description", rs.getString("description"));
+				currentPoint = currentPoint + rs.getInt("point_value");
+			}
+		}
+		streak.put("currentPoint", currentPoint);
+		
+		JSONArray achievements = streak.getJSONArray("lockedAchievements");
+		for (int i = 0; i < achievements.length(); i++) {
+			JSONObject achievement = achievements.getJSONObject(i);
+			stmt = conn.prepareStatement("SELECT name, badge_id, description FROM " + gameId + ".achievement WHERE achievement_id =?");
+			stmt.setString(1, achievement.getString("achievementId"));
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				achievement.put("name", rs.getString("name"));
+				achievement.put("badgeId", rs.getString("badge_id"));
+				achievement.put("description", rs.getString("description"));
+			}
+		}
+		return streak;
+	}
+
+	public void pauseStreak(Connection conn, String gameId, String memberId, String streakId) throws SQLException {
+		stmt = conn.prepareStatement("Update " + gameId + ".member_streak set status = ? WHERE member_id =? AND streak_id = ?");
+		stmt.setObject(1, StreakSatstus.PAUSED.toString(), Types.OTHER);
+		stmt.setString(2, memberId);
+		stmt.setString(3, streakId);
+		stmt.executeQuery();
 	}
 }

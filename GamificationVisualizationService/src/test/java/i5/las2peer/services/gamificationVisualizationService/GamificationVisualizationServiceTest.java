@@ -202,7 +202,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Quests With Status Of Member");
 		try {
 			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "quests/" + appId + "/" + memberId + "/status/COMPLETED", ""); // testInput is
+					mainPath + "quests/" + appId + "/" + memberId + "/status/COMPLETED", ""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -212,7 +212,7 @@ public class GamificationVisualizationServiceTest {
 		}
 		try {
 			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "quests/" + appId + "/" + memberId + "/status/REVEALED", ""); // testInput is
+					mainPath + "quests/" + appId + "/" + memberId + "/status/REVEALED", ""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -227,7 +227,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Quests With Progress Of Member");
 		try {
 			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "quests/" + appId + "/" + memberId + "/progress/" + questId, ""); // testInput is
+					mainPath + "quests/" + appId + "/" + memberId + "/progress/" + questId, ""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -257,7 +257,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Badge Image Detail");
 		try {
 			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "badges/" + appId + "/" + memberId + "/" + badgeId + "/img", ""); // testInput is
+					mainPath + "badges/" + appId + "/" + memberId + "/" + badgeId + "/img", ""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -272,7 +272,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Badge Detail With ID");
 		try {
 			ClientResponse result = c1.sendRequest("GET", mainPath + "badges/" + appId + "/" + memberId + "/" + badgeId,
-					""); // testInput is
+					""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -287,7 +287,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Quest Detail With ID");
 		try {
 			ClientResponse result = c1.sendRequest("GET", mainPath + "quests/" + appId + "/" + memberId + "/" + questId,
-					""); // testInput is
+					""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -302,7 +302,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Achievement Detail With ID");
 		try {
 			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "achievements/" + appId + "/" + memberId + "/" + achievementId, ""); // testInput is
+					mainPath + "achievements/" + appId + "/" + memberId + "/" + achievementId, ""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -317,7 +317,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Trigger Action");
 		try {
 			ClientResponse result = c1.sendRequest("POST",
-					mainPath + "actions/" + appId + "/" + actionId + "/" + memberId, ""); // testInput is
+					mainPath + "actions/" + appId + "/" + actionId + "/" + memberId, ""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -334,7 +334,7 @@ public class GamificationVisualizationServiceTest {
 		try {
 			ClientResponse result = c1.sendRequest("GET",
 					mainPath + "leaderboard/local/" + appId + "/" + memberId + "?current=1&rowCount=10&searchPhrase=",
-					""); // testInput is
+					""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -351,7 +351,7 @@ public class GamificationVisualizationServiceTest {
 		try {
 			ClientResponse result = c1.sendRequest("GET",
 					mainPath + "leaderboard/global/" + appId + "/" + memberId + "?current=1&rowCount=10&searchPhrase=",
-					""); // testInput is
+					""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -366,8 +366,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Streaks fo Memeber");
 
 		try {
-			ClientResponse result = c1.sendRequest("GET", mainPath + "streaks/" + appId + "/" + memberId, ""); // testInput
-																												// is
+			ClientResponse result = c1.sendRequest("GET", mainPath + "streaks/" + appId + "/" + memberId, "");
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -382,7 +381,7 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Streak Detail With ID");
 		try {
 			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "streaks/" + appId + "/" + memberId + "/" + streakId, ""); // testInput is
+					mainPath + "streaks/" + appId + "/" + memberId + "/" + streakId, ""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
@@ -397,7 +396,22 @@ public class GamificationVisualizationServiceTest {
 		System.out.println("Test --- Get Streak Progress Of Member");
 		try {
 			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "streaks/" + appId + "/" + memberId + "/progress/" + streakId, ""); // testInput is
+					mainPath + "streaks/" + appId + "/" + memberId + "/progress/" + streakId, ""); 
+			System.out.println(result.getResponse());
+			assertEquals(200, result.getHttpCode());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception: " + e);
+			System.exit(0);
+		}
+	}
+	
+	@Test
+	public void testC9_getTransitiveStreakProgressOfMember() {
+		System.out.println("Test --- Get Streak Progress Of Member");
+		try {
+			ClientResponse result = c1.sendRequest("GET",
+					mainPath + "streaks/accumulative/" + appId + "/" + memberId + "/" + streakId, ""); 
 			System.out.println(result.getResponse());
 			assertEquals(200, result.getHttpCode());
 		} catch (Exception e) {
