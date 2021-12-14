@@ -11,11 +11,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       run: | 
-        docker build -t registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification .
+        docker build -t registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:latest .
     - name: Push to registry
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}  
         DOCKER_PW: ${{ secrets.DOCKER_PW }}
       run: |
         docker login -u $DOCKER_USERNAME -p $DOCKER_PW registry.tech4comp.dbis.rwth-aachen.de
-        docker push registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification
+        docker push registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:latest
