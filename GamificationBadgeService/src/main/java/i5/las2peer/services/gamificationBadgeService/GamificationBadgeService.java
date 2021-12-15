@@ -1055,7 +1055,7 @@ public class GamificationBadgeService extends RESTService {
 
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25, "Badge image fetched : " + badgeId + " : " + gameId + " : " + name, true);
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.ARTIFACT_RECEIVED, "Badge image fetched : " + badgeId + " : " + gameId + " : " + name);
-				return Response.status(HttpURLConnection.HTTP_OK).entity(filecontent).type(MediaType.APPLICATION_JSON).build();
+				return Response.status(HttpURLConnection.HTTP_OK).entity(filecontent).type(MediaType.APPLICATION_OCTET_STREAM).build();
 			} catch (SQLException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot get badge image. Database error. " + e.getMessage());
