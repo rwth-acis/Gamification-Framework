@@ -728,6 +728,6 @@ public class VisualizationDAO {
 		stmt.setObject(1, StreakSatstus.PAUSED.toString(), Types.OTHER);
 		stmt.setString(2, memberId);
 		stmt.setString(3, streakId);
-		stmt.executeQuery();
+		stmt.executeUpdate();
 	}
 }
