@@ -94,6 +94,7 @@ public class GamificationVisualizationService extends RESTService {
 
 	public GamificationVisualizationService() {
 		setFieldValues();
+		System.out.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema)
 		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.visualizationAccess = new VisualizationDAO();
 	}
