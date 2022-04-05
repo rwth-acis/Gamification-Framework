@@ -6,3 +6,6 @@
 # Ignore Gradle build output directory
 .project
 .settings
+
+# Intellij
+.idea/
