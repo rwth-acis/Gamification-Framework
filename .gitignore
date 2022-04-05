@@ -8,4 +8,20 @@
 .settings
 
 # Intellij
-.idea/
+/.idea
+*.iml
+
+# LAS2peer files
+*/export
+*/tmp
+*/.las2peer
+*/node-storage
+*/startup
+*/log/
+*/lib
+*/etc/ivy/ivy.jar
+*/service
+*/etc/startup
+*/etc/launcher-configuration.ini
+
+*/restMapping.xml
