@@ -6,3 +6,28 @@
 # Ignore Gradle build output directory
 .project
 .settings
+
+# Intellij
+/.idea
+*.iml
+
+# LAS2peer files
+*/export
+*/tmp
+*/.las2peer
+*/node-storage
+*/startup
+*/log/
+*/lib
+*/etc/ivy/ivy.jar
+*/service
+*/etc/startup
+*/etc/launcher-configuration.ini
+
+*/restMapping.xml
+
+# GamificationFramework specific
+GamificationPointService/files/*
+
+# But NOT ignore these files...
+!GamificationPointService/files/test
