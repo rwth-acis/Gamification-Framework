@@ -25,3 +25,9 @@
 */etc/launcher-configuration.ini
 
 */restMapping.xml
+
+# GamificationFramework specific
+GamificationPointService/files/*
+
+# But NOT ignore these files...
+!GamificationPointService/files/test
