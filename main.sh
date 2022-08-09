@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function configure_function {
 	echo "[Configure]"
    	echo "Reading config"
@@ -14,21 +16,23 @@ function configure_function {
 	printf $CONF_PROPERTIES > GamificationBadgeService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties
 	printf $CONF_PROPERTIES > GamificationLevelService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties
 	printf $CONF_PROPERTIES > GamificationPointService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties
+	printf $CONF_PROPERTIES > GamificationStreakService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties
 	printf $CONF_PROPERTIES > GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties
 	printf $CONF_PROPERTIES > GamificationVisualizationService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties
 	printf $CONF_APP_PROPERTIES > GamificationGamifierService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties
 
 	echo "Copying executable shell"
-	cp -f GamificationAchievementService/bin/join_network.sh GamificationAchievementService/join_network.sh
-	cp -f GamificationActionService/bin/join_network.sh GamificationActionService/join_network.sh
-	cp -f GamificationBadgeService/bin/join_network.sh GamificationBadgeService/join_network.sh
-	cp -f GamificationLevelService/bin/join_network.sh GamificationLevelService/join_network.sh
-	cp -f GamificationPointService/bin/join_network.sh GamificationPointService/join_network.sh
-	cp -f GamificationQuestService/bin/join_network.sh GamificationQuestService/join_network.sh
-	cp -f GamificationVisualizationService/bin/join_network.sh GamificationVisualizationService/join_network.sh
-	cp -f GamificationGamifierService/bin/join_network.sh GamificationGamifierService/join_network.sh
-	cp -f GamificationGameService/bin/join_network.sh GamificationGameService/join_network.sh
-	cp -f GamificationGameService/bin/start_network.sh GamificationGameService/start_network.sh
+	cp -f GamificationAchievementService/etc/bin/join_network.sh GamificationAchievementService/join_network.sh
+	cp -f GamificationActionService/etc/bin/join_network.sh GamificationActionService/join_network.sh
+	cp -f GamificationBadgeService/etc/bin/join_network.sh GamificationBadgeService/join_network.sh
+	cp -f GamificationLevelService/etc/bin/join_network.sh GamificationLevelService/join_network.sh
+	cp -f GamificationPointService/etc/bin/join_network.sh GamificationPointService/join_network.sh
+	cp -f GamificationQuestService/etc/bin/join_network.sh GamificationQuestService/join_network.sh
+	cp -f GamificationStreakService/etc/bin/join_network.sh GamificationStreakService/join_network.sh
+	cp -f GamificationVisualizationService/etc/bin/join_network.sh GamificationVisualizationService/join_network.sh
+	cp -f GamificationGamifierService/etc/bin/join_network.sh GamificationGamifierService/join_network.sh
+	cp -f GamificationGameService/etc/bin/join_network.sh GamificationGameService/join_network.sh
+	cp -f GamificationGameService/etc/bin/start_network.sh GamificationGameService/start_network.sh
 
 	echo "Adjusting shell configuration"
 
@@ -41,8 +45,10 @@ function configure_function {
 	sed -i 's/\-p \([0-9]*\) /-p '$LEVEL_PORT' /' GamificationLevelService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$POINT_PORT' /' GamificationPointService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$QUEST_PORT' /' GamificationQuestService/join_network.sh
+	sed -i 's/\-p \([0-9]*\) /-p '$STREAK_PORT' /' GamificationStreakService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$VISUALIZATION_PORT' /' GamificationVisualizationService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$GAME_PORT' /' GamificationGameService/join_network_in_a_node.sh
+	
 
 	#Configure Bootstrap Node
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationAchievementService/join_network.sh
@@ -54,7 +60,8 @@ function configure_function {
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationVisualizationService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationGamifierService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationGameService/join_network.sh
-	#sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationGameService/join_network_in_a_node.sh
+	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationStreakService/join_network.sh
+
 
 	echo "Make it executable"
 	chmod +x GamificationAchievementService/join_network.sh
@@ -66,6 +73,7 @@ function configure_function {
 	chmod +x GamificationVisualizationService/join_network.sh
 	chmod +x GamificationGamifierService/join_network.sh
 	chmod +x GamificationGameService/join_network.sh
+	chmod +x GamificationStreakService/join_network.sh
 	chmod +x GamificationGameService/join_network_in_a_node.sh
 
 	echo "Done !!"
@@ -124,17 +132,20 @@ function help {
 
 if [ "$1" == "-m" ]; then
 	configure_function
-	cd GamificationGameService && \
+#	cd GamificationGameService && \
+
 	if [ "$2" == "build" ]; then
 		echo "[Build only]"
-	  pwd
-	  ant build_all_projects_only
+	  ./gradlew build --exclude-task test
 	elif [ "$2" == "clean" ]; then
 	  echo "[Clean only]"
-	  ant clean_all_projects
+	  ./gradlew clean
+	elif [ "$2" == "test" ]; then
+	  echo "[Test only]"
+	  ./gradlew test
 	elif [ "$2" == "all" ]; then
 	  echo "[Build all]"
-	  ant build_all_projects
+	  ./gradlew build
 	else
 	  help
 	fi

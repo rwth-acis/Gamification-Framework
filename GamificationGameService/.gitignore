@@ -1,1 +1,8 @@
-/output/
+.settings
+.project
+/export/
+/log/
+/service/
+/bin/
+/node-storage
+/build/

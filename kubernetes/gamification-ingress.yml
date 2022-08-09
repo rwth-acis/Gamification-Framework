@@ -1,0 +1,90 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/cors-allow-credentials: 'true'
+    nginx.ingress.kubernetes.io/cors-allow-headers: access-token, Authorization
+    nginx.ingress.kubernetes.io/cors-allow-methods: PUT, GET, POST, OPTIONS
+    nginx.ingress.kubernetes.io/cors-allow-origin: https://moodle.tech4comp.dbis.rwth-aachen.de
+    nginx.ingress.kubernetes.io/enable-cors: 'true'
+  name: gamification-ingress
+spec:
+  tls:
+    - hosts:
+        - milki-psy.dbis.rwth-aachen.de
+      secretName: nginx-tls
+  rules:
+    - host: milki-psy.dbis.rwth-aachen.de
+      http:
+        paths:
+          - path: /gamification/games(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/actions(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/achievements(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/badges(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/points(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/levels(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/streaks(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/quests(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/visualization(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/gamifier(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
