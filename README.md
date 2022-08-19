@@ -2,9 +2,21 @@
 =======
 # Gamification-Framework
 
+## Prerequisites
+- Java 14 (or newer)
+- Gradle 6.8 (exactly)
+- PostgreSQL
+
 ## Database
 The database used is PostgreSQL 9.5. SQL script to create the database and initialize the framework is located in psql folder.
 The default framework database name is 'gamification'and user name is 'gamification'. Each created application will have its own schema. A schema named 'manager' is used to maintain application and user information globally. A schema named 'global_leaderboard' contains global leaderboard data with the table name in the schema is community_type name.
+
+## Running the Gamification Framework through docker
+
+  * The image is fairly large (~1.5GB), so it's advisable to first execute `docker pull registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:latest`
+  * We can then run `docker run -p 8080:8080 registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:latest` to get a local installation of the gamification framework running under `localhost:8080/gamification`  
+
+See the [Dockerfile](Dockerfile) and the [kubernetes folder](kubernetes/) for more info.
 
 ## Building the Projects
 
@@ -62,6 +74,7 @@ To run all services, in main folder project execute
 > - **POINT_PORT**="9117"
 > - **QUEST_PORT**="9118"
 > - **VISUALIZATION_PORT**="9119"
+
 
 ## Local Setup
 
