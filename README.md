@@ -43,6 +43,16 @@ To run all services, in main folder project execute
 	1. ```./main.sh -r join_node start```, to run all services in different node and join existing network
 	1. ```./main.sh -r join_node stop```, to stop all services in different node and join existing network
 
+### Notes when running on Windows
+
+When you run Gamification Framework on Windows, you can use `main.bat` instead of `main.sh`. It still requires a shell binary (so it only works in VSCode or a custom bash/shell). Also, the script only supports running the services in a single node, so the *join_node* arguments are not supported.
+
+To run all services, in the main directory, execute:
+
+```bat
+./main.bat -r start_one_node
+```
+
 ## Content of gamification.config
 
 > - **jdbcDriverClassName**="org.postgresql.Driver"  (Database Driver for JAVA)
