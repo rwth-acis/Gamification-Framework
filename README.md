@@ -43,6 +43,16 @@ To run all services, in main folder project execute
 	1. ```./main.sh -r join_node start```, to run all services in different node and join existing network
 	1. ```./main.sh -r join_node stop```, to stop all services in different node and join existing network
 
+### Notes when running on Windows
+
+When you run Gamification Framework on Windows, you can use `main.bat` instead of `main.sh`. It still requires a shell binary (so it only works in VSCode or a custom bash/shell). Also, the script only supports running the services in a single node, so the *join_node* arguments are not supported.
+
+To run all services, in the main directory, execute:
+
+```bat
+./main.bat -r start_one_node
+```
+
 ## Content of gamification.config
 
 > - **jdbcDriverClassName**="org.postgresql.Driver"  (Database Driver for JAVA)
@@ -75,11 +85,28 @@ To run all services, in main folder project execute
 > - **QUEST_PORT**="9118"
 > - **VISUALIZATION_PORT**="9119"
 
-## HTTP PORT
-> - **ACHIEVEMENT_PORT**=8083
-> - **ACTION_PORT**=8084
-> - **BADGE_PORT**=8085
-> - **GAME_PORT**=8086
-> - **LEVEL_PORT**=8087
-> - **POINT_PORT**=8088
-> - **QUEST_PORT**=8089
+
+## Local Setup
+
+The web APIs for all services are deployed on port `8080`. You can access the different services at the following base URLS:
+
+- Achievement Service: `http://localhost:8080/gamification/achievements/`
+- Action Service: `http://localhost:8080/gamification/actions/`
+- Badge Service: `http://localhost:8080/gamification/badges/`
+- Game Service: `http://localhost:8080/gamification/games/`
+- Gamifier Service: `http://localhost:8080/gamification/gamifier/`
+- Level Service: `http://localhost:8080/gamification/levels/`
+- Point Service: `http://localhost:8080/gamification/points/`
+- Quest Service: `http://localhost:8080/gamification/quests/`
+- Streak Service: `http://localhost:8080/gamification/streaks/`
+- Visualization Service: `http://localhost:8080/gamification/visualization/`
+
+When each service is started in an individual node, the following ports are used for the HTTP APIs:
+
+- **ACHIEVEMENT_PORT**=8083
+- **ACTION_PORT**=8084
+- **BADGE_PORT**=8085
+- **GAME_PORT**=8086
+- **LEVEL_PORT**=8087
+- **POINT_PORT**=8088
+- **QUEST_PORT**=8089
