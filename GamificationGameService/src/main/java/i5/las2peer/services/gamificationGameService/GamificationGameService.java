@@ -251,7 +251,7 @@ public class GamificationGameService extends RESTService {
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
 						if (!isGameIdValid(gameid)) {
-							objResponse.put("message", "Invalid game ID. Game ID MUST NOT be blank and MUST NOT contain upper case characters.");
+							objResponse.put("message", "Invalid game ID. Game ID MUST NOT be blank and MUST NOT contain upper case characters. Max length is 20.");
 							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
@@ -323,7 +323,6 @@ public class GamificationGameService extends RESTService {
 				if (gameId == null || gameId.isBlank()) {
 					return false;
 				}
-				// ID must not contain upper case characters
 				/*
 				 * This constraint is caused by the internal SQL functions, which use the
 				 * LOWER_CASE game ID as a database schema name. However, not all functions
@@ -337,8 +336,15 @@ public class GamificationGameService extends RESTService {
 				 *
 				 * Check https://github.com/rwth-acis/Gamification-Framework/issues/29 for more.
 				 */
-				boolean hasUpperCaseChar = gameId.chars().anyMatch(Character::isUpperCase);
-				return !hasUpperCaseChar;
+				// ID must not contain upper case characters
+				if (gameId.chars().anyMatch(Character::isUpperCase)) {
+					return false;
+				}
+				// max length is 20
+				if (gameId.length() > 20) {
+					return false;
+				}
+				return true;
 			}
 
 			/**
