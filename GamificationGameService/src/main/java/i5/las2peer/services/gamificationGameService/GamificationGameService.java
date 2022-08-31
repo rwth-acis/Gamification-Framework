@@ -251,7 +251,7 @@ public class GamificationGameService extends RESTService {
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
 						if (!isGameIdValid(gameid)) {
-							objResponse.put("message", "Invalid game ID. Game ID MUST be not blank and MUST NOT contain upper case characters");
+							objResponse.put("message", "Invalid game ID. Game ID MUST NOT be blank and MUST NOT contain upper case characters.");
 							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
@@ -327,13 +327,12 @@ public class GamificationGameService extends RESTService {
 				/*
 				 * This constraint is caused by the internal SQL functions, which use the
 				 * LOWER_CASE game ID as a database schema name. However, not all functions
-				 * implement this correctly. For example a function might try to query a concrete game
+				 * implement this correctly. For example, a function might try to query a concrete game
 				 * using a schema name:
 				 *     SELECT * FROM manager.game_info WHERE game_id = schema_name
-				 * This query will fail if the game ID is, for example, 'testGameId', because the schema
-				 * name will be 'testgameid'.
+				 * This query will fail if the game ID is 'testGameId' because the schema name will be 'testgameid'.
 				 *
-				 * Instead of fixing this in the SQL code, which is very bad maintainable, we will enforce this
+				 * Instead of fixing this in the SQL code, which is very hard to maintain, we will enforce this
 				 * constraint on game IDs.
 				 *
 				 * Check https://github.com/rwth-acis/Gamification-Framework/issues/29 for more.
