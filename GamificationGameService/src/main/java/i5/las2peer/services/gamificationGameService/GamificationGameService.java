@@ -182,7 +182,7 @@ public class GamificationGameService extends RESTService {
 			 * Create a new game. 
 			 * Name attribute for form data : 
 			 * <ul>
-			 * 	<li>gameid - Game ID - String (20 chars)
+			 * 	<li>gameid - Game ID - String (20 chars, only lower case!)
 			 *  <li>commtype - Community Type - String (20 chars)
 			 *  <li>gamedesc - Game Description - String (50 chars)
 			 * </ul>
@@ -250,6 +250,11 @@ public class GamificationGameService extends RESTService {
 							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
+						if (!isGameIdValid(gameid)) {
+							objResponse.put("message", "Invalid game ID. Game ID MUST NOT be blank and MUST NOT contain upper case characters. Max length is 20.");
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						}
 						
 						FormDataPart partGameDesc = parts.get("gamedesc");
 						if (partGameDesc != null) {
@@ -311,6 +316,35 @@ public class GamificationGameService extends RESTService {
 			        logger.printStackTrace(e);
 			      }
 			    }
+			}
+
+			private boolean isGameIdValid(String gameId) {
+				// ID must not be blank
+				if (gameId == null || gameId.isBlank()) {
+					return false;
+				}
+				/*
+				 * This constraint is caused by the internal SQL functions, which use the
+				 * LOWER_CASE game ID as a database schema name. However, not all functions
+				 * implement this correctly. For example, a function might try to query a concrete game
+				 * using a schema name:
+				 *     SELECT * FROM manager.game_info WHERE game_id = schema_name
+				 * This query will fail if the game ID is 'testGameId' because the schema name will be 'testgameid'.
+				 *
+				 * Instead of fixing this in the SQL code, which is very hard to maintain, we will enforce this
+				 * constraint on game IDs.
+				 *
+				 * Check https://github.com/rwth-acis/Gamification-Framework/issues/29 for more.
+				 */
+				// ID must not contain upper case characters
+				if (gameId.chars().anyMatch(Character::isUpperCase)) {
+					return false;
+				}
+				// max length is 20
+				if (gameId.length() > 20) {
+					return false;
+				}
+				return true;
 			}
 
 			/**
