@@ -174,8 +174,7 @@ public class GamificationGameService extends RESTService {
 			
 			/**
 			 * Create a new game.
-			 * 
-			 * @param contentType form content type
+			 *
 			 * @param gameid Game ID - String (20 chars, only lower case!)
 			 * @param commtype Community Type - String (20 chars)
 			 * @param gamedesc Game Description - String (50 chars)
@@ -198,7 +197,6 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "New game created")
 			})
 			public Response createGame(
-					@ApiParam(value = "Game detail in multiple/form-data type", required = true) @HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
 					@FormDataParam("gameid") String gameid,
 					@FormDataParam("commtype") String commtype,
 					@FormDataParam("gamedesc") String gamedesc
