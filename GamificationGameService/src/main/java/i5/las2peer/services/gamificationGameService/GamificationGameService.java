@@ -35,8 +35,6 @@ import i5.las2peer.services.gamificationGameService.database.GameDAO;
 import i5.las2peer.services.gamificationGameService.database.GameModel;
 import i5.las2peer.services.gamificationGameService.database.DatabaseManager;
 import i5.las2peer.services.gamificationGameService.database.MemberModel;
-import i5.las2peer.services.gamificationGameService.helper.FormDataPart;
-import i5.las2peer.services.gamificationGameService.helper.MultipartHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
