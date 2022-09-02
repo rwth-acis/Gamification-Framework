@@ -107,6 +107,8 @@ public class GamificationGameService extends RESTService {
 	public static final String HEADER_OWNERID = "ownerid";
 	public static final String HEADER_CONTENT_DESCRIPTION = "Content-Description";
 
+	public static final String DEFAULT_COMM_TYPE = "def_type";
+
 	public GamificationGameService() {
 		// read and set properties values
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
@@ -197,9 +199,9 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "New game created")
 			})
 			public Response createGame(
-					@FormDataParam("gameid") String gameid,
-					@FormDataParam("commtype") String commtype,
-					@FormDataParam("gamedesc") String gamedesc
+					@ApiParam(value = "Game ID - String (20 chars, only lower case!)", required = true) @FormDataParam("gameid") String gameid,
+					@ApiParam(value = "Community Type - String (20 chars)", defaultValue = DEFAULT_COMM_TYPE) @FormDataParam("commtype") String commtype,
+					@ApiParam(value = "Game Description - String (50 chars)", defaultValue = "") @FormDataParam("gamedesc") String gamedesc
 			) {
 				// Request log
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/games/data", true);
@@ -240,7 +242,7 @@ public class GamificationGameService extends RESTService {
 					}
 
 					gamedesc = Objects.requireNonNullElse(gamedesc, "");
-					commtype = Objects.requireNonNullElse(commtype, "def_type");
+					commtype = Objects.requireNonNullElse(commtype, DEFAULT_COMM_TYPE);
 
 					GameModel newGame = new GameModel(gameid, gamedesc, commtype);
 
