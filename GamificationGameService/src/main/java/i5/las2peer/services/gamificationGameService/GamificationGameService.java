@@ -264,7 +264,7 @@ public class GamificationGameService extends RESTService {
 							gamedesc = "";
 						}
 						FormDataPart partCommType = parts.get("commtype");
-						if (partGameDesc != null) {
+						if (partCommType != null) {
 							commtype = partCommType.getContent();
 						}
 						else{
