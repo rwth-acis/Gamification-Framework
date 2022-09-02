@@ -2,6 +2,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
     id 'eclipse' // only required when using Eclipse
+    id 'com.benjaminsproule.swagger' version '1.0.8'
 }
 
 repositories {
@@ -85,6 +86,17 @@ tasks.withType(Jar) {
 
 javadoc {
     destinationDir = file("$projectDir/export/doc")
+}
+
+swagger {
+    apiSource {
+        springmvc = false
+        locations = ['i5.las2peer.services.gamificationGameService']
+        schemes = ['http', 'https']
+        host = 'www.example.com:8080'
+        basePath = '/gamification/games'
+        swaggerDirectory = "${project.buildDir}/swagger-ui"
+    }
 }
 
 build.dependsOn "javadoc"
