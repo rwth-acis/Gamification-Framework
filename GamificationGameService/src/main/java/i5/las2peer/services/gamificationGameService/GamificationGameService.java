@@ -6,15 +6,10 @@ import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
@@ -55,6 +50,7 @@ import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 
 /**
@@ -179,20 +175,17 @@ public class GamificationGameService extends RESTService {
 			
 			
 			/**
-			 * Create a new game. 
-			 * Name attribute for form data : 
-			 * <ul>
-			 * 	<li>gameid - Game ID - String (20 chars, only lower case!)
-			 *  <li>commtype - Community Type - String (20 chars)
-			 *  <li>gamedesc - Game Description - String (50 chars)
-			 * </ul>
+			 * Create a new game.
 			 * 
 			 * @param contentType form content type
-			 * @param formData Form data with multipart/form-data type
+			 * @param gameid Game ID - String (20 chars, only lower case!)
+			 * @param commtype Community Type - String (20 chars)
+			 * @param gamedesc Game Description - String (50 chars)
 			 * @return Game data in JSON
 			 */
 			@POST
 			@Path("/data")
+			@Consumes(MediaType.MULTIPART_FORM_DATA)
 			@Produces(MediaType.APPLICATION_JSON)
 			@ApiOperation(value = "createGame",
 					notes = "Method to create a new game")
@@ -207,8 +200,11 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "New game created")
 			})
 			public Response createGame(
-					@ApiParam(value = "Game detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
-					@ApiParam(value = "Content of form data", required = true) byte[] formData) {
+					@ApiParam(value = "Game detail in multiple/form-data type", required = true) @HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
+					@FormDataParam("gameid") String gameid,
+					@FormDataParam("commtype") String commtype,
+					@FormDataParam("gamedesc") String gamedesc
+			) {
 				
 				// Request log
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/games/data", true);
@@ -216,9 +212,6 @@ public class GamificationGameService extends RESTService {
 
 				JSONObject objResponse = new JSONObject();
 				String name = null;
-				String gameid = null;
-				String gamedesc = null;
-				String commtype = null;
 				Connection conn = null;
 				
 				Agent agent = Context.getCurrent().getMainAgent();
@@ -232,16 +225,11 @@ public class GamificationGameService extends RESTService {
 				else {
 					name = agent.getIdentifier();
 				}
-				
-				Map<String, FormDataPart> parts;
+
 				try {
 					conn = dbm.getConnection();
-					
-					parts = MultipartHelper.getParts(formData, contentType);
-					FormDataPart partGameID = parts.get("gameid");
-					if (partGameID != null) {
-						// these data belong to the (optional) file id text input form element
-						gameid = partGameID.getContent();
+
+					if (gameid != null) {
 						// gameid must be unique
 						System.out.println(gameid);
 						if(gameAccess.isGameIdExist(conn,gameid)){
@@ -255,21 +243,9 @@ public class GamificationGameService extends RESTService {
 							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
-						
-						FormDataPart partGameDesc = parts.get("gamedesc");
-						if (partGameDesc != null) {
-							gamedesc = partGameDesc.getContent();
-						}
-						else{
-							gamedesc = "";
-						}
-						FormDataPart partCommType = parts.get("commtype");
-						if (partCommType != null) {
-							commtype = partCommType.getContent();
-						}
-						else{
-							commtype = "def_type";
-						}
+
+						gamedesc = Objects.requireNonNullElse(gamedesc, "");
+						commtype = Objects.requireNonNullElse(commtype, "def_type");
 						
 						GameModel newGame = new GameModel(gameid, gamedesc, commtype);
 
@@ -296,12 +272,6 @@ public class GamificationGameService extends RESTService {
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-					objResponse.put("message", "Cannot Add New Game. Error in parsing form data. " + e.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot Add New Game. Error checking game ID exist. "  + e.getMessage());
