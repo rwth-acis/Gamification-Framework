@@ -8,15 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
@@ -54,6 +46,7 @@ import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 
 /**
@@ -147,12 +140,11 @@ public class GamificationAchievementService extends RESTService {
 		 *  <li>achievementnotificationmessage - Achievement Notification Message - String
 		 * </ul>
 		 * @param gameId Game ID obtained from Gamification Game Service
-		 * @param formData Form data with multipart/form-data type
-		 * @param contentType Content type (implicitly sent in header)
 		 * @return HTTP Response returned as JSON object
 		 */
 		@POST
 		@Path("/{gameId}")
+		@Consumes(MediaType.MULTIPART_FORM_DATA)
 		@Produces(MediaType.APPLICATION_JSON)
 		@ApiResponses(value = {
 				@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "{message:Achievement upload success (achievementid)}"),
@@ -169,8 +161,22 @@ public class GamificationAchievementService extends RESTService {
 					 notes = "A method to store a new achievement with details (achievement ID, achievement name, achievement description, achievement point value, achievement point id, achievement badge id")
 		public Response createNewAchievement(
 				@ApiParam(value = "Game ID to store a new achievement", required = true) @PathParam("gameId") String gameId,
-				@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-				@ApiParam(value = "Achievement detail in multiple/form-data type", required = true) byte[] formData)  {
+				@FormDataParam("achievementid") String achievementid,
+				@FormDataParam("achievementname") String achievementname,
+				@FormDataParam("achievementdesc") String achievementdesc,
+				@FormDataParam("achievementpointvalue") int achievementpointvalue,
+				@FormDataParam("achievementbadgeid") String achievementbadgeid,
+				@FormDataParam("achievementnotificationcheck") String achievementnotifcheckStr,
+				@FormDataParam("achievementnotificationmessage") String achievementnotifmessage
+		)  {
+			/*
+			 * Legacy semantics of 'achievementnotificationcheck' param are the following:
+			 * - If parameter has any non-null value (even blank string) -> true
+			 * - Otherwise -> false
+			 *
+			 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+			 */
+			boolean achievementnotifcheck = achievementnotifcheckStr != null;
 			
 			// Request log
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/achievements/"+gameId, true);
@@ -178,14 +184,7 @@ public class GamificationAchievementService extends RESTService {
 			
 			// parse given multipart form data
 			JSONObject objResponse = new JSONObject();
-			String achievementid = null;
-			String achievementname = null;
-			String achievementdesc = null;
-			int achievementpointvalue = 0;
-			String achievementbadgeid = null;
-			
-			boolean achievementnotifcheck = false;
-			String achievementnotifmessage = null;
+
 			Connection conn = null;
 			
 			String name = null;
@@ -220,59 +219,24 @@ public class GamificationAchievementService extends RESTService {
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
-				
-				// Parse content of form
-				Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
-				FormDataPart partAchievementID = parts.get("achievementid");
-				if (partAchievementID != null) {
-					achievementid = partAchievementID.getContent();
-					
+
+				if (achievementid != null) {
 					if(achievementAccess.isAchievementIdExist(conn,gameId, achievementid)){
 						// Achievement id already exist
 						objResponse.put("message", "Cannot create achievement. Failed to add the achievement. achievement ID already exist!");
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
-					FormDataPart partAchievementName = parts.get("achievementname");
-					if (partAchievementName != null) {
-						achievementname = partAchievementName.getContent();
-					}
-					FormDataPart partAchievementDesc = parts.get("achievementdesc");
-					if (partAchievementDesc != null) {
-						// optional description text input form element
-						achievementdesc = partAchievementDesc.getContent();
-					}
-					FormDataPart partAchievementPV = parts.get("achievementpointvalue");
-					if (partAchievementPV != null) {
-						// optional description text input form element
-						achievementpointvalue =  Integer.parseInt(partAchievementPV.getContent());
-					}
 
-					FormDataPart partAchievementBID = parts.get("achievementbadgeid");
-
-					if (partAchievementBID != null) {
-						// optional description text input form element
-						achievementbadgeid = partAchievementBID.getContent();
-					}
-					if(achievementbadgeid.equals("")){
+					// treat blank badge ID as 'null' (no badge)
+					if(achievementbadgeid.equals("")) {
 						achievementbadgeid = null;
 					}
-					
-					FormDataPart partNotificationCheck = parts.get("achievementnotificationcheck");
-					if (partNotificationCheck != null) {
-						// checkbox is checked
-						achievementnotifcheck = true;
-						
-					}else{
-						achievementnotifcheck = false;
+
+					if (achievementnotifmessage == null) {
+						achievementnotifmessage = ""; // default: empty message
 					}
-					
-					FormDataPart partNotificationMsg = parts.get("achievementnotificationmessage");
-					if (partNotificationMsg != null) {
-						achievementnotifmessage = partNotificationMsg.getContent();
-					}else{
-						achievementnotifmessage = "";
-					}
+
 					AchievementModel achievement = new AchievementModel(achievementid, achievementname, achievementdesc, achievementpointvalue, achievementbadgeid, achievementnotifcheck, achievementnotifmessage);
 					
 					try{
@@ -299,26 +263,13 @@ public class GamificationAchievementService extends RESTService {
 				}
 				
 				
-			} catch (MalformedStreamException e) {
-				// the stream failed to follow required syntax
-				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
-			} catch (IOException e) {
-				// a read or write error occurred
-				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
 			} catch (SQLException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
-			}
-			catch (NullPointerException e){
+			} catch (NullPointerException e){
 				e.printStackTrace();
 				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
