@@ -152,13 +152,9 @@ public class GamificationAchievementService extends RESTService {
 				@ApiParam(value = "Achievement Notification Message - String") @FormDataParam("achievementnotificationmessage") String achievementnotifmessage
 		)  {
 			/*
-			 * Legacy semantics of 'achievementnotificationcheck' param are the following:
-			 * - If parameter has any non-null value (even blank string) -> true
-			 * - Otherwise -> false
-			 *
 			 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
 			 */
-			boolean achievementnotifcheck = achievementnotifcheckStr != null;
+			boolean achievementnotifcheck = legacyBooleanParameterFromFormParam(achievementnotifcheckStr);
 			
 			// Request log
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/achievements/"+gameId, true);
@@ -426,13 +422,9 @@ public class GamificationAchievementService extends RESTService {
 				@ApiParam(value = "Achievement Notification Message - String") @FormDataParam("achievementnotificationmessage") String achievementnotifmessage
 		)  {
 			/*
-			 * Legacy semantics of 'achievementnotificationcheck' param are the following:
-			 * - If parameter has any non-null value (even blank string) -> true
-			 * - Otherwise -> false
-			 *
 			 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
 			 */
-			boolean achievementnotifcheck = achievementnotifcheckStr != null;
+			boolean achievementnotifcheck = legacyBooleanParameterFromFormParam(achievementnotifcheckStr);
 
 			// Request log
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/achievements/"+gameId+"/"+achievementId, true);
@@ -544,7 +536,21 @@ public class GamificationAchievementService extends RESTService {
 		    }
 
 		}
-		
+
+		/**
+		 * Legacy semantics of the 'achievementnotificationcheck' parameter are the following:
+		 * - If parameter has any non-null value (even blank string) -> true
+		 * - Otherwise -> false
+		 *
+		 * @param paramValue the raw string value of the form param (may be null if parameter is not set)
+		 * @return
+		 */
+		private static boolean legacyBooleanParameterFromFormParam(String paramValue) {
+			/*
+			 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+			 */
+			return paramValue != null;
+		}
 
 		/**
 		 * Delete an achievement data with specified ID
