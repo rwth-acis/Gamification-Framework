@@ -128,18 +128,17 @@ public class GamificationAchievementService extends RESTService {
 		
 		
 		/**
-		 * Create a new achievement. 
-		 * Name attribute for form data : 
-		 * <ul>
-		 * 	<li>achievementid - Achievement ID - String (20 chars)
-		 *  <li>achievementname - Achievement name - String (20 chars)
-		 *  <li>achievementdesc - Achievement Description - String (50 chars)
-		 *  <li>achievementpointvalue - Point Value Action - Integer
-		 *  <li>achievementbadgeid - The existing badge from Gamification Badge Service - String (20 chars)
-		 *  <li>achievementnotificationcheck - Achievement Notification Boolean - Boolean - Option whether use notification or not
-		 *  <li>achievementnotificationmessage - Achievement Notification Message - String
-		 * </ul>
+		 * Create a new achievement.
+		 *
 		 * @param gameId Game ID obtained from Gamification Game Service
+		 * @param achievementid Achievement ID - String (20 chars)
+		 * @param achievementname Achievement name - String (20 chars)
+		 * @param achievementdesc Achievement Description - String (50 chars)
+		 * @param achievementpointvalue Point Value Action - Integer
+		 * @param achievementbadgeid The existing badge from Gamification Badge Service - String (20 chars)
+		 * @param achievementnotifcheckStr Achievement Notification Boolean - Boolean - Option whether use notification or not. Must be null for 'false' and any other value for 'true'
+		 * @param achievementnotifmessage Achievement Notification Message - String
+		 *
 		 * @return HTTP Response returned as JSON object
 		 */
 		@POST
@@ -161,13 +160,14 @@ public class GamificationAchievementService extends RESTService {
 					 notes = "A method to store a new achievement with details (achievement ID, achievement name, achievement description, achievement point value, achievement point id, achievement badge id")
 		public Response createNewAchievement(
 				@ApiParam(value = "Game ID to store a new achievement", required = true) @PathParam("gameId") String gameId,
-				@FormDataParam("achievementid") String achievementid,
-				@FormDataParam("achievementname") String achievementname,
-				@FormDataParam("achievementdesc") String achievementdesc,
-				@FormDataParam("achievementpointvalue") int achievementpointvalue,
-				@FormDataParam("achievementbadgeid") String achievementbadgeid,
-				@FormDataParam("achievementnotificationcheck") String achievementnotifcheckStr,
-				@FormDataParam("achievementnotificationmessage") String achievementnotifmessage
+				@ApiParam(value = "Achievement ID - String (20 chars)", required = true) @FormDataParam("achievementid") String achievementid,
+				@ApiParam(value = "Achievement name - String (20 chars)", required = true) @FormDataParam("achievementname") String achievementname,
+				@ApiParam(value = "Achievement Description - String (50 chars)") @FormDataParam("achievementdesc") String achievementdesc,
+				@ApiParam(value = "Point Value Action - Integer") @FormDataParam("achievementpointvalue") int achievementpointvalue,
+				@ApiParam(value = "The existing badge from Gamification Badge Service - String (20 chars)") @FormDataParam("achievementbadgeid") String achievementbadgeid,
+				@ApiParam(value = "Achievement Notification Boolean - Boolean - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.")
+					@FormDataParam("achievementnotificationcheck") String achievementnotifcheckStr,
+				@ApiParam(value = "Achievement Notification Message - String") @FormDataParam("achievementnotificationmessage") String achievementnotifmessage
 		)  {
 			/*
 			 * Legacy semantics of 'achievementnotificationcheck' param are the following:
