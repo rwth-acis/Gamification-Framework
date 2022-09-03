@@ -348,24 +348,15 @@ public class GamificationGameService extends RESTService {
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
-					// Add Member to Game
+					// Get game from DB
 					GameModel game = gameAccess.getGameWithId(conn,gameId);
-					ObjectMapper objectMapper = new ObjectMapper();
-			    	//Set pretty printing of json
-			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-			    	String gameString = objectMapper.writeValueAsString(game);
-			    	return Response.status(HttpURLConnection.HTTP_OK).entity(gameString).type(MediaType.APPLICATION_JSON).build();
+			    	return Response.status(HttpURLConnection.HTTP_OK).entity(game).type(MediaType.APPLICATION_JSON).build();
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get Game detail. Database Error. " + e.getMessage());
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-				} catch (JsonProcessingException e) {
-					e.printStackTrace();
-					objResponse.put("message", "Cannot get Game detail. Failed to process JSON. " + e.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-				}		 
+				}
 				// always close connections
 			    finally {
 			      try {
