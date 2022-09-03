@@ -456,6 +456,7 @@ public class GamificationAchievementService extends RESTService {
 			else {
 				name = agent.getIdentifier();
 			}
+
 			try {
 				conn = dbm.getConnection();
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong, true);
@@ -465,75 +466,67 @@ public class GamificationAchievementService extends RESTService {
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
-				
+
 				try {
-					try {
-						if(!achievementAccess.isGameIdExist(conn,gameId)){
-							objResponse.put("message", "Cannot update achievement. Game not found");
-							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						}
-					} catch (SQLException e1) {
-						e1.printStackTrace();
-						objResponse.put("message", "Cannot update achievement. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					}
-					if(!achievementAccess.isAchievementIdExist(conn,gameId, achievementId)){
-						objResponse.put("message", "Cannot update achievement. Achievement not found");
+					if(!achievementAccess.isGameIdExist(conn,gameId)){
+						objResponse.put("message", "Cannot update achievement. Game not found");
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
-					
-					AchievementModel currentAchievement = achievementAccess.getAchievementWithId(conn,gameId, achievementId);
-
-					if(currentAchievement == null){
-						// currentAchievement is null
-						objResponse.put("message", "Cannot update achievement. Achievement not found in database");
-						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					}
-
-					if(achievementname != null) {
-						currentAchievement.setName(achievementname);
-					}
-
-					if(achievementdesc!=null) {
-						currentAchievement.setDescription(achievementdesc);
-					}
-
-					if (achievementpointvalue != null) {
-						currentAchievement.setPointValue(achievementpointvalue);
-					}
-
-					if (achievementbadgeid != null) {
-						logger.info(achievementbadgeid);
-						if(achievementbadgeid.equals("")) {
-							achievementbadgeid = null;
-						}
-						currentAchievement.setBadgeId(achievementbadgeid);
-					}
-
-					currentAchievement.useNotification(achievementnotifcheck);
-
-					if (achievementnotifmessage!=null) {
-						currentAchievement.setNotificationMessage(achievementnotifmessage);
-					}
-
-					achievementAccess.updateAchievement(conn,gameId, currentAchievement);
-					objResponse.put("message", "Achievement updated");
-
-					Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong, true);
-					Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_28, ""+name, true);
-					Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_29, ""+gameId,true);
-					return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-					objResponse.put("message", "Cannot update achievement. DB Error. " + e.getMessage());
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+					objResponse.put("message", "Cannot update achievement. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				}
+				if(!achievementAccess.isAchievementIdExist(conn,gameId, achievementId)){
+					objResponse.put("message", "Cannot update achievement. Achievement not found");
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
+
+				AchievementModel currentAchievement = achievementAccess.getAchievementWithId(conn,gameId, achievementId);
+
+				if(currentAchievement == null){
+					// currentAchievement is null
+					objResponse.put("message", "Cannot update achievement. Achievement not found in database");
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				}
+
+				if(achievementname != null) {
+					currentAchievement.setName(achievementname);
+				}
+
+				if(achievementdesc!=null) {
+					currentAchievement.setDescription(achievementdesc);
+				}
+
+				if (achievementpointvalue != null) {
+					currentAchievement.setPointValue(achievementpointvalue);
+				}
+
+				if (achievementbadgeid != null) {
+					logger.info(achievementbadgeid);
+					if(achievementbadgeid.equals("")) {
+						achievementbadgeid = null;
+					}
+					currentAchievement.setBadgeId(achievementbadgeid);
+				}
+
+				currentAchievement.useNotification(achievementnotifcheck);
+
+				if (achievementnotifmessage!=null) {
+					currentAchievement.setNotificationMessage(achievementnotifmessage);
+				}
+
+				achievementAccess.updateAchievement(conn,gameId, currentAchievement);
+				objResponse.put("message", "Achievement updated");
+
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_19, ""+randomLong, true);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_28, ""+name, true);
+				Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_29, ""+gameId,true);
+				return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 			} catch (SQLException e) {
 				e.printStackTrace();
