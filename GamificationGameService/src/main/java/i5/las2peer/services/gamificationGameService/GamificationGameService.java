@@ -318,7 +318,7 @@ public class GamificationGameService extends RESTService {
 			@ApiOperation(value = "getGameDetails",
 						notes = "Get an game data with specific ID")
 			@ApiResponses(value = {
-					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return game data with specific ID"),
+					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return game data with specific ID", response = GameModel.class),
 					@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Method not found"),
 					@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Game not found"),
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
