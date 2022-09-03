@@ -1,48 +1,30 @@
 package i5.las2peer.services.gamificationAchievementService;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-
 import javax.ws.rs.*;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
-
-import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
+import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.api.Context;
+import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.security.Agent;
 import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.security.UserAgent;
-import i5.las2peer.api.ManualDeployment;
-import i5.las2peer.api.logging.MonitoringEvent;
-import i5.las2peer.api.Context;
+import i5.las2peer.logging.L2pLogger;
+import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.services.gamificationAchievementService.database.AchievementDAO;
 import i5.las2peer.services.gamificationAchievementService.database.AchievementModel;
 import i5.las2peer.services.gamificationAchievementService.database.DatabaseManager;
-import i5.las2peer.services.gamificationAchievementService.helper.FormDataPart;
-import i5.las2peer.services.gamificationAchievementService.helper.MultipartHelper;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.Contact;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.License;
-import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
@@ -552,7 +534,7 @@ public class GamificationAchievementService extends RESTService {
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
-				
+
 			} catch (SQLException e) {
 				e.printStackTrace();
 				objResponse.put("message", "Cannot update achievement. DB Error. " + e.getMessage());
