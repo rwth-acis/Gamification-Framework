@@ -53,6 +53,14 @@ To run all services, in the main directory, execute:
 ./main.bat -r start_one_node
 ```
 
+## API Documentation
+
+Detailed generated documentation for the API of each service can be found in the following documents:
+
+- [Game Service](docs/api/game-service/README.adoc)
+- [Achievement Service](docs/api/acheivement-service/README.adoc)
+
+
 ## Content of gamification.config
 
 > - **jdbcDriverClassName**="org.postgresql.Driver"  (Database Driver for JAVA)
