@@ -1,0 +1,30 @@
+
+[[_definitions]]
+== Definitions
+
+[[_achievementmodel]]
+=== AchievementModel
+Achievement resource representation
+
+
+[options="header", cols=".^3a,.^11a,.^4a"]
+|===
+|Name|Description|Schema
+|**badgeId** +
+__required__||string
+|**description** +
+__optional__|Achievement description|string
+|**id** +
+__required__||string
+|**name** +
+__required__|Achievement name|string
+|**notificationMessage** +
+__required__||string
+|**pointValue** +
+__required__||integer (int32)
+|**useNotification** +
+__required__||boolean
+|===
+
+
+

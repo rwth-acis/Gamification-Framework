@@ -1,0 +1,284 @@
+
+[[_paths]]
+== Resources
+
+[[_gamificationachievements_resource]]
+=== Gamificationachievements
+
+[[_createnewachievement]]
+==== createNewAchievement
+....
+POST /{gameId}
+....
+
+
+===== Description
+A method to store a new achievement with details (achievement ID, achievement name, achievement description, achievement point value, achievement point id, achievement badge id
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID to store a new achievement|string
+|**FormData**|**achievementbadgeid** +
+__optional__|The existing badge from Gamification Badge Service - String (20 chars)|string
+|**FormData**|**achievementdesc** +
+__optional__|Achievement Description - String (50 chars)|string
+|**FormData**|**achievementid** +
+__required__|Achievement ID - String (20 chars)|string
+|**FormData**|**achievementname** +
+__required__|Achievement name - String (20 chars)|string
+|**FormData**|**achievementnotificationcheck** +
+__optional__|Achievement Notification Boolean - Boolean - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.|string
+|**FormData**|**achievementnotificationmessage** +
+__optional__|Achievement Notification Message - String|string
+|**FormData**|**achievementpointvalue** +
+__optional__|Point Value Action - Integer|integer (int32)
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**201**|{message:Achievement upload success (achievementid)}|No Content
+|**400**|{message:Cannot create achievement. Failed to upload (achievementid).|No Content
+|**401**|{message:You are not authorized|No Content
+|**500**|{message:Cannot create achievement. Achievement ID cannot be null!}|No Content
+|===
+
+
+===== Consumes
+
+* `multipart/form-data`
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Type|Name
+|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|===
+
+
+[[_getachievementlist]]
+==== getAchievementList
+....
+GET /{gameId}
+....
+
+
+===== Description
+Returns a list of achievements
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID to return|string
+|**Query**|**current** +
+__optional__|Page number for retrieving data|integer (int32)
+|**Query**|**rowCount** +
+__optional__|Number of data size|integer (int32)
+|**Query**|**searchPhrase** +
+__optional__|Search phrase parameter|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Found a list of achievements|< <<_achievementmodel,AchievementModel>> > array
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Type|Name
+|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|===
+
+
+[[_getachievementwithid]]
+==== getAchievementWithId
+....
+GET /{gameId}/{achievementId}
+....
+
+
+===== Description
+Get achievement data with specified ID
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**achievementId** +
+__required__|Achievement ID|string
+|**Path**|**gameId** +
+__required__|Game ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**||<<_achievementmodel,AchievementModel>>
+|**400**|{message:Cannot get achievement detail. DB Error.|No Content
+|**401**|{message:You are not authorized|No Content
+|**500**|{message:Cannot get achievement. Failed to fetch (achievementId)}|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Type|Name
+|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|===
+
+
+[[_updateachievement]]
+==== updateAchievement
+....
+PUT /{gameId}/{achievementId}
+....
+
+
+===== Description
+A method to update an achievement with details (achievement ID, achievement name, achievement description, achievement point value, achievement point id, achievement badge id
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**achievementId** +
+__required__|Achievement ID to be updated|string
+|**Path**|**gameId** +
+__required__|Game ID to update an achievement|string
+|**FormData**|**achievementbadgeid** +
+__optional__|The existing badge from Gamification Badge Service - String (20 chars)|string
+|**FormData**|**achievementdesc** +
+__optional__|Achievement Description - String (50 chars)|string
+|**FormData**|**achievementname** +
+__optional__|Achievement name - String (20 chars)|string
+|**FormData**|**achievementnotificationcheck** +
+__optional__|Achievement Notification Boolean - Boolean - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.|string
+|**FormData**|**achievementnotificationmessage** +
+__optional__|Achievement Notification Message - String|string
+|**FormData**|**achievementpointvalue** +
+__optional__|Point Value Action - Integer|integer (int32)
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Achievement Updated|No Content
+|**400**|Bad request|No Content
+|**401**|Unauthorized|No Content
+|**500**|Error occured|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Type|Name
+|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|===
+
+
+[[_deleteachievement]]
+==== deleteAchievement
+....
+DELETE /{gameId}/{achievementId}
+....
+
+
+===== Description
+Delete an achievement
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^4a"]
+|===
+|Type|Name|Schema
+|**Path**|**achievementId** +
+__required__|string
+|**Path**|**gameId** +
+__required__|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Achievement Delete Success|No Content
+|**400**|Bad Request|No Content
+|**404**|Achievements not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Type|Name
+|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|===
+
+
+

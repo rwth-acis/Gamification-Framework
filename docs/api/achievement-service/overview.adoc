@@ -1,0 +1,39 @@
+= Gamification Achievement Service
+
+
+[[_overview]]
+== Overview
+Gamification Achievement Service for Gamification Framework
+
+
+=== Version information
+[%hardbreaks]
+__Version__ : 0.1
+
+
+=== Contact information
+[%hardbreaks]
+__Contact__ : Muhammad Abduh Arifin
+__Contact Email__ : arifin@dbis.rwth-aachen.de
+
+
+=== License information
+[%hardbreaks]
+__License__ : your software license name
+__License URL__ : http://your-software-license-url.com
+__Terms of service__ : http://your-terms-of-service-url.com
+
+
+=== URI scheme
+[%hardbreaks]
+__Host__ : www.example.com:8080
+__BasePath__ : /gamification/achievements
+__Schemes__ : HTTP, HTTPS
+
+
+=== Tags
+
+* gamificationachievements
+
+
+
