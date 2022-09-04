@@ -120,12 +120,12 @@ public class GamificationActionService extends RESTService {
 				 * Post a new action.
 				 *
 				 * @param gameId Game ID obtained from Gamification Game Service
-				 * @param actionid - Action ID - String (20 chars)
-				 * @param actionname - Action name - String (20 chars)
-				 * @param actiondesc - Action Description - String (50 chars)
-				 * @param actionpointvalue - Point Value Action - Integer
-				 * @param actionnotifcheckStr - Action Notification Boolean - Boolean - Option whether use notification or not.  Must be null for 'false' and any other value for 'true'
-				 * @param actionnotifmessage - Action Notification Message - String
+				 * @param actionid Action ID - String (20 chars)
+				 * @param actionname Action name - String (20 chars)
+				 * @param actiondesc Action Description - String (50 chars)
+				 * @param actionpointvalue Point Value Action - Integer
+				 * @param actionnotifcheckStr Action Notification Boolean - Boolean - Option whether use notification or not.  Must be null for 'false' and any other value for 'true'
+				 * @param actionnotifmessage Action Notification Message - String
 				 *
 				 * @return HTTP Response returned as JSON object
 				 */
@@ -371,11 +371,11 @@ public class GamificationActionService extends RESTService {
 				 *
 				 * @param gameId Game ID obtained from Gamification Game Service
 				 * @param actionId Action ID to be updated
-				 * @param actionname - Action name - String (20 chars)
-				 * @param actiondesc - Action Description - String (50 chars)
-				 * @param actionpointvalue - Point Value Action - Integer
-				 * @param actionnotifcheckStr - Action Notification Boolean - Boolean - Option whether use notification or not.  Must be null for 'false' and any other value for 'true'
-				 * @param actionnotifmessage - Action Notification Message - String
+				 * @param actionname Action name - String (20 chars)
+				 * @param actiondesc Action Description - String (50 chars)
+				 * @param actionpointvalue Point Value Action - Integer
+				 * @param actionnotifcheckStr Action Notification Boolean - Boolean - Option whether use notification or not.  Must be null for 'false' and any other value for 'true'
+				 * @param actionnotifmessage Action Notification Message - String
 				 *
 				 * @return HTTP Response returned as JSON object
 				 */
@@ -392,7 +392,7 @@ public class GamificationActionService extends RESTService {
 							 notes = "A method to update an action with details (action ID, action name, action description, action point value")
 				public Response updateAction(
 						@ApiParam(value = "Game ID to store an updated action", required = true) @PathParam("gameId") String gameId,
-						@PathParam("actionId") String actionId,
+						@ApiParam(value = "Action ID to be updated", required = true) @PathParam("actionId") String actionId,
 						@ApiParam(value = "Action name - String (20 chars)", required = true) @FormDataParam("actionname") String actionname,
 						@ApiParam(value = "Action Description - String (50 chars)") @FormDataParam("actiondesc") String actiondesc,
 						@ApiParam(value = "Point Value Action - Integer") @FormDataParam("actionpointvalue") Integer actionpointvalue,
