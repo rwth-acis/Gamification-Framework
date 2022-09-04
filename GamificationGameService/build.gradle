@@ -109,7 +109,7 @@ swagger {
 
 convertSwagger2markup {
     swaggerInput file("${project.buildDir}/swagger-ui/swagger.json").getAbsolutePath()
-    outputDir file("${project.buildDir}/asciidoc")
+    outputDir file("${project.rootDir}/docs/api/game-service")
     config = ['swagger2markup.markupLanguage' : 'ASCIIDOC',
               'swagger2markup.pathsGroupedBy' : 'TAGS']
 }
