@@ -67,7 +67,7 @@ __optional__|Point Value Action - Integer|integer (int32)
 [options="header", cols=".^3a,.^4a"]
 |===
 |Type|Name
-|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|**Unknown**|**<<security.adoc#_achievements_auth,achievements_auth>>**
 |===
 
 
@@ -103,7 +103,7 @@ __optional__|Search phrase parameter|string
 [options="header", cols=".^2a,.^14a,.^4a"]
 |===
 |HTTP Code|Description|Schema
-|**200**|Found a list of achievements|< <<_achievementmodel,AchievementModel>> > array
+|**200**|Found a list of achievements|< <<definitions.adoc#_achievementmodel,AchievementModel>> > array
 |**401**|Unauthorized|No Content
 |**500**|Internal Error|No Content
 |===
@@ -119,7 +119,7 @@ __optional__|Search phrase parameter|string
 [options="header", cols=".^3a,.^4a"]
 |===
 |Type|Name
-|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|**Unknown**|**<<security.adoc#_achievements_auth,achievements_auth>>**
 |===
 
 
@@ -151,7 +151,7 @@ __required__|Game ID|string
 [options="header", cols=".^2a,.^14a,.^4a"]
 |===
 |HTTP Code|Description|Schema
-|**200**||<<_achievementmodel,AchievementModel>>
+|**200**||<<definitions.adoc#_achievementmodel,AchievementModel>>
 |**400**|{message:Cannot get achievement detail. DB Error.|No Content
 |**401**|{message:You are not authorized|No Content
 |**500**|{message:Cannot get achievement. Failed to fetch (achievementId)}|No Content
@@ -168,7 +168,7 @@ __required__|Game ID|string
 [options="header", cols=".^3a,.^4a"]
 |===
 |Type|Name
-|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|**Unknown**|**<<security.adoc#_achievements_auth,achievements_auth>>**
 |===
 
 
@@ -229,7 +229,7 @@ __optional__|Point Value Action - Integer|integer (int32)
 [options="header", cols=".^3a,.^4a"]
 |===
 |Type|Name
-|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|**Unknown**|**<<security.adoc#_achievements_auth,achievements_auth>>**
 |===
 
 
@@ -277,7 +277,7 @@ __required__|string
 [options="header", cols=".^3a,.^4a"]
 |===
 |Type|Name
-|**Unknown**|**<<_achievements_auth,achievements_auth>>**
+|**Unknown**|**<<security.adoc#_achievements_auth,achievements_auth>>**
 |===
 
 
