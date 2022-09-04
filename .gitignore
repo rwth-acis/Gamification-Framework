@@ -28,6 +28,7 @@
 
 # GamificationFramework specific
 GamificationPointService/files/*
+GamificationBadgeService/files/*
 
 # But NOT ignore these files...
 !GamificationPointService/files/test
