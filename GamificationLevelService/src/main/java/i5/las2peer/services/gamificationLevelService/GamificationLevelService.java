@@ -1,61 +1,34 @@
 package i5.las2peer.services.gamificationLevelService;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-
-import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
-
+import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
-import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.security.Agent;
 import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.security.UserAgent;
+import i5.las2peer.logging.L2pLogger;
+import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.restMapper.annotations.ServicePath;
+import i5.las2peer.services.gamificationLevelService.database.DatabaseManager;
 import i5.las2peer.services.gamificationLevelService.database.LevelDAO;
 import i5.las2peer.services.gamificationLevelService.database.LevelModel;
-import i5.las2peer.services.gamificationLevelService.database.DatabaseManager;
-import i5.las2peer.services.gamificationLevelService.helper.FormDataPart;
-import i5.las2peer.services.gamificationLevelService.helper.MultipartHelper;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
-import io.swagger.annotations.Contact;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.License;
-import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 
 /**
@@ -152,17 +125,14 @@ public class GamificationLevelService extends RESTService {
 			
 			/**
 			 * Post a new level.
-			 * Name attribute for form data : 
-			 * <ul>
-			 * 	<li>levelnum - Level Number - String (20 chars)
-			 *  <li>levelname - Level name - String (20 chars)
-			 *  <li>levelpointvalue - Point Value Level - Integer
-			 *  <li>levelnotificationcheck - Level Notification Boolean - Boolean - Option whether use notification or not
-			 *  <li>levelnotificationmessage - Level Notification Message - String
-			 * </ul>
+			 *
 			 * @param gameId Game ID obtained from Gamification Game Service
-			 * @param formData Form data with multipart/form-data type
-			 * @param contentType Content type (implicitly sent in header)
+			 * @param levelnum Level Number - Integer
+			 * @param levelname Level name - String (20 chars)
+			 * @param levelpointvalue Point Value Level - Integer
+			 * @param levelnotifcheckStr Level Notification Boolean - Boolean - Option whether use notification or not. Must be null for 'false' and any other value for 'true'
+			 * @param levelnotifmessage Level Notification Message - String
+			 *
 			 * @return HTTP Response returned as JSON object
 			 */
 			@POST
@@ -181,21 +151,24 @@ public class GamificationLevelService extends RESTService {
 						 notes = "A method to store a new level with details (Level number, level name, level point value, level point id)")
 			public Response createLevel(
 					@ApiParam(value = "Game ID to store a new level", required = true) @PathParam("gameId") String gameId,
-					@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-					@ApiParam(value = "Level detail in multiple/form-data type", required = true) byte[] formData)  {
-				
+					@ApiParam(value = "Level Number - Integer", required = true) @FormDataParam("levelnum") Integer levelnum,
+					@ApiParam(value = "Level name - String (20 chars)") @FormDataParam("levelname") @DefaultValue("") String levelname,
+					@ApiParam(value = "Point Value Level - Integer") @FormDataParam("levelpointvalue") @DefaultValue("0") int levelpointvalue,
+					@ApiParam(value = "Level Notification Boolean - Boolean - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.") @FormDataParam("levelnotificationcheck") String levelnotifcheckStr,
+					@ApiParam(value = "Level Notification Message - String") @FormDataParam("levelnotificationmessage") @DefaultValue("") String levelnotifmessage
+			)  {
+				/*
+				 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+				 */
+				boolean levelnotifcheck = legacyBooleanParameterFromFormParam(levelnotifcheckStr);
+
 				// Request log
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/levels/"+gameId, true);
 				long randomLong = new Random().nextLong(); //To be able to match
 				
 				// parse given multipart form data
 				JSONObject objResponse = new JSONObject();
-				int levelnum = 0;
-				String levelname = null;
-				int levelpointvalue = 0;
-				
-				boolean levelnotifcheck = false;
-				String levelnotifmessage = null;
+
 				Connection conn = null;
 
 				
@@ -227,10 +200,8 @@ public class GamificationLevelService extends RESTService {
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
-					Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
-					FormDataPart partNum = parts.get("levelnum");
-					if (partNum != null) {
-						levelnum = Integer.parseInt(partNum.getContent());
+
+					if (levelnum != null) {
 						if(levelAccess.isLevelNumExist(conn,gameId, levelnum)){
 							// level id already exist
 							objResponse.put("message", "Cannot create level. Failed to add the level. levelnum already exist!");
@@ -238,30 +209,7 @@ public class GamificationLevelService extends RESTService {
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 						}
-						FormDataPart partName = parts.get("levelname");
-						if (partName != null) {
-							levelname = partName.getContent();
-						}
-						
-						FormDataPart partPV = parts.get("levelpointvalue");
-						if (partPV != null) {
-							// optional description text input form element
-							levelpointvalue =  Integer.parseInt(partPV.getContent());
-						}
-						FormDataPart partNotificationCheck = parts.get("levelnotificationcheck");
-						if (partNotificationCheck != null) {
-							// checkbox is checked
-							levelnotifcheck = true;
-							
-						}else{
-							levelnotifcheck = false;
-						}
-						FormDataPart partNotificationMsg = parts.get("levelnotificationmessage");
-						if (partNotificationMsg != null) {
-							levelnotifmessage = partNotificationMsg.getContent();
-						}else{
-							levelnotifmessage = "";
-						}
+
 						LevelModel model = new LevelModel(levelnum, levelname, levelpointvalue, levelnotifcheck, levelnotifmessage);
 						
 						try{
@@ -278,27 +226,12 @@ public class GamificationLevelService extends RESTService {
 							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
-					}
-					else{
+					} else{
 						objResponse.put("message", "Cannot create level. Level number cannot be null!");
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 					}
-					
-					
-				} catch (MalformedStreamException e) {
-					// the stream failed to follow required syntax
-					objResponse.put("message", "Cannot create level. Failed to upload. " + levelnum + e.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
-				} catch (IOException e) {
-					// a read or write error occurred
-					objResponse.put("message", "Cannot create level. Failed to upload " + levelnum + ". " + e.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot create level. Failed to upload " + levelnum + ". " + e.getMessage());
@@ -436,18 +369,14 @@ public class GamificationLevelService extends RESTService {
 
 			/**
 			 * Update a level.
-			 * Name attribute for form data : 
-			 * <ul>
-			 * 	<li>levelnum - Level Number - String (20 chars)
-			 *  <li>levelname - Level name - String (20 chars)
-			 *  <li>levelpointvalue - Point Value Level - Integer
-			 *  <li>levelnotificationcheck - Level Notification Boolean - Boolean - Option whether use notification or not
-			 *  <li>levelnotificationmessage - Level Notification Message - String
-			 * </ul>
+			 *
 			 * @param gameId Game ID obtained from Gamification Game Service
-			 * @param levelNum levelNum
-			 * @param formData Form data with multipart/form-data type
-			 * @param contentType Content type (implicitly sent in header)
+			 * @param levelNum Level Number to be updated
+			 * @param levelname - Level name - String (20 chars)
+			 * @param levelpointvalue - Point Value Level - Integer
+			 * @param levelnotifcheckStr - Level Notification Boolean - Boolean - Option whether use notification or not. Must be null for 'false' and any other value for 'true'
+			 * @param levelnotifmessage - Level Notification Message - String
+			 *
 			 * @return HTTP Response returned as JSON object
 			 */
 			@PUT
@@ -463,9 +392,16 @@ public class GamificationLevelService extends RESTService {
 						 notes = "A method to update an level with details (Level number, level name, level point value, level point id)")
 			public Response updateLevel(
 					@ApiParam(value = "Game ID to store a new level", required = true) @PathParam("gameId") String gameId,
-						@PathParam("levelNum") int levelNum,
-					@ApiParam(value = "Content type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-					@ApiParam(value = "Level detail in multiple/form-data type", required = true) byte[] formData)  {
+					@ApiParam(value = "Level number to be updated", required = true) @PathParam("levelNum") Integer levelNum,
+					@ApiParam(value = "Level name - String (20 chars)") @FormDataParam("levelname") @DefaultValue("") String levelname,
+					@ApiParam(value = "Point Value Level - Integer") @FormDataParam("levelpointvalue") @DefaultValue("0") Integer levelpointvalue,
+					@ApiParam(value = "Level Notification Boolean - Boolean - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.") @FormDataParam("levelnotificationcheck") String levelnotifcheckStr,
+					@ApiParam(value = "Level Notification Message - String") @FormDataParam("levelnotificationmessage") @DefaultValue("") String levelnotifmessage
+			)  {
+				/*
+				 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+				 */
+				boolean levelnotifcheck = legacyBooleanParameterFromFormParam(levelnotifcheckStr);
 				
 				// Request log
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/levels/"+gameId+"/"+levelNum, true);
@@ -475,10 +411,6 @@ public class GamificationLevelService extends RESTService {
 				// parse given multipart form data
 				JSONObject objResponse = new JSONObject();
 
-				String levelname = null;
-				int levelpointvalue = 0;
-				//boolean levelnotifcheck = false;
-				String levelnotifmessage = null;
 				Connection conn = null;
 
 				
@@ -518,8 +450,6 @@ public class GamificationLevelService extends RESTService {
 
 						}
 						
-						Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
-						
 						if (levelNum == 0 ) {
 							objResponse.put("message", "Cannot update level. Level ID cannot be null");
 							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -527,38 +457,22 @@ public class GamificationLevelService extends RESTService {
 
 						}
 							
-						LevelModel model =levelAccess.getLevelWithNumber(conn,gameId, levelNum);
+						LevelModel model = levelAccess.getLevelWithNumber(conn,gameId, levelNum);
 
-						if(model != null){
-							FormDataPart partName = parts.get("levelname");
-							if (partName != null) {
-								levelname = partName.getContent();
-								
-								if(levelname != null){
-									model.setName(levelname);
-								}
+						if (model != null) {
+
+							if(levelname != null){
+								model.setName(levelname);
 							}
-							FormDataPart partPV = parts.get("levelpointvalue");
-							if (partPV != null) {
-								// optional description text input form element
-								levelpointvalue = Integer.parseInt(partPV.getContent());
+							if (levelpointvalue != null) {
 								model.setPointValue(levelpointvalue);
 							}
-							FormDataPart partNotificationCheck = parts.get("levelnotificationcheck");
-							if (partNotificationCheck != null) {
-								// checkbox is checked
-								model.useNotification(true);	
-							}else{
 
-								model.useNotification(false);
+							model.useNotification(levelnotifcheck);
+							if(levelnotifmessage != null){
+								model.setNotificationMessage(levelnotifmessage);
 							}
-							FormDataPart partNotificationMsg = parts.get("levelnotificationmessage");
-							if (partNotificationMsg != null) {
-								levelnotifmessage = partNotificationMsg.getContent();
-								if(levelnotifmessage != null){
-									model.setNotificationMessage(levelnotifmessage);
-								}
-							}
+
 							try{
 								levelAccess.updateLevel(conn,gameId, model);
 								objResponse.put("message", "Level updated");
@@ -588,16 +502,6 @@ public class GamificationLevelService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					
-				} catch (MalformedStreamException e) {
-					// the stream failed to follow required syntax
-					objResponse.put("message", "Cannot update level. Failed to upload " + levelNum + ". "+e.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-				} catch (IOException e) {
-					// a read or write error occurred
-					objResponse.put("message", "Cannot update level. Failed to upload " + levelNum + ". " + e.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 					objResponse.put("message", "Cannot update level. DB Error " + e1.getMessage());
@@ -820,6 +724,20 @@ public class GamificationLevelService extends RESTService {
 			    }
 			}
 	  //}
-	
+
+	/**
+	 * Legacy semantics of the 'XYZnotificationcheck' parameter are the following:
+	 * - If parameter has any non-null value (even blank string) -> true
+	 * - Otherwise -> false
+	 *
+	 * @param paramValue the raw string value of the form param (may be null if parameter is not set)
+	 * @return
+	 */
+	private static boolean legacyBooleanParameterFromFormParam(String paramValue) {
+		/*
+		 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+		 */
+		return paramValue != null;
+	}
 
 }
