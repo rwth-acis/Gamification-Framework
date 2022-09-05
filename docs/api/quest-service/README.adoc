@@ -1,0 +1,44 @@
+= Gamification Quest Service
+
+
+[[_overview]]
+== Overview
+
+1. <<paths.adoc#_paths, Resources and Operations - Detailed API Documentation>>
+2. <<definitions.adoc#_definitions, Definitions - Response and Request Entities>>
+3. <<../README.adoc#_authentication, Authentication>>
+
+Gamification Quest Service for Gamification Framework
+
+
+=== Version information
+[%hardbreaks]
+__Version__ : 0.1
+
+
+=== Contact information
+[%hardbreaks]
+__Contact__ : Muhammad Abduh Arifin
+__Contact Email__ : arifin@dbis.rwth-aachen.de
+
+
+=== License information
+[%hardbreaks]
+__License__ : your software license name
+__License URL__ : http://your-software-license-url.com
+__Terms of service__ : http://your-terms-of-service-url.com
+
+
+=== URI scheme
+[%hardbreaks]
+__Host__ : www.example.com:8080
+__BasePath__ : /gamification/quests
+__Schemes__ : HTTP, HTTPS
+
+
+=== Tags
+
+* quests
+
+
+

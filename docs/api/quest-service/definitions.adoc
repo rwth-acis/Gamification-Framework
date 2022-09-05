@@ -1,0 +1,74 @@
+
+[[_definitions]]
+== Definitions
+
+[[_pair]]
+=== Pair
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**key** +
+__required__|object
+|**left** +
+__required__|object
+|**right** +
+__required__|object
+|**value** +
+__required__|object
+|===
+
+
+[[_pairstringinteger]]
+=== PairStringInteger
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**key** +
+__required__|string
+|**left** +
+__required__|string
+|**right** +
+__required__|integer (int32)
+|**value** +
+__required__|integer (int32)
+|===
+
+
+[[_questmodel]]
+=== QuestModel
+Quest resource representation
+
+
+[options="header", cols=".^3a,.^11a,.^4a"]
+|===
+|Name|Description|Schema
+|**achievementId** +
+__required__||string
+|**actionIds** +
+__required__||< <<definitions.adoc#_pairstringinteger,PairStringInteger>> > array
+|**description** +
+__optional__|Quest description|string
+|**id** +
+__required__||string
+|**name** +
+__required__|Quest name|string
+|**notificationMessage** +
+__required__||string
+|**pointFlag** +
+__required__||boolean
+|**pointValue** +
+__required__||integer (int32)
+|**questFlag** +
+__required__||boolean
+|**questIdCompleted** +
+__required__||string
+|**status** +
+__required__|Quest status|enum (COMPLETED, REVEALED, HIDDEN)
+|**useNotification** +
+__required__||boolean
+|===
+
+
+

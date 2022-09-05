@@ -1,0 +1,927 @@
+
+[[_paths]]
+== Resources
+
+[[_members_resource]]
+=== Members
+
+[[_getachievementsofmember]]
+==== GET /achievements/{gameId}/{memberId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getachievementdetailwithid]]
+==== Find point for specific Game ID and achievement ID
+....
+GET /achievements/{gameId}/{memberId}/{achievementId}
+....
+
+
+===== Description
+Returns a achievement
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**achievementId** +
+__required__|Achievement ID|string
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Found an achievement|<<definitions.adoc#_achievementmodel,AchievementModel>>
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_api_key,api_key>>**|
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_triggeraction]]
+==== triggerAction
+....
+POST /actions/{gameId}/{actionId}/{memberId}
+....
+
+
+===== Description
+A method to trigger an
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**actionId** +
+__required__|Action ID|string
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**201**|{"status": 3, "message": "Action upload success ( (actionid) )"}|No Content
+|**400**|{"status": 2, "message": "Failed to upload (actionid)"}|No Content
+|**401**|{"status": 3, "message": &quot;Action upload success ( (actionid) )}|No Content
+|**500**|{"status": =, "message": "Action ID cannot be null!"}|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getbadgesofmember]]
+==== GET /badges/{gameId}/{memberId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getbadgedetailwithid]]
+==== Find point for specific Game ID and badge ID
+....
+GET /badges/{gameId}/{memberId}/{badgeId}
+....
+
+
+===== Description
+Returns a badge
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**badgeId** +
+__required__|Badge ID|string
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Found a badges|< <<definitions.adoc#_badgemodel,BadgeModel>> > array
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_api_key,api_key>>**|
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getbadgeimagedetail]]
+==== GET /badges/{gameId}/{memberId}/{badgeId}/img
+
+===== Description
+list of stored badges
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**badgeId** +
+__required__||string
+|**Path**|**gameId** +
+__required__||string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Badges Entry|No Content
+|**500**|Cannot found image|No Content
+|===
+
+
+===== Produces
+
+* `application/octet-stream`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getgloballeaderboard]]
+==== Get the local leaderboard
+....
+GET /leaderboard/global/{gameId}/{memberId}
+....
+
+
+===== Description
+Returns a leaderboard array
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Query**|**current** +
+__optional__|Page number for retrieving data|integer (int32)
+|**Query**|**rowCount** +
+__optional__|Number of data size|integer (int32)
+|**Query**|**searchPhrase** +
+__optional__|Search phrase parameter|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Return global leaderboard|No Content
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_api_key,api_key>>**|
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getlocalleaderboard]]
+==== Get the local leaderboard
+....
+GET /leaderboard/local/{gameId}/{memberId}
+....
+
+
+===== Description
+Returns a leaderboard array
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Query**|**current** +
+__optional__|Page number for retrieving data|integer (int32)
+|**Query**|**rowCount** +
+__optional__|Number of data size|integer (int32)
+|**Query**|**searchPhrase** +
+__optional__|Search phrase parameter|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Return local leaderboard|No Content
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_api_key,api_key>>**|
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getnotification]]
+==== Get the local leaderboard
+....
+GET /notifications/{gameId}/{memberId}
+....
+
+
+===== Description
+Returns a leaderboard array
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Query**|**current** +
+__optional__|Page number for retrieving data|integer (int32)
+|**Query**|**rowCount** +
+__optional__|Number of data size|integer (int32)
+|**Query**|**searchPhrase** +
+__optional__|Search phrase parameter|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Return global leaderboard|No Content
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_api_key,api_key>>**|
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_pauseuserstreak]]
+==== getStreakWithId
+....
+POST /pause/{gameId}/{memberId}/{streakId}
+....
+
+
+===== Description
+Returns streak detail with specific ID
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Path**|**streakId** +
+__required__|Streak ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Found a streak|<<definitions.adoc#_streakmodel,StreakModel>>
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getpointofmember]]
+==== GET /points/{gameId}/{memberId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getquestprogressofmember]]
+==== GET /quests/{gameId}/{memberId}/progress/{questId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Path**|**questId** +
+__required__|Quest ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getquestswithstatusofmember]]
+==== GET /quests/{gameId}/{memberId}/status/{statusId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Path**|**statusId** +
+__required__|Quest status|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getquestdetailwithid]]
+==== Find quest for specific Game ID and quest ID
+....
+GET /quests/{gameId}/{memberId}/{questId}
+....
+
+
+===== Description
+Returns a quest
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Path**|**questId** +
+__required__|Quest ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Found a quest|<<definitions.adoc#_questmodel,QuestModel>>
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_api_key,api_key>>**|
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getstatusofmember]]
+==== GET /status/{gameId}/{memberId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_gettransitivestreakprogress]]
+==== GET /streaks/accumulative/{gameId}/{memberId}/{streakId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Path**|**streakId** +
+__required__|Streak ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getstreaksofmember]]
+==== GET /streaks/{gameId}/{memberId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getstreakprogressofmember]]
+==== GET /streaks/{gameId}/{memberId}/progress/{streakId}
+
+===== Description
+Select an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Path**|**streakId** +
+__required__|Streak ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Selected|No Content
+|**400**|Bad Request|No Content
+|**404**|Game not found|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+[[_getstreakdetailwithid]]
+==== Find point for specific Game ID and streak ID
+....
+GET /streaks/{gameId}/{memberId}/{streakId}
+....
+
+
+===== Description
+Returns a streak
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|**Path**|**streakId** +
+__required__|Streak ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Found a streak|<<definitions.adoc#_streakmodel,StreakModel>>
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_api_key,api_key>>**|
+|**Unknown**|**<<security.adoc#_members_auth,members_auth>>**|read:members
+|===
+
+
+

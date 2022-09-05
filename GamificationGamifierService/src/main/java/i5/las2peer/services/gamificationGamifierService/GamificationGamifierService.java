@@ -61,7 +61,7 @@ import net.minidev.json.parser.ParseException;
  * the entire ApiInfo annotation should be removed.
  * 
  */
-@Api
+@Api(tags = "gamifier")
 @SwaggerDefinition(
 		info = @Info(
 				title = "las2peer Example Service",
