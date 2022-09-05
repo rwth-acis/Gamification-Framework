@@ -55,10 +55,9 @@ To run all services, in the main directory, execute:
 
 ## API Documentation
 
-Detailed generated documentation for the API of each service can be found in the following documents:
+Information about authentication and links to detailed documentation for the API of each service can be found here:
 
-- [Game Service](docs/api/game-service/README.adoc)
-- [Achievement Service](docs/api/acheivement-service/README.adoc)
+- [Gamification Framework API](docs/api/README.adoc)
 
 
 ## Content of gamification.config
