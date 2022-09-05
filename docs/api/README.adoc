@@ -15,4 +15,4 @@ TODO
 ## Developer Notes
 
 The API documentation for each service is generated automatically.
-Please read the following <<developers-read-this.md, this file>> for more information!
+Please read the following <<developers-read-this.adoc#, this file>> for more information!
