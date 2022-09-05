@@ -1,6 +1,0 @@
-== Table of Contents
-
-Check the documents linked below for a detailed documentation:
-
-1. <<paths.adoc#_paths, Resources and Operations>> - Detailed API documentation
-2. <<definitions.adoc#_definitions, Definitions>> - Response and Request entities

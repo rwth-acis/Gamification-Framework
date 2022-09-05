@@ -3,6 +3,11 @@
 
 [[_overview]]
 == Overview
+
+1. <<paths.adoc#_paths, Resources and Operations - Detailed API Documentation>>
+2. <<definitions.adoc#_definitions, Definitions - Response and Request Entities>>
+3. <<../README.adoc#_authentication, Authentication>>
+
 Gamification Game Service for Gamification Framework
 
 
@@ -34,14 +39,6 @@ __Schemes__ : HTTP, HTTPS
 === Tags
 
 * games
-
-
-=== Table of Contents
-
-Check the documents linked below for a detailed documentation:
-
-1. <<paths.adoc#_paths, Resources and Operations>> - Detailed API documentation
-2. <<definitions.adoc#_definitions, Definitions>> - Response and Request entities
 
 
 

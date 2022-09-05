@@ -1,0 +1,18 @@
+# Gamification Framework API
+
+[[_paths]]
+## Services
+
+- <<game-service/README.adoc#_overview, Game Service API>>
+- <<achievement-service/README.adoc#_overview, Achievement Service API>>
+
+[[_authentication]]
+## Authentication
+
+TODO
+
+
+## Developer Notes
+
+The API documentation for each service is generated automatically.
+Please read the following <<developers-read-this.md, this file>> for more information!
