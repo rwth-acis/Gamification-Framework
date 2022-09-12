@@ -1,0 +1,229 @@
+
+[[_definitions]]
+== Definitions
+
+[[_achievementmodel]]
+=== AchievementModel
+Achievement resource representation
+
+
+[options="header", cols=".^3a,.^11a,.^4a"]
+|===
+|Name|Description|Schema
+|**badgeId** +
+__required__||string
+|**description** +
+__optional__|Achievement description|string
+|**id** +
+__required__||string
+|**name** +
+__required__|Achievement name|string
+|**notificationMessage** +
+__required__||string
+|**pointValue** +
+__required__||integer (int32)
+|**useNotification** +
+__required__||boolean
+|===
+
+
+[[_badgemodel]]
+=== BadgeModel
+Badge resource representation
+
+
+[options="header", cols=".^3a,.^11a,.^4a"]
+|===
+|Name|Description|Schema
+|**description** +
+__optional__|Badge description|string
+|**id** +
+__required__|Badge ID|string
+|**name** +
+__required__|Badge name|string
+|**notificationMessage** +
+__required__||string
+|**useNotification** +
+__required__||boolean
+|===
+
+
+[[_duration]]
+=== Duration
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**nano** +
+__required__|integer (int32)
+|**negative** +
+__required__|boolean
+|**seconds** +
+__required__|integer (int64)
+|**units** +
+__required__|< <<definitions.adoc#_temporalunit,TemporalUnit>> > array
+|**zero** +
+__required__|boolean
+|===
+
+
+[[_isochronology]]
+=== IsoChronology
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**calendarType** +
+__required__|string
+|**id** +
+__required__|string
+|===
+
+
+[[_pair]]
+=== Pair
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**key** +
+__required__|object
+|**left** +
+__required__|object
+|**right** +
+__required__|object
+|**value** +
+__required__|object
+|===
+
+
+[[_pairstringinteger]]
+=== PairStringInteger
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**key** +
+__required__|string
+|**left** +
+__required__|string
+|**right** +
+__required__|integer (int32)
+|**value** +
+__required__|integer (int32)
+|===
+
+
+[[_period]]
+=== Period
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**chronology** +
+__required__|<<definitions.adoc#_isochronology,IsoChronology>>
+|**days** +
+__required__|integer (int32)
+|**months** +
+__required__|integer (int32)
+|**negative** +
+__required__|boolean
+|**units** +
+__required__|< <<definitions.adoc#_temporalunit,TemporalUnit>> > array
+|**years** +
+__required__|integer (int32)
+|**zero** +
+__required__|boolean
+|===
+
+
+[[_questmodel]]
+=== QuestModel
+Quest resource representation
+
+
+[options="header", cols=".^3a,.^11a,.^4a"]
+|===
+|Name|Description|Schema
+|**achievementId** +
+__required__||string
+|**actionIds** +
+__required__||< <<definitions.adoc#_pairstringinteger,PairStringInteger>> > array
+|**description** +
+__optional__|Quest description|string
+|**id** +
+__required__||string
+|**name** +
+__required__|Quest name|string
+|**notificationMessage** +
+__required__||string
+|**pointFlag** +
+__required__||boolean
+|**pointValue** +
+__required__||integer (int32)
+|**questFlag** +
+__required__||boolean
+|**questIdCompleted** +
+__required__||string
+|**status** +
+__required__|Quest status|enum (COMPLETED, REVEALED, HIDDEN)
+|**useNotification** +
+__required__||boolean
+|===
+
+
+[[_streakmodel]]
+=== StreakModel
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**achievements** +
+__required__|< string, string > map
+|**actions** +
+__required__|< string > array
+|**badges** +
+__required__|< string, string > map
+|**description** +
+__required__|string
+|**dueDate** +
+__required__|string (date-time)
+|**lockedDate** +
+__required__|string (date-time)
+|**name** +
+__required__|string
+|**notificationCheck** +
+__required__|boolean
+|**notificationMessage** +
+__required__|string
+|**period** +
+__required__|<<definitions.adoc#_period,Period>>
+|**pointThreshold** +
+__required__|integer (int32)
+|**status** +
+__required__|enum (ACTIVE, PAUSED, FAILED, UPDATED)
+|**streakId** +
+__required__|string
+|**streakLevel** +
+__required__|integer (int32)
+|===
+
+
+[[_temporalunit]]
+=== TemporalUnit
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**dateBased** +
+__required__|boolean
+|**duration** +
+__required__|<<definitions.adoc#_duration,Duration>>
+|**durationEstimated** +
+__required__|boolean
+|**timeBased** +
+__required__|boolean
+|===
+
+
+

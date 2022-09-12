@@ -1,0 +1,327 @@
+
+[[_paths]]
+== Resources
+
+[[_games_resource]]
+=== Games
+
+[[_creategame]]
+==== createGame
+....
+POST /data
+....
+
+
+===== Description
+Method to create a new game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a,.^2a"]
+|===
+|Type|Name|Description|Schema|Default
+|**FormData**|**commtype** +
+__optional__|Community Type - String (20 chars)|string|`"def_type"`
+|**FormData**|**gamedesc** +
+__optional__|Game Description - String (50 chars)|string|
+|**FormData**|**gameid** +
+__required__|Game ID - String (20 chars, only lower case!)|string|
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**201**|New game created|No Content
+|**400**|Error checking app ID exist|No Content
+|**401**|Unauthorized|No Content
+|**500**|Error in parsing form data|No Content
+|===
+
+
+===== Consumes
+
+* `multipart/form-data`
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_game_auth,game_auth>>**|write:games,read:games
+|===
+
+
+[[_getgamedetails]]
+==== getGameDetails
+....
+GET /data/{gameId}
+....
+
+
+===== Description
+Get an game data with specific ID
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Return game data with specific ID|<<definitions.adoc#_gamemodel,GameModel>>
+|**400**|Game not found|No Content
+|**404**|Method not found|No Content
+|**500**|Failed to process JSON|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_game_auth,game_auth>>**|write:games,read:games
+|===
+
+
+[[_deletegame]]
+==== Delete Game
+....
+DELETE /data/{gameId}
+....
+
+
+===== Description
+This method deletes an Game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Game Deleted|No Content
+|**400**|Game not found|No Content
+|**401**|Unauthorized|No Content
+|**500**|Error delete storage|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_game_auth,game_auth>>**|write:games,read:games
+|===
+
+
+[[_addmembertogame]]
+==== addMemberToGame
+....
+POST /data/{gameId}/{memberId}
+....
+
+
+===== Description
+add a member to an game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Member is Added|No Content
+|**400**|Error checking game ID exist|No Content
+|**500**|Database error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_game_auth,game_auth>>**|write:games,read:games
+|===
+
+
+[[_removememberfromgame]]
+==== removeMemberFromGame
+....
+DELETE /data/{gameId}/{memberId}
+....
+
+
+===== Description
+delete a member from an game
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|**Path**|**memberId** +
+__required__|Member ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Member is removed from game|No Content
+|**400**|No member found|No Content
+|**500**|Database error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_game_auth,game_auth>>**|write:games,read:games
+|===
+
+
+[[_getseparategameinfo]]
+==== getSeparateGameInfo
+....
+GET /list/separated
+....
+
+
+===== Description
+Get all game list separated into two categories. All games registered for the member and other games.
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|List of games|No Content
+|**401**|Unauthorized|No Content
+|**500**|JsonProcessingException|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_game_auth,game_auth>>**|write:games,read:games
+|===
+
+
+[[_memberloginvalidation]]
+==== memberLoginValidation
+....
+POST /validation
+....
+
+
+===== Description
+Simple function to validate a member login.
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Member is registered|No Content
+|**400**|User data error to be retrieved|No Content
+|**401**|Unauthorized|No Content
+|**500**|User data error to be retrieved. Not JSON object|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_game_auth,game_auth>>**|write:games,read:games
+|===
+
+
+

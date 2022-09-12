@@ -1,0 +1,83 @@
+
+[[_paths]]
+== Resources
+
+[[_gamifier_resource]]
+=== Gamifier
+
+[[_getactions]]
+==== getActions
+....
+GET /actions/{gameId}
+....
+
+
+===== Description
+Function to get actions from the game.
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Fetch the actions|No Content
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+[[_updaterepository]]
+==== updateRepository
+....
+POST /repo
+....
+
+
+===== Description
+Simple function to update repository.
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Body**|**body** +
+__required__|Data in JSON|< string (byte) > array
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Member is registered|No Content
+|**400**|User data error to be retrieved|No Content
+|**401**|Unauthorized|No Content
+|**500**|User data error to be retrieved. Not JSON object|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+

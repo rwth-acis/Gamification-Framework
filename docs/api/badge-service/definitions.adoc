@@ -1,0 +1,26 @@
+
+[[_definitions]]
+== Definitions
+
+[[_badgemodel]]
+=== BadgeModel
+Badge resource representation
+
+
+[options="header", cols=".^3a,.^11a,.^4a"]
+|===
+|Name|Description|Schema
+|**description** +
+__optional__|Badge description|string
+|**id** +
+__required__|Badge ID|string
+|**name** +
+__required__|Badge name|string
+|**notificationMessage** +
+__required__||string
+|**useNotification** +
+__required__||boolean
+|===
+
+
+

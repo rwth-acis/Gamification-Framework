@@ -1,0 +1,3 @@
+1. <<paths.adoc#_paths, Resources and Operations - Detailed API Documentation>>
+2. <<definitions.adoc#_definitions, Definitions - Response and Request Entities>>
+3. <<../README.adoc#_authentication, Authentication>>

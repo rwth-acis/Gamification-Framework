@@ -1,0 +1,114 @@
+
+[[_definitions]]
+== Definitions
+
+[[_duration]]
+=== Duration
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**nano** +
+__required__|integer (int32)
+|**negative** +
+__required__|boolean
+|**seconds** +
+__required__|integer (int64)
+|**units** +
+__required__|< <<definitions.adoc#_temporalunit,TemporalUnit>> > array
+|**zero** +
+__required__|boolean
+|===
+
+
+[[_isochronology]]
+=== IsoChronology
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**calendarType** +
+__required__|string
+|**id** +
+__required__|string
+|===
+
+
+[[_period]]
+=== Period
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**chronology** +
+__required__|<<definitions.adoc#_isochronology,IsoChronology>>
+|**days** +
+__required__|integer (int32)
+|**months** +
+__required__|integer (int32)
+|**negative** +
+__required__|boolean
+|**units** +
+__required__|< <<definitions.adoc#_temporalunit,TemporalUnit>> > array
+|**years** +
+__required__|integer (int32)
+|**zero** +
+__required__|boolean
+|===
+
+
+[[_streakmodel]]
+=== StreakModel
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**achievements** +
+__required__|< string, string > map
+|**actions** +
+__required__|< string > array
+|**badges** +
+__required__|< string, string > map
+|**description** +
+__required__|string
+|**dueDate** +
+__required__|string (date-time)
+|**lockedDate** +
+__required__|string (date-time)
+|**name** +
+__required__|string
+|**notificationCheck** +
+__required__|boolean
+|**notificationMessage** +
+__required__|string
+|**period** +
+__required__|<<definitions.adoc#_period,Period>>
+|**pointThreshold** +
+__required__|integer (int32)
+|**status** +
+__required__|enum (ACTIVE, PAUSED, FAILED, UPDATED)
+|**streakId** +
+__required__|string
+|**streakLevel** +
+__required__|integer (int32)
+|===
+
+
+[[_temporalunit]]
+=== TemporalUnit
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**dateBased** +
+__required__|boolean
+|**duration** +
+__required__|<<definitions.adoc#_duration,Duration>>
+|**durationEstimated** +
+__required__|boolean
+|**timeBased** +
+__required__|boolean
+|===
+
+
+

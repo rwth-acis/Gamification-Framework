@@ -1,0 +1,26 @@
+# Gamification Framework API
+
+[[_paths]]
+## Services
+
+- <<game-service/README.adoc#_overview, Game Service API>>
+- <<achievement-service/README.adoc#_overview, Achievement Service API>>
+- <<action-service/README.adoc#_overview, Action Service API>>
+- <<badge-service/README.adoc#_overview, Badge Service API>>
+- <<point-service/README.adoc#_overview, Point Service API>>
+- <<level-service/README.adoc#_overview, Level Service API>>
+- <<quest-service/README.adoc#_overview, Quest Service API>>
+- <<streak-service/README.adoc#_overview, Streak Service API>>
+- <<visualization-service/README.adoc#_overview, Visualization Service API>>
+- <<gamifier-service/README.adoc#_overview, Gamifier Service API>>
+
+[[_authentication]]
+## Authentication
+
+TODO
+
+
+## Developer Notes
+
+The API documentation for each service is generated automatically.
+Please read the following <<developers-read-this.adoc#, this file>> for more information!

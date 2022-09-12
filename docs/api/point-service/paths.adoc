@@ -1,0 +1,102 @@
+
+[[_paths]]
+== Resources
+
+[[_points_resource]]
+=== Points
+
+[[_getunitname]]
+==== getUnitName
+....
+GET /{gameId}/name
+....
+
+
+===== Description
+Get unit name
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID to return|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Unit name|No Content
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_points_auth,points_auth>>**|write:points,read:points
+|===
+
+
+[[_changeunitname]]
+==== changeUnitName
+....
+PUT /{gameId}/name/{unitName}
+....
+
+
+===== Description
+Change unit name
+
+
+===== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**gameId** +
+__required__|Game ID to return|string
+|**Path**|**unitName** +
+__required__|Point unit name|string
+|===
+
+
+===== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|Unit name changed|No Content
+|**401**|Unauthorized|No Content
+|**500**|Internal Error|No Content
+|===
+
+
+===== Produces
+
+* `application/json`
+
+
+===== Security
+
+[options="header", cols=".^3a,.^4a,.^13a"]
+|===
+|Type|Name|Scopes
+|**Unknown**|**<<security.adoc#_points_auth,points_auth>>**|write:points,read:points
+|===
+
+
+

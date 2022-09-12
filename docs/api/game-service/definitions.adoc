@@ -1,0 +1,22 @@
+
+[[_definitions]]
+== Definitions
+
+[[_gamemodel]]
+=== GameModel
+Game data resource representation
+
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**commType** +
+__required__|string
+|**description** +
+__required__|string
+|**id** +
+__required__|string
+|===
+
+
+

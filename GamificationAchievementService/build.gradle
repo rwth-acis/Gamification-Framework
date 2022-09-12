@@ -1,8 +1,23 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/' }
+    }
+    dependencies {
+        classpath 'io.github.swagger2markup:swagger2markup-gradle-plugin:1.3.3'
+        classpath 'io.github.swagger2markup:swagger2markup-import-files-ext:1.3.1'
+    }
+}
+
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
     id 'eclipse' // only required when using Eclipse
+    id 'com.benjaminsproule.swagger' version '1.0.8'
 }
+
+apply plugin: 'io.github.swagger2markup'
 
 repositories {
     // Use mavenCentral for resolving dependencies.
@@ -82,6 +97,29 @@ tasks.withType(Jar) {
 
 javadoc {
     destinationDir = file("$projectDir/export/doc")
+}
+
+swagger {
+    apiSource {
+        springmvc = false
+        locations = ['i5.las2peer.services.gamificationAchievementService']
+        schemes = ['http', 'https']
+        host = 'www.example.com:8080'
+        basePath = '/gamification/achievements'
+        swaggerDirectory = "${project.buildDir}/swagger-ui"
+    }
+}
+
+convertSwagger2markup {
+    swaggerInput file("${project.buildDir}/swagger-ui/swagger.json").getAbsolutePath()
+    outputDir file("${project.rootDir}/docs/api/achievement-service")
+    config = [
+            'swagger2markup.markupLanguage' : 'ASCIIDOC',
+            'swagger2markup.pathsGroupedBy' : 'TAGS',
+            'swagger2markup.interDocumentCrossReferencesEnabled': true,
+            'swagger2markup.overviewDocument': 'README',
+            'swagger2markup.extensions.dynamicOverview.contentPath' : file('src/docs/asciidoc/extensions/overview').absolutePath
+    ]
 }
 
 build.dependsOn "javadoc"
