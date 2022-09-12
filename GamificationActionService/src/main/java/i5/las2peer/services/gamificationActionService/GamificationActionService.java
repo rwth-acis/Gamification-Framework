@@ -1,62 +1,35 @@
 package i5.las2peer.services.gamificationActionService;
 
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
-
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-
-import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
+import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.api.Context;
-import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.security.Agent;
 import i5.las2peer.api.security.AnonymousAgent;
 import i5.las2peer.api.security.UserAgent;
-import i5.las2peer.services.gamificationActionService.database.DatabaseManager;
+import i5.las2peer.logging.L2pLogger;
+import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.services.gamificationActionService.database.ActionDAO;
 import i5.las2peer.services.gamificationActionService.database.ActionModel;
-import i5.las2peer.services.gamificationActionService.helper.FormDataPart;
-import i5.las2peer.services.gamificationActionService.helper.MultipartHelper;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
-import io.swagger.annotations.Contact;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.License;
-import io.swagger.annotations.SwaggerDefinition;
+import i5.las2peer.services.gamificationActionService.database.DatabaseManager;
+import io.swagger.annotations.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /**
  * Gamification Action Service
@@ -144,19 +117,16 @@ public class GamificationActionService extends RESTService {
 				// //////////////////////////////////////////////////////////////////////////////////////
 
 				/**
-				 * Post a new action. 
-				 * Name attribute for form data : 
-				 * <ul>
-				 *  <li>actionid - Action ID - String (20 chars)
-				 *  <li>actionname - Action name - String (20 chars)
-				 *  <li>actiondesc - Action Description - String (50 chars)
-				 *  <li>actionpointvalue - Point Value Action - Integer
-				 *  <li>actionnotificationcheck - Action Notification Boolean - Boolean - Option whether use notification or not
-				 *  <li>actionnotificationmessage - Action Notification Message - String
-				 * </ul>
+				 * Post a new action.
+				 *
 				 * @param gameId Game ID obtained from Gamification Game Service
-				 * @param formData Form data with multipart/form-data type
-				 * @param contentType Content type (implicitly sent in header)
+				 * @param actionid Action ID - String (20 chars)
+				 * @param actionname Action name - String (20 chars)
+				 * @param actiondesc Action Description - String (50 chars)
+				 * @param actionpointvalue Point Value Action - Integer
+				 * @param actionnotifcheckStr Action Notification Boolean - Boolean - Option whether use notification or not.  Must be null for 'false' and any other value for 'true'
+				 * @param actionnotifmessage Action Notification Message - String
+				 *
 				 * @return HTTP Response returned as JSON object
 				 */
 				@POST
@@ -175,8 +145,18 @@ public class GamificationActionService extends RESTService {
 							 notes = "A method to store a new action with details (action ID, action name, action description,action point value")
 				public Response createNewAction(
 						@ApiParam(value = "Game ID to store a new action", required = true) @PathParam("gameId") String gameId,
-						@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-						@ApiParam(value = "Action detail in multiple/form-data type", required = true) byte[] formData)  {
+						@ApiParam(value = "Action ID - String (20 chars)", required = true) @FormDataParam("actionid") String actionid,
+						@ApiParam(value = "Action name - String (20 chars)", required = true) @FormDataParam("actionname") String actionname,
+						@ApiParam(value = "Action Description - String (50 chars)") @FormDataParam("actiondesc") @DefaultValue("") String actiondesc,
+						@ApiParam(value = "Point Value Action - Integer") @FormDataParam("actionpointvalue") @DefaultValue("0") int actionpointvalue,
+						@ApiParam(value = "Action Notification Boolean - Boolean - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.")
+							@FormDataParam("actionnotificationcheck") String actionnotifcheckStr,
+						@ApiParam(value = "Action Notification Message - String") @FormDataParam("actionnotificationmessage") @DefaultValue("") String actionnotifmessage
+				)  {
+					/*
+					 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+					 */
+					boolean actionnotifcheck = legacyBooleanParameterFromFormParam(actionnotifcheckStr);
 					
 					// Request log
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/actions/"+gameId, true);
@@ -184,14 +164,7 @@ public class GamificationActionService extends RESTService {
 					
 					// parse given multipart form data
 					JSONObject objResponse = new JSONObject();
-					
-					String actionid = null;
-					String actionname = null;
-					String actiondesc = null;
-					int actionpointvalue = 0;
-					
-					boolean actionnotifcheck = false;
-					String actionnotifmessage = null;
+
 					Connection conn = null;
 
 					String name = null;
@@ -222,43 +195,14 @@ public class GamificationActionService extends RESTService {
 							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
-						Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
-						FormDataPart partID = parts.get("actionid");
-						if (partID != null) {
-							actionid = partID.getContent();
-							
+
+						if (actionid != null) {
 							if(actionAccess.isActionIdExist(conn,gameId, actionid)){
 								objResponse.put("message", "Cannot create action. Failed to add the action. action ID already exist!");
 								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 							}
-							FormDataPart partName = parts.get("actionname");
-							if (partName != null) {
-								actionname = partName.getContent();
-							}
-							FormDataPart partDesc = parts.get("actiondesc");
-							if (partDesc != null) {
-								// optional description text input form element
-								actiondesc = partDesc.getContent();
-							}
-							FormDataPart partPV = parts.get("actionpointvalue");
-							if (partPV != null) {
-								// optional description text input form element
-								actionpointvalue =  Integer.parseInt(partPV.getContent());
-							}
-							FormDataPart partNotificationCheck = parts.get("actionnotificationcheck");
-							if (partNotificationCheck != null) {
-								// checkbox is checked
-								actionnotifcheck = true;
-							}else{
-								actionnotifcheck = false;
-							}
-							FormDataPart partNotificationMsg = parts.get("actionnotificationmessage");
-							if (partNotificationMsg != null) {
-								actionnotifmessage = partNotificationMsg.getContent();
-							}else{
-								actionnotifmessage = "";
-							}
+
 							ActionModel action = new ActionModel(actionid, actionname, actiondesc, actionpointvalue, actionnotifcheck, actionnotifmessage);
 							
 							try{
@@ -281,19 +225,6 @@ public class GamificationActionService extends RESTService {
 							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
-						
-						
-					} catch (MalformedStreamException e) {
-						// the stream failed to follow required syntax
-						objResponse.put("message", "Cannot create action. Failed to upload " + actionid + ". " + e.getMessage());
-						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
-					} catch (IOException e) {
-						// a read or write error occurred
-						objResponse.put("message", "Cannot create action. Failed to upload " + actionid + ". " + e.getMessage());
-						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -301,8 +232,7 @@ public class GamificationActionService extends RESTService {
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
-					}
-					catch (NullPointerException e){
+					} catch (NullPointerException e){
 						e.printStackTrace();
 						objResponse.put("message", "Cannot create action. Failed to upload " + actionid + ". " + e.getMessage());
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -438,18 +368,15 @@ public class GamificationActionService extends RESTService {
 
 				/**
 				 * Update an action.
-				 * <ul>
-				 *  <li>actionid - Action ID - String (20 chars)
-				 *  <li>actionname - Action name - String (20 chars)
-				 *  <li>actiondesc - Action Description - String (50 chars)
-				 *  <li>actionpointvalue - Point Value Action - Integer
-				 *  <li>actionnotificationcheck - Action Notification Boolean - Boolean - Option whether use notification or not
-				 *  <li>actionnotificationmessage - Action Notification Message - String
-				 * </ul>
+				 *
 				 * @param gameId Game ID obtained from Gamification Game Service
 				 * @param actionId Action ID to be updated
-				 * @param formData Form data with multipart/form-data type
-				 * @param contentType Content type (implicitly sent in header)
+				 * @param actionname Action name - String (20 chars)
+				 * @param actiondesc Action Description - String (50 chars)
+				 * @param actionpointvalue Point Value Action - Integer
+				 * @param actionnotifcheckStr Action Notification Boolean - Boolean - Option whether use notification or not.  Must be null for 'false' and any other value for 'true'
+				 * @param actionnotifmessage Action Notification Message - String
+				 *
 				 * @return HTTP Response returned as JSON object
 				 */
 				@PUT
@@ -465,9 +392,18 @@ public class GamificationActionService extends RESTService {
 							 notes = "A method to update an action with details (action ID, action name, action description, action point value")
 				public Response updateAction(
 						@ApiParam(value = "Game ID to store an updated action", required = true) @PathParam("gameId") String gameId,
-						@PathParam("actionId") String actionId,
-						@ApiParam(value = "action detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-						byte[] formData)  {
+						@ApiParam(value = "Action ID to be updated", required = true) @PathParam("actionId") String actionId,
+						@ApiParam(value = "Action name - String (20 chars)", required = true) @FormDataParam("actionname") String actionname,
+						@ApiParam(value = "Action Description - String (50 chars)") @FormDataParam("actiondesc") String actiondesc,
+						@ApiParam(value = "Point Value Action - Integer") @FormDataParam("actionpointvalue") Integer actionpointvalue,
+						@ApiParam(value = "Action Notification Boolean - Boolean - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.")
+							@FormDataParam("actionnotificationcheck") String actionnotifcheckStr,
+						@ApiParam(value = "Action Notification Message - String") @FormDataParam("actionnotificationmessage") String actionnotifmessage
+				)  {
+					/*
+					 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+					 */
+					boolean actionnotifcheck = legacyBooleanParameterFromFormParam(actionnotifcheckStr);
 					
 					// Request log
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/actions/"+gameId+"/"+actionId, true);
@@ -476,12 +412,7 @@ public class GamificationActionService extends RESTService {
 					// parse given multipart form data
 					JSONObject objResponse = new JSONObject();
 					logger.info(actionId);
-					String actionname = null;
-					String actiondesc = null;
-					int actionpointvalue = 0;
-					
-					//boolean actionnotifcheck = false;
-					String actionnotifmessage = null;
+
 					Connection conn = null;
 
 					
@@ -500,9 +431,7 @@ public class GamificationActionService extends RESTService {
 					try {
 						conn = dbm.getConnection();
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_18, ""+randomLong, true);
-						
-						Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
-						
+
 						if (actionId == null) {
 							logger.info("action ID cannot be null >> " );
 							objResponse.put("message", "action ID cannot be null");
@@ -527,43 +456,22 @@ public class GamificationActionService extends RESTService {
 								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 							}
-							
-							FormDataPart partName = parts.get("actionname");
-							if (partName != null) {
-								actionname = partName.getContent();
-								
-								if(actionname != null){
-									action.setName(actionname);
-								}
+
+							if(actionname != null){
+								action.setName(actionname);
 							}
-							FormDataPart partDesc = parts.get("actiondesc");
-							if (partDesc != null) {
-								// optional description text input form element
-								actiondesc = partDesc.getContent();
-								if(actiondesc!=null){
-									action.setDescription(actiondesc);
-								}
+							// optional description text input form element
+							if(actiondesc != null) {
+								action.setDescription(actiondesc);
 							}
-							FormDataPart partPV = parts.get("actionpointvalue");
-							if (partPV != null) {
-								// optional description text input form element
-								actionpointvalue = Integer.parseInt(partPV.getContent());
+							if (actionpointvalue != null) {
 								action.setPointValue(actionpointvalue);
 							}
-							FormDataPart partNotificationCheck = parts.get("actionnotificationcheck");
-							if (partNotificationCheck != null) {
-								// checkbox is checked
-								action.useNotification(true);
-							}else{
-								action.useNotification(false);
+							action.useNotification(actionnotifcheck);
+							if(actionnotifmessage != null){
+								action.setNotificationMessage(actionnotifmessage);
 							}
-							FormDataPart partNotificationMsg = parts.get("actionnotificationmessage");
-							if (partNotificationMsg != null) {
-								actionnotifmessage = partNotificationMsg.getContent();
-								if(actionnotifmessage == null){
-									action.setNotificationMessage(actionnotifmessage);
-								}
-							}
+
 							actionAccess.updateAction(conn,gameId, action);
 							logger.info("action updated >> ");
 							objResponse.put("message", "action updated");
@@ -580,20 +488,6 @@ public class GamificationActionService extends RESTService {
 							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 						}
 						
-					} catch (MalformedStreamException e) {
-						// the stream failed to follow required syntax
-						logger.log(Level.SEVERE, e.getMessage(), e);
-						logger.info("MalformedStreamException >> " );
-						objResponse.put("message", "Failed to upload " + actionId + ". "+e.getMessage());
-						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-					} catch (IOException e) {
-						// a read or write error occurred
-						logger.log(Level.SEVERE, e.getMessage(), e);
-						logger.info("IOException >> " );
-						objResponse.put("message", "Failed to upload " + actionId + ".");
-						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					} catch (SQLException e) {
 						e.printStackTrace();
 						System.out.println(e.getMessage());
@@ -903,6 +797,21 @@ public class GamificationActionService extends RESTService {
 				      }
 				    }
 		  }
+
+	/**
+	 * Legacy semantics of the 'XYZnotificationcheck' parameter are the following:
+	 * - If parameter has any non-null value (even blank string) -> true
+	 * - Otherwise -> false
+	 *
+	 * @param paramValue the raw string value of the form param (may be null if parameter is not set)
+	 * @return
+	 */
+	private static boolean legacyBooleanParameterFromFormParam(String paramValue) {
+		/*
+		 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+		 */
+		return paramValue != null;
+	}
 		
 
 	//}

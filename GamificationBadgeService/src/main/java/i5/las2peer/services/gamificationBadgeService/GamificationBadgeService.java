@@ -1,34 +1,23 @@
 package i5.las2peer.services.gamificationBadgeService;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
 
 
 
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
@@ -51,9 +40,7 @@ import i5.las2peer.api.execution.InternalServiceException;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeModel;
 import i5.las2peer.services.gamificationBadgeService.database.DatabaseManager;
-import i5.las2peer.services.gamificationBadgeService.helper.FormDataPart;
 import i5.las2peer.services.gamificationBadgeService.helper.LocalFileManager;
-import i5.las2peer.services.gamificationBadgeService.helper.MultipartHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -182,15 +169,15 @@ public class GamificationBadgeService extends RESTService {
 		
 		/**
 		 * Function to resize image
-		 * @param inputImageRaw input image in byte array
+		 * @param inputImageRaw input image as raw InputStream
 		 * @return return resized image in byte array
 		 * @throws IllegalArgumentException Illegal argument exception
 		 * @throws IOException IO exception
 		 * @throws NUllPointerException null pointer exception
 		 */
-		private byte[] resizeImage(byte[] inputImageRaw) throws IllegalArgumentException, IOException, NullPointerException{
+		private byte[] resizeImage(InputStream inputImageRaw) throws IllegalArgumentException, IOException, NullPointerException{
 
-			BufferedImage img = ImageIO.read(new ByteArrayInputStream(inputImageRaw));
+			BufferedImage img = ImageIO.read(inputImageRaw);
 			BufferedImage newImg = Scalr.resize(img,Mode.AUTOMATIC,300,300);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ImageIO.write(newImg, "png", baos);
@@ -247,18 +234,17 @@ public class GamificationBadgeService extends RESTService {
 		
 		/**
 		 * Post a new badge.
-		 * Name attribute for form data : 
-		 * <ul>
-		 * 	<li>badgeid - Badge ID - String (20 chars)
-		 *  <li>badgeimageinput - Badge Image - Image byte
-		 * 	<li>badgename - Badge Name - String (20 chars)
-		 *  <li>badgedesc - Badge Description - String (50 chars)
-		 *  <li>badgenotificationcheck - Badge Notification Boolean - Boolean - Option whether use notification or not
-		 *  <li>badgenotificationmessage - Badnge Notification - String
-		 * </ul>
+		 *
 		 * @param gameId Game ID obtained from Gamification Game Service
-		 * @param formData Form data with multipart/form-data type
-		 * @param contentType Content type (implicitly sent in header)
+		 * @param badgeid Badge ID - String (20 chars)
+		 * @param badgename Badge Name - String (20 chars)
+		 * @param badgedescription Badge Description - String (50 chars)
+		 * @param badgeusenotificationStr Badge Notification Boolean - Boolean - Option whether use notification or not. Must be null for 'false' and any other value for 'true'
+		 * @param badgenotificationmessage Badge Notification - String
+		 * @param badgeImageData Badge Image - InputStream containing the data
+		 * @param badgeImagePart Badge Image - detailed form part information (file name, media type)
+		 * @param devFlag (no official API parameter!) used only in unit tests
+		 *
 		 * @return HTTP Response returned as JSON object
 		 */
 		@POST
@@ -277,8 +263,20 @@ public class GamificationBadgeService extends RESTService {
 					 notes = "A method to store a new badge with details (badge ID, badge name, badge description, and badge image")
 		public Response createNewBadge(
 				@ApiParam(value = "Game ID to store a new badge", required = true) @PathParam("gameId") String gameId,
-				@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-				@ApiParam(value = "Badge detail in multiple/form-data type", required = true) byte[] formData)  {
+				@ApiParam(value = "Badge ID - String (20 chars)", required = true) @FormDataParam("badgeid") String badgeid,
+				@ApiParam(value = "Badge Name - String (20 chars)", required = true) @FormDataParam("badgename") String badgename,
+				@ApiParam(value = "Badge Description - String (50 chars)") @DefaultValue("") @FormDataParam("badgedesc") String badgedescription,
+				@ApiParam(value = "Badge Notification Boolean - Boolean - Option whether use notification or not.  - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.")
+					@FormDataParam("badgenotificationcheck") String badgeusenotificationStr,
+				@ApiParam(value = "Badge Notification - String") @DefaultValue("" )@FormDataParam("badgenotificationmessage") String badgenotificationmessage,
+				@ApiParam(value = "Badge Image - Image byte", required = true) @FormDataParam("badgeimageinput") InputStream badgeImageData,
+				@ApiParam(value = "Badge Image - Image byte", required = true) @FormDataParam("badgeimageinput") FormDataBodyPart badgeImagePart,
+				@FormDataParam("dev") String devFlag // only for unit tests
+		)  {
+			/*
+			 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+			 */
+			boolean badgeusenotification = legacyBooleanParameterFromFormParam(badgeusenotificationStr);
 			
 			// Request log
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/badges/"+gameId, true);
@@ -289,12 +287,8 @@ public class GamificationBadgeService extends RESTService {
 			String filename = null;
 			byte[] filecontent = null;
 			String mimeType = null;
-			String badgeid = null;
 			// Badge ID for the filesystem is appended with game id to make sure it is unique
-			String badgename = null;
-			String badgedescription = null;
-			boolean badgeusenotification = false;
-			String badgenotificationmessage = null;
+
 			Connection conn = null;
 
 			
@@ -328,13 +322,8 @@ public class GamificationBadgeService extends RESTService {
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
-				
-				Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
-				FormDataPart partBadgeID = parts.get("badgeid");
-				if (partBadgeID != null) {
-					// these data belong to the (optional) file id text input form element
-					badgeid = partBadgeID.getContent();
-					
+
+				if (badgeid != null) {
 					if(badgeAccess.isBadgeIdExist(conn,gameId, badgeid)){
 						// Badge id already exist
 						logger.info("Failed to add the badge. Badge ID already exist!");
@@ -343,56 +332,34 @@ public class GamificationBadgeService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 					}
-					FormDataPart partFilecontent = parts.get("badgeimageinput");
-					if (partFilecontent != null) {
-						//System.out.println(partFilecontent.getContent());
+
+					if (badgeImagePart != null) {
 						// these data belong to the file input form element
-							filename = partFilecontent.getHeader(HEADER_CONTENT_DISPOSITION).getParameter("filename");
-							byte[] filecontentbefore = partFilecontent.getContentRaw();
-//									 validate input
-							if (filecontentbefore == null) {
-								logger.info("File content null");
-								objResponse.put("message", "Cannot create badge. File content null. Failed to upload " + badgeid);
-								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							}
+							filename = badgeImagePart.getFormDataContentDisposition().getFileName();
 							
 							// in unit test, resize image will turn the image into null BufferedImage
 							// but, it works in web browser
-							FormDataPart partDev = parts.get("dev");
-							if (partDev != null) {
-								filecontent = filecontentbefore;
+							if (devFlag != null) {
+								try {
+									filecontent = badgeImageData.readAllBytes();
+								} catch (IOException e) {
+									logger.warning("Failed to read image input: " + e.getMessage());
+									logger.printStackTrace(e);
+									objResponse.put("message", "Cannot create badge. Failed to read image data. Failed to upload " + badgeid);
+									Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+									return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								}
+							} else {
+								filecontent = resizeImage(badgeImageData);
 							}
-							else{
-								filecontent = resizeImage(filecontentbefore);
-							}
-							mimeType = partFilecontent.getContentType();
+							mimeType = badgeImagePart.getMediaType().toString();
 							logger.info("upload request (" + filename + ") of mime type '" + mimeType + "' with content length "
 									+ filecontent.length);
-					}
-
-					FormDataPart partBadgeName = parts.get("badgename");
-					if (partBadgeName != null) {
-						badgename = partBadgeName.getContent();
-					}
-					FormDataPart partDescription = parts.get("badgedesc");
-					if (partDescription != null) {
-						// optional description text input form element
-						badgedescription = partDescription.getContent();
-					}
-					
-					FormDataPart partNotificationCheck = parts.get("badgenotificationcheck");
-					if (partNotificationCheck != null) {
-						// checkbox is checked
-						badgeusenotification = true;
-					}else{
-						badgeusenotification = false;
-					}
-					FormDataPart partNotificationMsg = parts.get("badgenotificationmessage");
-					if (partNotificationMsg != null) {
-						badgenotificationmessage = partNotificationMsg.getContent();
-					}else{
-						badgenotificationmessage = "";
+					} else {
+						logger.info("No badge image");
+						objResponse.put("message", "Cannot create badge. Missing badge image. Failed to upload " + badgeid);
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
 					
 					
@@ -471,19 +438,17 @@ public class GamificationBadgeService extends RESTService {
 		
 		/**
 		 * Update a badge.
-		 * Name attribute for form data : 
-		 * <ul>
-		 * 	<li>badgeid - Badge ID - String (20 chars)
-		 *  <li>badgeimageinput - Badge Image - Image byte
-		 * 	<li>badgename - Badge Name - String (20 chars)
-		 *  <li>badgedesc - Badge Description - String (50 chars)
-		 *  <li>badgenotificationcheck - Badge Notification Boolean - Boolean - Option whether use notification or not
-		 *  <li>badgenotificationmessage - Badge Notification Message - String
-		 * </ul>
+		 *
 		 * @param gameId Game ID obtained from Gamification Game Service
 		 * @param badgeId badge id
-		 * @param formData Form data with multipart/form-data type
-		 * @param contentType Content type (implicitly sent in header)
+		 * @param badgename Badge Name - String (20 chars)
+		 * @param badgedescription Badge Description - String (50 chars)
+		 * @param badgeusenotificationStr Badge Notification Boolean - Boolean - Option whether use notification or not. Must be null for 'false' and any other value for 'true'
+		 * @param badgenotificationmessage Badge Notification - String
+		 * @param badgeImageData Badge Image - InputStream containing the data
+		 * @param badgeImagePart Badge Image - detailed form part information (file name, media type)
+		 * @param devFlag (no official API parameter!) used only in unit tests
+		 *
 		 * @return HTTP Response returned as JSON object
 		 */
 		@PUT
@@ -500,8 +465,19 @@ public class GamificationBadgeService extends RESTService {
 		public Response updateBadge(
 				@ApiParam(value = "Game ID to store a new badge", required = true) @PathParam("gameId") String gameId,
 				@PathParam("badgeId") String badgeId,
-				@ApiParam(value = "Badge detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-				byte[] formData)  {
+				@ApiParam(value = "Badge Name - String (20 chars)", required = true) @FormDataParam("badgename") String badgename,
+				@ApiParam(value = "Badge Description - String (50 chars)") @FormDataParam("badgedesc") String badgedescription,
+				@ApiParam(value = "Badge Notification Boolean - Boolean - Option whether use notification or not.  - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.")
+				@FormDataParam("badgenotificationcheck") String badgeusenotificationStr,
+				@ApiParam(value = "Badge Notification - String") @FormDataParam("badgenotificationmessage") String badgenotificationmessage,
+				@ApiParam(value = "Badge Image - Image byte", required = true) @FormDataParam("badgeimageinput") InputStream badgeImageData,
+				@ApiParam(value = "Badge Image - Image byte", required = true) @FormDataParam("badgeimageinput") FormDataBodyPart badgeImagePart,
+				@FormDataParam("dev") String devFlag // only for unit tests
+		)  {
+			/*
+			 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+			 */
+			boolean badgeusenotification = legacyBooleanParameterFromFormParam(badgeusenotificationStr);
 			
 			// Request log
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "PUT " + "gamification/badges/"+gameId+"/"+badgeId, true);
@@ -513,10 +489,7 @@ public class GamificationBadgeService extends RESTService {
 			byte[] filecontent = null;
 			String mimeType = null;
 			// Badge ID for the filesystem is appended with game id to make sure it is unique
-			String badgename = null;
-			String badgedescription = null;
-			//boolean badgeusenotification = false;
-			String badgenotificationmessage = null;
+
 			Connection conn = null;
 
 			
@@ -548,7 +521,6 @@ public class GamificationBadgeService extends RESTService {
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
-				Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
 				
 				if (badgeId == null) {
 					objResponse.put("message", "Cannot update badge. Badge ID cannot be null");
@@ -563,76 +535,58 @@ public class GamificationBadgeService extends RESTService {
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 				}
-				FormDataPart partBadgeName = parts.get("badgename");
-				if (partBadgeName != null) {
-					badgename = partBadgeName.getContent();
-					if(badgename != null){
-						currentBadge.setName(badgename);
-					}
-				}
-				FormDataPart partDescription = parts.get("badgedesc");
-				if (partDescription != null) {
-					// optional description text input form element
-					badgedescription = partDescription.getContent();
-					if(badgedescription!=null){
-						currentBadge.setDescription(badgedescription);
-					}
-				}
-				FormDataPart partFilecontent = parts.get("badgeimageinput");
-				if (partFilecontent != null) {
-					// these data belong to the file input form element
-						filename = partFilecontent.getHeader(HEADER_CONTENT_DISPOSITION).getParameter("filename");
-						byte[] filecontentbefore = partFilecontent.getContentRaw();
-						mimeType = partFilecontent.getContentType();
-//							 validate input
-						
-						if (filecontentbefore != null) {
-							try {
-								// in unit test, resize image will turn the image into null BufferedImage
-								// but, it works in web browser
-								FormDataPart partDev = parts.get("dev");
-								if (partDev != null) {
-									filecontent = filecontentbefore;
-								}
-								else{
-									filecontent = resizeImage(filecontentbefore);
-								}
-								//filecontent = resizeImage(filecontentbefore);
-								storeBadgeDataToSystem(gameId, badgeId, filename, filecontent,mimeType , badgedescription);
-								logger.info("upload request (" + filename + ") of mime type '" + mimeType + "' with content length "
-										+ filecontent.length);
-								
-							} catch (AgentNotFoundException | InternalServiceException | 
-									InterruptedException | TimeoutException e) {
-								e.printStackTrace();
-								objResponse.put("message", "Cannot update badge. Failed to upload " + badgeId + ". " + e.getMessage() );
-								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-							}
-							catch (IllegalArgumentException e){
-								objResponse.put("message", "Cannot update badge. Badge image is not updated. " + e.getMessage());
-								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-								
-							}
-						}		
-				}
-				FormDataPart partNotificationCheck = parts.get("badgenotificationcheck");
-				
-				if (partNotificationCheck != null) {
-					currentBadge.useNotification(true);
-					
-				}else{
-					currentBadge.useNotification(false);
-					
-				}
-				FormDataPart partNotificationMsg = parts.get("badgenotificationmessage");
 
-				if (partNotificationMsg != null) {
-					badgenotificationmessage = partNotificationMsg.getContent();
-					if(badgenotificationmessage != null){
-						currentBadge.setNotificationMessage(badgenotificationmessage);
+				if(badgename != null){
+					currentBadge.setName(badgename);
+				}
+				if(badgedescription!=null){
+					currentBadge.setDescription(badgedescription);
+				}
+
+				if (badgeImagePart != null) {
+					// these data belong to the file input form element
+					filename = badgeImagePart.getFormDataContentDisposition().getFileName();
+					mimeType = badgeImagePart.getMediaType().toString();
+
+					try {
+						// in unit test, resize image will turn the image into null BufferedImage
+						// but, it works in web browser
+						if (devFlag != null) {
+							try {
+								filecontent = badgeImageData.readAllBytes();
+							} catch (IOException e) {
+								logger.warning("Failed to read image input: " + e.getMessage());
+								logger.printStackTrace(e);
+								objResponse.put("message", "Cannot create badge. Failed to read image data. Failed to upload " + badgeId);
+								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+								return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							}
+						} else{
+							filecontent = resizeImage(badgeImageData);
+						}
+						storeBadgeDataToSystem(gameId, badgeId, filename, filecontent,mimeType , badgedescription);
+						logger.info("upload request (" + filename + ") of mime type '" + mimeType + "' with content length "
+								+ filecontent.length);
+
+					} catch (AgentNotFoundException | InternalServiceException |
+							InterruptedException | TimeoutException e) {
+						e.printStackTrace();
+						objResponse.put("message", "Cannot update badge. Failed to upload " + badgeId + ". " + e.getMessage() );
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
+					catch (IllegalArgumentException e){
+						objResponse.put("message", "Cannot update badge. Badge image is not updated. " + e.getMessage());
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+
+					}
+				}
+
+				currentBadge.useNotification(badgeusenotification);
+
+				if(badgenotificationmessage != null){
+					currentBadge.setNotificationMessage(badgenotificationmessage);
 				}
 				
 				try{
@@ -1141,5 +1095,20 @@ public class GamificationBadgeService extends RESTService {
 			}
 		}
 	  //}
+
+		/**
+		 * Legacy semantics of the 'achievementnotificationcheck' parameter are the following:
+		 * - If parameter has any non-null value (even blank string) -> true
+		 * - Otherwise -> false
+		 *
+		 * @param paramValue the raw string value of the form param (may be null if parameter is not set)
+		 * @return
+		 */
+		private static boolean legacyBooleanParameterFromFormParam(String paramValue) {
+			/*
+			 * TODO Consider breaking change and using default 'boolean' semantics (param needs to be string 'true' for true value)
+			 */
+			return paramValue != null;
+		}
 	
 }

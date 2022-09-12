@@ -6,15 +6,10 @@ import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
@@ -40,8 +35,6 @@ import i5.las2peer.services.gamificationGameService.database.GameDAO;
 import i5.las2peer.services.gamificationGameService.database.GameModel;
 import i5.las2peer.services.gamificationGameService.database.DatabaseManager;
 import i5.las2peer.services.gamificationGameService.database.MemberModel;
-import i5.las2peer.services.gamificationGameService.helper.FormDataPart;
-import i5.las2peer.services.gamificationGameService.helper.MultipartHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -55,6 +48,7 @@ import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 
 /**
@@ -112,6 +106,8 @@ public class GamificationGameService extends RESTService {
 	// non HTTP standard headers
 	public static final String HEADER_OWNERID = "ownerid";
 	public static final String HEADER_CONTENT_DESCRIPTION = "Content-Description";
+
+	public static final String DEFAULT_COMM_TYPE = "def_type";
 
 	public GamificationGameService() {
 		// read and set properties values
@@ -179,20 +175,16 @@ public class GamificationGameService extends RESTService {
 			
 			
 			/**
-			 * Create a new game. 
-			 * Name attribute for form data : 
-			 * <ul>
-			 * 	<li>gameid - Game ID - String (20 chars, only lower case!)
-			 *  <li>commtype - Community Type - String (20 chars)
-			 *  <li>gamedesc - Game Description - String (50 chars)
-			 * </ul>
-			 * 
-			 * @param contentType form content type
-			 * @param formData Form data with multipart/form-data type
+			 * Create a new game.
+			 *
+			 * @param gameid Game ID - String (20 chars, only lower case!)
+			 * @param commtype Community Type - String (20 chars)
+			 * @param gamedesc Game Description - String (50 chars)
 			 * @return Game data in JSON
 			 */
 			@POST
 			@Path("/data")
+			@Consumes(MediaType.MULTIPART_FORM_DATA)
 			@Produces(MediaType.APPLICATION_JSON)
 			@ApiOperation(value = "createGame",
 					notes = "Method to create a new game")
@@ -207,18 +199,16 @@ public class GamificationGameService extends RESTService {
 					@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "New game created")
 			})
 			public Response createGame(
-					@ApiParam(value = "Game detail in multiple/form-data type", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType,
-					@ApiParam(value = "Content of form data", required = true) byte[] formData) {
-				
+					@ApiParam(value = "Game ID - String (20 chars, only lower case!)", required = true) @FormDataParam("gameid") String gameid,
+					@ApiParam(value = "Community Type - String (20 chars)", defaultValue = DEFAULT_COMM_TYPE) @FormDataParam("commtype") String commtype,
+					@ApiParam(value = "Game Description - String (50 chars)", defaultValue = "") @FormDataParam("gamedesc") String gamedesc
+			) {
 				// Request log
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/games/data", true);
 				long randomLong = new Random().nextLong(); //To be able to match 
 
 				JSONObject objResponse = new JSONObject();
 				String name = null;
-				String gameid = null;
-				String gamedesc = null;
-				String commtype = null;
 				Connection conn = null;
 				
 				Agent agent = Context.getCurrent().getMainAgent();
@@ -232,82 +222,52 @@ public class GamificationGameService extends RESTService {
 				else {
 					name = agent.getIdentifier();
 				}
-				
-				Map<String, FormDataPart> parts;
+
 				try {
 					conn = dbm.getConnection();
-					
-					parts = MultipartHelper.getParts(formData, contentType);
-					FormDataPart partGameID = parts.get("gameid");
-					if (partGameID != null) {
-						// these data belong to the (optional) file id text input form element
-						gameid = partGameID.getContent();
-						// gameid must be unique
-						System.out.println(gameid);
-						if(gameAccess.isGameIdExist(conn,gameid)){
-							// game id already exist
-							objResponse.put("message", "Game ID already exist");
-							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						}
-						if (!isGameIdValid(gameid)) {
-							objResponse.put("message", "Invalid game ID. Game ID MUST NOT be blank and MUST NOT contain upper case characters. Max length is 20.");
-							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						}
-						
-						FormDataPart partGameDesc = parts.get("gamedesc");
-						if (partGameDesc != null) {
-							gamedesc = partGameDesc.getContent();
-						}
-						else{
-							gamedesc = "";
-						}
-						FormDataPart partCommType = parts.get("commtype");
-						if (partGameDesc != null) {
-							commtype = partCommType.getContent();
-						}
-						else{
-							commtype = "def_type";
-						}
-						
-						GameModel newGame = new GameModel(gameid, gamedesc, commtype);
 
-						try{
-							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_1, ""+randomLong, true);
-							gameAccess.addNewGame(conn,newGame);
-							gameAccess.addMemberToGame(conn,newGame.getId(), name);
-							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_2, ""+randomLong, true);
-							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_3, ""+name, true);
-							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_4, ""+newGame.getId(), true);
-							objResponse.put("message", "New game created");
-							return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
-						} catch (SQLException e) {
-							e.printStackTrace();
-							objResponse.put("message", "Cannot Add New Game. Database Error. " + e.getMessage());
-							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						}
-					}
-					else{
-						// game id cannot be empty
-						objResponse.put("message", "Cannot Add New Game. Game ID cannot be empty.");
+					if (!isGameIdValid(gameid)) {
+						objResponse.put("message", "Invalid game ID. Game ID MUST NOT be blank and MUST NOT contain upper case characters. Max length is 20.");
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-					objResponse.put("message", "Cannot Add New Game. Error in parsing form data. " + e.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+
+					// gameid must be unique
+					System.out.println(gameid);
+					if(gameAccess.isGameIdExist(conn,gameid)){
+						// game id already exist
+						objResponse.put("message", "Game ID already exist");
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					}
+
+					gamedesc = Objects.requireNonNullElse(gamedesc, "");
+					commtype = Objects.requireNonNullElse(commtype, DEFAULT_COMM_TYPE);
+
+					GameModel newGame = new GameModel(gameid, gamedesc, commtype);
+
+					try{
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_1, ""+randomLong, true);
+						gameAccess.addNewGame(conn,newGame);
+						gameAccess.addMemberToGame(conn,newGame.getId(), name);
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_2, ""+randomLong, true);
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_3, ""+name, true);
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_4, ""+newGame.getId(), true);
+						objResponse.put("message", "New game created");
+						return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+
+					} catch (SQLException e) {
+						e.printStackTrace();
+						objResponse.put("message", "Cannot Add New Game. Database Error. " + e.getMessage());
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot Add New Game. Error checking game ID exist. "  + e.getMessage());
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-				} 		 
+				}
 				// always close connections
 			    finally {
 			      try {
@@ -358,7 +318,7 @@ public class GamificationGameService extends RESTService {
 			@ApiOperation(value = "getGameDetails",
 						notes = "Get an game data with specific ID")
 			@ApiResponses(value = {
-					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return game data with specific ID"),
+					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return game data with specific ID", response = GameModel.class),
 					@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Method not found"),
 					@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Game not found"),
 					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
@@ -388,24 +348,15 @@ public class GamificationGameService extends RESTService {
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
-					// Add Member to Game
+					// Get game from DB
 					GameModel game = gameAccess.getGameWithId(conn,gameId);
-					ObjectMapper objectMapper = new ObjectMapper();
-			    	//Set pretty printing of json
-			    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-			    	String gameString = objectMapper.writeValueAsString(game);
-			    	return Response.status(HttpURLConnection.HTTP_OK).entity(gameString).type(MediaType.APPLICATION_JSON).build();
+			    	return Response.status(HttpURLConnection.HTTP_OK).entity(game).type(MediaType.APPLICATION_JSON).build();
 				} catch (SQLException e) {
 					e.printStackTrace();
 					objResponse.put("message", "Cannot get Game detail. Database Error. " + e.getMessage());
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-				} catch (JsonProcessingException e) {
-					e.printStackTrace();
-					objResponse.put("message", "Cannot get Game detail. Failed to process JSON. " + e.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-				}		 
+				}
 				// always close connections
 			    finally {
 			      try {
