@@ -2,13 +2,18 @@ name: Docker Build and Push
 
 on:
   push:
-    branches: [ba-marc-belsch]
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Get Version
+      id: get_version
+      uses: battila7/get-version-action@v2
     - name: Build the Docker image
       run: | 
         docker build -t registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:latest .
@@ -19,3 +24,5 @@ jobs:
       run: |
         docker login -u $DOCKER_USERNAME -p $DOCKER_PW registry.tech4comp.dbis.rwth-aachen.de
         docker push registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:latest
+        docker tag registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:latest registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:${{ steps.get_version.outputs.version-without-v }}
+        docker push registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:${{ steps.get_version.outputs.version-without-v }}
