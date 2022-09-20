@@ -8,6 +8,10 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-methods: PUT, GET, POST, OPTIONS
     nginx.ingress.kubernetes.io/cors-allow-origin: https://moodle.tech4comp.dbis.rwth-aachen.de
     nginx.ingress.kubernetes.io/enable-cors: 'true'
+    # The following two lines should prevent nginx from returning a default error page and forward the error messages
+    # from th framework instead
+    nginx.ingress.kubernetes.io/custom-http-errors: '418'
+    nginx.ingress.kubernetes.io/default-backend: error-pages
   name: gamification-ingress
 spec:
   tls:
