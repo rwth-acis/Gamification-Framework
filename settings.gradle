@@ -9,3 +9,6 @@ include('GamificationPointService')
 include('GamificationQuestService')
 include('GamificationStreakService')
 include('GamificationVisualizationService')
+include 'gamification-commons'
+include 'gamification-commons'
+

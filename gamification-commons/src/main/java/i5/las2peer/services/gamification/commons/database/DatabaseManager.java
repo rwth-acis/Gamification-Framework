@@ -1,9 +1,9 @@
-package i5.las2peer.services.gamificationGameService.database;
+package i5.las2peer.services.gamification.commons.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
-import i5.las2peer.logging.L2pLogger;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -17,7 +17,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 public class DatabaseManager {
 
-	private static final L2pLogger logger = L2pLogger.getInstance(DatabaseManager.class);
+	private static final Logger logger = Logger.getLogger(DatabaseManager.class.getName());
 
 	private static DatabaseManager instance;
 

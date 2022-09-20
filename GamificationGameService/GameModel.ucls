@@ -24,7 +24,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="3" language="java" name="i5.las2peer.services.gamificationGameService.database.DatabaseManager" 
+  <class id="3" language="java" name="i5.las2peer.services.gamification.commons.database.DatabaseManager"
     project="GamificationGameService" 
     file="/GamificationGameService/src/main/i5/las2peer/services/gamificationGameService/database/DatabaseManager.java" 
     binary="false" corner="BOTTOM_RIGHT">    
