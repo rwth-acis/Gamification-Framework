@@ -409,8 +409,10 @@ public class GamificationQuestService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -513,8 +515,10 @@ public class GamificationQuestService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -716,8 +720,10 @@ public class GamificationQuestService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -802,8 +808,10 @@ public class GamificationQuestService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -934,8 +942,10 @@ public class GamificationQuestService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -981,8 +991,10 @@ public class GamificationQuestService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }

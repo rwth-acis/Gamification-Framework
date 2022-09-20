@@ -189,7 +189,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -283,7 +285,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -373,7 +377,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -487,7 +493,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -579,7 +587,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -672,7 +682,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -777,7 +789,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -883,7 +897,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -982,7 +998,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -1098,7 +1116,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -1210,7 +1230,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -1320,7 +1342,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -1411,7 +1435,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -1492,7 +1518,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -1791,7 +1819,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}
@@ -1881,7 +1911,9 @@ public class GamificationVisualizationService extends RESTService {
 		// always close connections
 		finally {
 			try {
-				conn.close();
+				if (conn != null) {
+					conn.close();
+				}
 			} catch (SQLException e) {
 				logger.printStackTrace(e);
 			}

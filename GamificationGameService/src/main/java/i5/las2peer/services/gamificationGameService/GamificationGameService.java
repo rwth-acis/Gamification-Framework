@@ -1,51 +1,34 @@
 package i5.las2peer.services.gamificationGameService;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-
 import javax.ws.rs.*;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import i5.las2peer.logging.L2pLogger;
-import i5.las2peer.p2p.TimeoutException;
-import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.api.Context;
+import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.execution.InternalServiceException;
 import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.security.Agent;
 import i5.las2peer.api.security.AgentNotFoundException;
 import i5.las2peer.api.security.AnonymousAgent;
-import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.security.UserAgent;
-import i5.las2peer.api.execution.InternalServiceException;
+import i5.las2peer.logging.L2pLogger;
+import i5.las2peer.p2p.TimeoutException;
+import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.restMapper.annotations.ServicePath;
+import i5.las2peer.services.gamificationGameService.database.DatabaseManager;
 import i5.las2peer.services.gamificationGameService.database.GameDAO;
 import i5.las2peer.services.gamificationGameService.database.GameModel;
-import i5.las2peer.services.gamificationGameService.database.DatabaseManager;
 import i5.las2peer.services.gamificationGameService.database.MemberModel;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
-import io.swagger.annotations.AuthorizationScope;
-import io.swagger.annotations.Contact;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.License;
-import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -271,8 +254,10 @@ public class GamificationGameService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -360,8 +345,10 @@ public class GamificationGameService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -447,8 +434,10 @@ public class GamificationGameService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }	
@@ -515,8 +504,10 @@ public class GamificationGameService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -594,8 +585,10 @@ public class GamificationGameService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -665,8 +658,10 @@ public class GamificationGameService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }		
@@ -735,8 +730,10 @@ public class GamificationGameService extends RESTService {
 							// always close connections
 						    finally {
 						      try {
-						        conn.close();
-						      } catch (SQLException e) {
+								  if (conn != null) {
+									  conn.close();
+								  }
+							  } catch (SQLException e) {
 						        logger.printStackTrace(e);
 						      }
 						    }	
@@ -787,8 +784,10 @@ public class GamificationGameService extends RESTService {
 				// always close connections
 			    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }	
