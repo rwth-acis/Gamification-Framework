@@ -22,9 +22,9 @@ import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
+import i5.las2peer.services.gamification.commons.database.DatabaseManager;
 import i5.las2peer.services.gamificationActionService.database.ActionDAO;
 import i5.las2peer.services.gamificationActionService.database.ActionModel;
-import i5.las2peer.services.gamificationActionService.database.DatabaseManager;
 import io.swagger.annotations.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -97,7 +97,7 @@ public class GamificationActionService extends RESTService {
 		// read and set properties values
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		setFieldValues();
-		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.actionAccess = new ActionDAO();
 	}
 	

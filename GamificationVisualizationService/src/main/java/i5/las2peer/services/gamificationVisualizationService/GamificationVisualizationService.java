@@ -30,7 +30,7 @@ import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.security.Agent;
 import i5.las2peer.api.security.AnonymousAgent;
-import i5.las2peer.services.gamificationVisualizationService.database.DatabaseManager;
+import i5.las2peer.services.gamification.commons.database.DatabaseManager;
 import i5.las2peer.services.gamificationVisualizationService.database.AchievementModel;
 import i5.las2peer.services.gamificationVisualizationService.database.BadgeModel;
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel;
@@ -95,7 +95,7 @@ public class GamificationVisualizationService extends RESTService {
 	public GamificationVisualizationService() {
 		setFieldValues();
 		System.out.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema);
-		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.visualizationAccess = new VisualizationDAO();
 	}
 

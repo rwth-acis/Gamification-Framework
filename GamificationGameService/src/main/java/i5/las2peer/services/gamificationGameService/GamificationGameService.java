@@ -24,7 +24,7 @@ import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.p2p.TimeoutException;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.services.gamificationGameService.database.DatabaseManager;
+import i5.las2peer.services.gamification.commons.database.DatabaseManager;
 import i5.las2peer.services.gamificationGameService.database.GameDAO;
 import i5.las2peer.services.gamificationGameService.database.GameModel;
 import i5.las2peer.services.gamificationGameService.database.MemberModel;
