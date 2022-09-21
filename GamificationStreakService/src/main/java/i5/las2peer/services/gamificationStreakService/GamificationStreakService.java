@@ -38,7 +38,7 @@ import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.services.gamificationStreakService.database.DatabaseManager;
+import i5.las2peer.services.gamification.commons.database.DatabaseManager;
 import i5.las2peer.services.gamificationStreakService.database.StreakDAO;
 import i5.las2peer.services.gamificationStreakService.database.StreakModel;
 import i5.las2peer.services.gamificationStreakService.database.StreakModel.StreakSatstus;
@@ -105,7 +105,7 @@ public class GamificationStreakService extends RESTService {
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 					"Could not load properties for StreakService" + e.getMessage());
 		}
-		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		streakAccess = new StreakDAO();
 	}
 

@@ -21,9 +21,9 @@ import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
+import i5.las2peer.services.gamification.commons.database.DatabaseManager;
 import i5.las2peer.services.gamificationAchievementService.database.AchievementDAO;
 import i5.las2peer.services.gamificationAchievementService.database.AchievementModel;
-import i5.las2peer.services.gamificationAchievementService.database.DatabaseManager;
 import io.swagger.annotations.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -93,7 +93,7 @@ public class GamificationAchievementService extends RESTService {
 		// read and set properties values
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		setFieldValues();
-		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.achievementAccess = new AchievementDAO();
 	}
 	
@@ -256,7 +256,9 @@ public class GamificationAchievementService extends RESTService {
 			 // always close connections
 		    finally {
 		      try {
-		        conn.close();
+		        if (conn != null) {
+					conn.close();
+				}
 		      } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
@@ -376,8 +378,10 @@ public class GamificationAchievementService extends RESTService {
 			}		 // always close connections
 		    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -529,8 +533,10 @@ public class GamificationAchievementService extends RESTService {
 			 // always close connections
 		    finally {
 		      try {
-		        conn.close();
-		      } catch (SQLException e) {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
 		    }
@@ -629,8 +635,10 @@ public class GamificationAchievementService extends RESTService {
 			 // always close connections
 		    finally {
 		      try {
-		        conn.close();
-		      } catch (SQLException e) {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
 		    }
@@ -742,8 +750,10 @@ public class GamificationAchievementService extends RESTService {
 			 // always close connections
 		    finally {
 		      try {
-		        conn.close();
-		      } catch (SQLException e) {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
 		    }
@@ -784,8 +794,10 @@ public class GamificationAchievementService extends RESTService {
 			 // always close connections
 		    finally {
 		      try {
-		        conn.close();
-		      } catch (SQLException e) {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
 		    }

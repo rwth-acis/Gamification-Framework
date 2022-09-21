@@ -57,6 +57,8 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-core:2.12.5'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
 	implementation "io.swagger:swagger-annotations:1.6.2"
+
+    implementation project(":gamification-commons")
 }
 
 configurations {

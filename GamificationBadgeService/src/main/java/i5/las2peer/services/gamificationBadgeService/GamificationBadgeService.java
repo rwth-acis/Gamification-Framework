@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
 
 
-
+import i5.las2peer.services.gamification.commons.database.DatabaseManager;
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -39,7 +39,6 @@ import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.api.execution.InternalServiceException;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeDAO;
 import i5.las2peer.services.gamificationBadgeService.database.BadgeModel;
-import i5.las2peer.services.gamificationBadgeService.database.DatabaseManager;
 import i5.las2peer.services.gamificationBadgeService.helper.LocalFileManager;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -125,7 +124,7 @@ public class GamificationBadgeService extends RESTService {
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		//super();
 		setFieldValues();
-		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.badgeAccess = new BadgeDAO();
 		
 	}
@@ -173,7 +172,7 @@ public class GamificationBadgeService extends RESTService {
 		 * @return return resized image in byte array
 		 * @throws IllegalArgumentException Illegal argument exception
 		 * @throws IOException IO exception
-		 * @throws NUllPointerException null pointer exception
+		 * @throws NullPointerException null pointer exception
 		 */
 		private byte[] resizeImage(InputStream inputImageRaw) throws IllegalArgumentException, IOException, NullPointerException{
 
@@ -428,7 +427,9 @@ public class GamificationBadgeService extends RESTService {
 			// always close connections
 		    finally {
 		      try {
-		        conn.close();
+		        if (conn != null) {
+					conn.close();
+				}
 		      } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
@@ -623,7 +624,9 @@ public class GamificationBadgeService extends RESTService {
 			// always close connections
 		    finally {
 		      try {
-		        conn.close();
+				  if (conn != null) {
+					  conn.close();
+				  }
 		      } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
@@ -721,8 +724,10 @@ public class GamificationBadgeService extends RESTService {
 			// always close connections
 		    finally {
 		      try {
-		        conn.close();
-		      } catch (SQLException e) {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
 		    }
@@ -813,8 +818,10 @@ public class GamificationBadgeService extends RESTService {
 			}		 // always close connections
 		    finally {
 			      try {
-			        conn.close();
-			      } catch (SQLException e) {
+					  if (conn != null) {
+						  conn.close();
+					  }
+				  } catch (SQLException e) {
 			        logger.printStackTrace(e);
 			      }
 			    }
@@ -937,8 +944,10 @@ public class GamificationBadgeService extends RESTService {
 			// always close connections
 		    finally {
 		      try {
-		        conn.close();
-		      } catch (SQLException e) {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
 		    }
@@ -1019,8 +1028,10 @@ public class GamificationBadgeService extends RESTService {
 			// always close connections
 		    finally {
 		      try {
-		        conn.close();
-		      } catch (SQLException e) {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
 		    }
@@ -1071,8 +1082,10 @@ public class GamificationBadgeService extends RESTService {
 			// always close connections
 		    finally {
 		      try {
-		        conn.close();
-		      } catch (SQLException e) {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
 		        logger.printStackTrace(e);
 		      }
 		    }
