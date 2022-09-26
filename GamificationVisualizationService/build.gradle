@@ -2,7 +2,7 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
-        maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/' }
+        maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local/' }
     }
     dependencies {
         classpath 'io.github.swagger2markup:swagger2markup-gradle-plugin:1.3.3'
@@ -41,8 +41,6 @@ dependencies {
 	
 	implementation group: 'org.json', name: 'json', version: '20210307'
 	implementation group: 'org.postgresql', name: 'postgresql', version: '42.3.0'
-	implementation "org.apache.commons:commons-pool2:2.2"
-	implementation "org.apache.commons:commons-dbcp2:2.0"
 	implementation "commons-logging:commons-logging:1.1.3"
 	implementation "commons-fileupload:commons-fileupload:1.3.1"
 	implementation "org.imgscalr:imgscalr-lib:4.2"
@@ -68,6 +66,8 @@ dependencies {
 	implementation project(':GamificationQuestService')
 	implementation project(':GamificationStreakService')
 
+    implementation project(":gamification-commons")
+
 }
 
 configurations {
@@ -86,6 +86,8 @@ jar {
         // Exclude signatures to be able to natively bundle signed jars
         exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     }
+
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
 application {

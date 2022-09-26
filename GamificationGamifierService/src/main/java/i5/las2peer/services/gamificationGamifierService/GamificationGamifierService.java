@@ -338,10 +338,16 @@ public class GamificationGamifierService extends RESTService {
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
 			    finally {
-				  newRepository.close();
-				  originRepository.close();
-			      treeWalk.close();
-			    }
+					if (newRepository != null) {
+						newRepository.close();
+					}
+					if (originRepository != null) {
+						originRepository.close();
+					}
+					if (treeWalk != null) {
+						treeWalk.close();
+					}
+				}
 			  
 				objResponse.put("message", "Updated");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_10, "" + randomLong, true);

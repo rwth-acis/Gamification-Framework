@@ -60,7 +60,7 @@ var oidc_idtoken; // OpenID Connect ID Token (human-readable)
 var nofill; // if true, don't use 'success' style for logged-in button.
 
 var google_server = "https://accounts.google.com/o/oauth2";
-var learning_layers_server = "https://api.learning-layers.eu/o/oauth2";
+var learning_layers_server = "https://auth.las2peer.org/auth/realms/main";
 
 // Exceptions and debug messages are logged to the console.
 try{
@@ -143,13 +143,13 @@ function googleLogin(){
 
 function registerLearningLayer(successCallback,errorCallback){
 
-	///o/oauth2/request?discovery=https://api.learning-layers.eu/o/oauth2/.well-known/openid-configuration&client_id=242c4084-353a-485d-9d3c-80f55ad73e20&client_secret=ALmWqWqzWzYSVvDlLIrIzVXdmxeCgwUjoayzT4kHA3PkQGkZqPisg_t5GZI8A1-_02eX3l1G_FQwhQDfh4OKPFk&return=${returnUriEnc}">
+	///o/oauth2/request?discovery=https://auth.las2peer.org/auth/realms/main/.well-known/openid-configuration&client_id=242c4084-353a-485d-9d3c-80f55ad73e20&client_secret=ALmWqWqzWzYSVvDlLIrIzVXdmxeCgwUjoayzT4kHA3PkQGkZqPisg_t5GZI8A1-_02eX3l1G_FQwhQDfh4OKPFk&return=${returnUriEnc}">
 	openapp.resource.get(openapp.param.space(), (function(space){
 		openapp.resource.context(space).metadata().get((function(metadata) {
 			var properties = openapp.resource.content(metadata).properties();
 			var spacename = properties["http://purl.org/dc/terms/title"];
 			var returnURL = encodeURI("/spaces/"+spacename);
-			var oauth2Endpoint = "/o/oauth2/request?discovery=https://api.learning-layers.eu/o/oauth2/.well-known/openid-configuration&client_id=242c4084-353a-485d-9d3c-80f55ad73e20&client_secret=ALmWqWqzWzYSVvDlLIrIzVXdmxeCgwUjoayzT4kHA3PkQGkZqPisg_t5GZI8A1-_02eX3l1G_FQwhQDfh4OKPFk&return=" + returnURL;
+			var oauth2Endpoint = "/o/oauth2/request?discovery=https://auth.las2peer.org/auth/realms/main/.well-known/openid-configuration&client_id=242c4084-353a-485d-9d3c-80f55ad73e20&client_secret=ALmWqWqzWzYSVvDlLIrIzVXdmxeCgwUjoayzT4kHA3PkQGkZqPisg_t5GZI8A1-_02eX3l1G_FQwhQDfh4OKPFk&return=" + returnURL;
 			
 		}));
 

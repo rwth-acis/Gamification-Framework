@@ -16,7 +16,7 @@ spec:
     spec: 
       containers: 
         - 
-          image: registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification
+          image: registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification:0.1.4
           name: gamification
           ports: 
             - 
