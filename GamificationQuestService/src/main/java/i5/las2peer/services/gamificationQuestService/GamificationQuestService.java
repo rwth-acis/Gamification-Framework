@@ -241,7 +241,7 @@ public class GamificationQuestService extends RESTService {
 			 *  <li>questpointflag - Point flag dependency boolean - String (20 chars)
 			 *  <li>questidcompleted - Completed Quest ID if the quest flag dependency is true - String (20 chars)
 			 *  <li>questpointvalue - Point value if the point flag dependency boolean is true - Integer
-			 *  <li>questactionids - Array of object {action: , time: }
+			 *  <li>questactionids - Array of object {action: , times: }(times must have a positive value)
 			 *  <li>questdescription - Quest Description - String (50 chars)
 			 *  <li>questnotificationcheck - Quest Notification Boolean - Boolean - Option whether use notification or not
 			 *  <li>questnotificationmessage - Quest Notification Message - String
