@@ -1,0 +1,8 @@
+.settings
+.project
+/export/
+/log/
+/service/
+/bin/
+
+/build/

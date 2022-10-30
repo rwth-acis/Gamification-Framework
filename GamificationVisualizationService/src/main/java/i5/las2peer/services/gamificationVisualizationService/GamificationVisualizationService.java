@@ -18,6 +18,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.MediaType;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -1984,5 +1987,58 @@ public class GamificationVisualizationService extends RESTService {
 		}
 
 	}
+
+
+	/**
+	 * @param gameId the gameId of the game
+	 * @param memberId the memberId to be searched  
+	 * @return Returns an HTTP response with 200  with all success awareness models measures 
+	 * that this member has gamified if everything was performed successfully, or 500 if something 
+	 * unexpected happened.
+	 */
+	@GET
+	@Path("successawareness/{gameId}/{memberId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(
+			value = { @ApiResponse(
+					code = HttpURLConnection.HTTP_OK,
+					message = "If it was possible to retrieved the gamified measures done by the member") })
+	@ApiOperation(
+			value = "getMemberGamifiedMeasures",
+			notes = "This returns the gamified measures done by a member in a game")
+	public Response getMemberGamifiedMeasures(@PathParam("gameId") String gameId
+			,@PathParam("memberId") String memberId) {
+		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "GET" + "gamification/successawareness/" + gameId + "/" + memberId, true);
+
+		JSONObject objResponse = new JSONObject();
+
+		JSONArray jsons = new JSONArray();
+		try(PreparedStatement stmn = dbm.getConnection().prepareStatement(
+				"SELECT * FROM " + gameId + ".success_awareness_gamified_measure WHERE member_id = ?")) {
+			stmn.setString(1, memberId);
+			
+			stmn.execute();
+			
+			ResultSet set = stmn.getResultSet();
+			ResultSetMetaData metaData = set.getMetaData();
+			while(set.next()) {
+				JSONObject json = new JSONObject();
+				for(int i = 1; i <= metaData.getColumnCount(); i++) {
+					json.put(metaData.getColumnName(i),set.getObject(i));
+				}
+				jsons.put(json);
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+			
+			
+			objResponse.put("message", e.getMessage());
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse).build();
+		}
+		objResponse.put("response", jsons.toString());
+		return Response.ok().entity(objResponse).build();
+	}
+
 
 }

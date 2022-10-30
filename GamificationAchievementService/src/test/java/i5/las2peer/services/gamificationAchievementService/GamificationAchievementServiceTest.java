@@ -29,6 +29,7 @@ import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.connectors.webConnector.WebConnector;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
 import i5.las2peer.connectors.webConnector.client.MiniClient;
+import java.io.*;
 
 /**
  * Example Test Class demonstrating a basic JUnit test structure.
@@ -164,13 +165,15 @@ public class GamificationAchievementServiceTest {
 			headers.put("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			
 			ClientResponse result = c1.sendRequest("POST", mainPath + "" + gameId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
-
+			FileWriter writer = new FileWriter(new File("a.txt"));
+				writer.write(result.getResponse());
+				writer.close();
 			System.out.println(result.getResponse());
 			if(result.getHttpCode()==HttpURLConnection.HTTP_OK){
 				assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
 			}
 			else{
-
+				
 				assertEquals(HttpURLConnection.HTTP_CREATED,result.getHttpCode());
 			}
 		} catch (Exception e)

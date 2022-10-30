@@ -54,6 +54,7 @@ import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import java.io.*;
 
 
 /**
@@ -172,166 +173,185 @@ public class GamificationAchievementService extends RESTService {
 				@ApiParam(value = "Content-type in header", required = true)@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
 				@ApiParam(value = "Achievement detail in multiple/form-data type", required = true) byte[] formData)  {
 			
-			// Request log
-			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/achievements/"+gameId, true);
-			long randomLong = new Random().nextLong(); //To be able to match 
-			
-			// parse given multipart form data
-			JSONObject objResponse = new JSONObject();
-			String achievementid = null;
-			String achievementname = null;
-			String achievementdesc = null;
-			int achievementpointvalue = 0;
-			String achievementbadgeid = null;
-			
-			boolean achievementnotifcheck = false;
-			String achievementnotifmessage = null;
-			Connection conn = null;
-			
-			String name = null;
-			Agent agent = Context.getCurrent().getMainAgent();
-			if (agent instanceof AnonymousAgent) {
-				return unauthorizedMessage();
-			}
-			else if (agent instanceof UserAgent) {
-				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
-				name = userAgent.getLoginName();
-			}
-			else {
-				name = agent.getIdentifier();
-			}
-			try {
-				conn = dbm.getConnection();
+			try(FileWriter writer = new FileWriter(new File("b.txt"))){
+				int i = 0;
+				writer.write("here" + i++);	
+				// Request log
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/achievements/"+gameId, true);
+				writer.write("here" + i++);	
+				long randomLong = new Random().nextLong(); //To be able to match 
 				
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong, true);
+				// parse given multipart form data
+				JSONObject objResponse = new JSONObject();
+				String achievementid = null;
+				String achievementname = null;
+				String achievementdesc = null;
+				int achievementpointvalue = 0;
+				String achievementbadgeid = null;
 				
-				// Check the existence of game ID
+				boolean achievementnotifcheck = false;
+				String achievementnotifmessage = null;
+				Connection conn = null;
+				
+				String name = null;
+				Agent agent = Context.getCurrent().getMainAgent();
+				writer.write("here" + i++);	
+				if (agent instanceof AnonymousAgent) {
+					writer.write("A" + i++);	
+					return unauthorizedMessage();
+				}
+				else if (agent instanceof UserAgent) {
+					UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+					name = userAgent.getLoginName();
+					writer.write("B" + i++);	
+				}
+				else {
+					writer.write("C" + i++);	
+					name = agent.getIdentifier();
+				}
 				try {
-					if(!achievementAccess.isGameIdExist(conn,gameId)){
-						logger.info("Game not found >> ");
-						objResponse.put("message", "Cannot create achievement. Game not found");
-						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));						
-						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-						
-					}
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-					objResponse.put("message", "Cannot create achievement. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-				}
-				
-				// Parse content of form
-				Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
-				FormDataPart partAchievementID = parts.get("achievementid");
-				if (partAchievementID != null) {
-					achievementid = partAchievementID.getContent();
-					
-					if(achievementAccess.isAchievementIdExist(conn,gameId, achievementid)){
-						// Achievement id already exist
-						objResponse.put("message", "Cannot create achievement. Failed to add the achievement. achievement ID already exist!");
+					writer.write("\n" + dbm + "\n");	
+					conn = dbm.getConnection();
+					writer.write("here" + i++);	
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_14, ""+randomLong, true);
+					writer.write("hereAA" + i++);	
+					// Check the existence of game ID
+					try {
+						if(!achievementAccess.isGameIdExist(conn,gameId)){
+							writer.write("hereAA" + i++);	
+							logger.info("Game not found >> ");
+							objResponse.put("message", "Cannot create achievement. Game not found");
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));						
+							return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							
+						}
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+						objResponse.put("message", "Cannot create achievement. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
-					FormDataPart partAchievementName = parts.get("achievementname");
-					if (partAchievementName != null) {
-						achievementname = partAchievementName.getContent();
-					}
-					FormDataPart partAchievementDesc = parts.get("achievementdesc");
-					if (partAchievementDesc != null) {
-						// optional description text input form element
-						achievementdesc = partAchievementDesc.getContent();
-					}
-					FormDataPart partAchievementPV = parts.get("achievementpointvalue");
-					if (partAchievementPV != null) {
-						// optional description text input form element
-						achievementpointvalue =  Integer.parseInt(partAchievementPV.getContent());
-					}
+					writer.write("hereAA" + i++);	
+					// Parse content of form
+					Map<String, FormDataPart> parts = MultipartHelper.getParts(formData, contentType);
+					FormDataPart partAchievementID = parts.get("achievementid");
+					if (partAchievementID != null) {
+						achievementid = partAchievementID.getContent();
+						
+						if(achievementAccess.isAchievementIdExist(conn,gameId, achievementid)){
+							// Achievement id already exist
+							objResponse.put("message", "Cannot create achievement. Failed to add the achievement. achievement ID already exist!");
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						}
+						FormDataPart partAchievementName = parts.get("achievementname");
+						if (partAchievementName != null) {
+							achievementname = partAchievementName.getContent();
+						}
+						FormDataPart partAchievementDesc = parts.get("achievementdesc");
+						if (partAchievementDesc != null) {
+							// optional description text input form element
+							achievementdesc = partAchievementDesc.getContent();
+						}
+						FormDataPart partAchievementPV = parts.get("achievementpointvalue");
+						if (partAchievementPV != null) {
+							// optional description text input form element
+							achievementpointvalue =  Integer.parseInt(partAchievementPV.getContent());
+						}
 
-					FormDataPart partAchievementBID = parts.get("achievementbadgeid");
+						FormDataPart partAchievementBID = parts.get("achievementbadgeid");
 
-					if (partAchievementBID != null) {
-						// optional description text input form element
-						achievementbadgeid = partAchievementBID.getContent();
-					}
-					if(achievementbadgeid.equals("")){
-						achievementbadgeid = null;
-					}
-					
-					FormDataPart partNotificationCheck = parts.get("achievementnotificationcheck");
-					if (partNotificationCheck != null) {
-						// checkbox is checked
-						achievementnotifcheck = true;
+						if (partAchievementBID != null) {
+							// optional description text input form element
+							achievementbadgeid = partAchievementBID.getContent();
+						}
+						if(achievementbadgeid.equals("")){
+							achievementbadgeid = null;
+						}
 						
-					}else{
-						achievementnotifcheck = false;
-					}
-					
-					FormDataPart partNotificationMsg = parts.get("achievementnotificationmessage");
-					if (partNotificationMsg != null) {
-						achievementnotifmessage = partNotificationMsg.getContent();
-					}else{
-						achievementnotifmessage = "";
-					}
-					AchievementModel achievement = new AchievementModel(achievementid, achievementname, achievementdesc, achievementpointvalue, achievementbadgeid, achievementnotifcheck, achievementnotifmessage);
-					
-					try{
-						achievementAccess.addNewAchievement(conn,gameId, achievement);
-						objResponse.put("message", "Achievement upload success (" + achievementid +")");
+						FormDataPart partNotificationCheck = parts.get("achievementnotificationcheck");
+						if (partNotificationCheck != null) {
+							// checkbox is checked
+							achievementnotifcheck = true;
+							
+						}else{
+							achievementnotifcheck = false;
+						}
 						
-						// Mobsos Logger
-						Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong, true);
-						Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_24, ""+name, true);
-						Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25, ""+gameId, true);
-						return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						FormDataPart partNotificationMsg = parts.get("achievementnotificationmessage");
+						if (partNotificationMsg != null) {
+							achievementnotifmessage = partNotificationMsg.getContent();
+						}else{
+							achievementnotifmessage = "";
+						}
+						AchievementModel achievement = new AchievementModel(achievementid, achievementname, achievementdesc, achievementpointvalue, achievementbadgeid, achievementnotifcheck, achievementnotifmessage);
 						
-					} catch (SQLException e) {
-						e.printStackTrace();
-						objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+						try{
+							achievementAccess.addNewAchievement(conn,gameId, achievement);
+							objResponse.put("message", "Achievement upload success (" + achievementid +")");
+							
+							// Mobsos Logger
+							Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong, true);
+							Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_24, ""+name, true);
+							Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_25, ""+gameId, true);
+							return Response.status(HttpURLConnection.HTTP_CREATED).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							
+						} catch (SQLException e) {
+							e.printStackTrace();
+							objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						}
+					}
+					else{
+						objResponse.put("message", "Cannot create achievement. Achievement ID cannot be null!");
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 					}
+					
+					
+				} catch (MalformedStreamException e) {
+					writer.write(e.getMessage());	
+					// the stream failed to follow required syntax
+					objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+
+				} catch (IOException e) {
+					writer.write(e.getMessage());	
+					// a read or write error occurred
+					objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+
+				} catch (SQLException e) {
+					writer.write(e.getMessage());	
+					e.printStackTrace();
+					objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+
 				}
-				else{
-					objResponse.put("message", "Cannot create achievement. Achievement ID cannot be null!");
+				catch (NullPointerException e){
+					writer.write(e.getMessage());	
+					e.printStackTrace();
+					objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 				}
-				
-				
-			} catch (MalformedStreamException e) {
-				// the stream failed to follow required syntax
-				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
-			} catch (IOException e) {
-				// a read or write error occurred
-				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-
-			} catch (SQLException e) {
+				 // always close connections
+			    finally {
+			      try {
+			        conn.close();
+			      } catch (SQLException e) {
+			        logger.printStackTrace(e);
+			      }
+			    }
+		    }catch(Exception e){
 				e.printStackTrace();
-				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+			}
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).build();
 
-			}
-			catch (NullPointerException e){
-				e.printStackTrace();
-				objResponse.put("message", "Cannot create achievement. Failed to upload " + achievementid + ". " + e.getMessage());
-				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
-			}
-			 // always close connections
-		    finally {
-		      try {
-		        conn.close();
-		      } catch (SQLException e) {
-		        logger.printStackTrace(e);
-		      }
-		    }
 		}
 		
 		/**

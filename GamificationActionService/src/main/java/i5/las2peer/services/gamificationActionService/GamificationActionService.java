@@ -124,11 +124,6 @@ public class GamificationActionService extends RESTService {
 		// read and set properties values
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		setFieldValues();
-		jdbcDriverClassName="org.postgresql.Driver";
-		jdbcUrl="jdbc:postgresql://gamification-db-service.ba-mbelsch:5432/";
-		jdbcSchema="postgres";
-		jdbcLogin="postgres";
-		jdbcPass="postgres";
 		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.actionAccess = new ActionDAO();
 	}

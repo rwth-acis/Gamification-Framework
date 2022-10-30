@@ -393,6 +393,20 @@ BEGIN
 	);';
 	-----------------------------STREAK TABLES END------------------------------------------------------------------------------------------------------------
 
+	-----------------------------~SUCCESS AWARENESS MODEL TABLES START------------------------------------------------------------------------------------------------------------
+	EXECUTE 'CREATE TABLE ' || new_schema || '.success_awareness_gamified_measure (
+		measure_name character varying(100) NOT NULL,
+		action_id  character varying(20) NOT NULL UNIQUE,
+		game_id character varying(20) NOT NULL,
+		member_id character varying(20) NOT NULL,
+		measure_xml character varying(1000) NOT NULL,
+		CONSTRAINT success_awareness_gamified_pkey PRIMARY KEY(measure_name),
+		CONSTRAINT member_id FOREIGN KEY (game_id,member_id) REFERENCES manager.member_game (game_id,member_id) ON UPDATE CASCADE ON DELETE CASCADE,
+		CONSTRAINT action_id FOREIGN KEY (action_id) REFERENCES ' || new_schema || '.action (action_id) ON UPDATE CASCADE ON DELETE CASCADE
+	);';
+	-----------------------------SUCCESS AWARENESS MODEL TABLES END------------------------------------------------------------------------------------------------------------
+
+
 	-- trigger
 
 	EXECUTE 'SELECT create_trigger_pointquest_observer(' || quote_literal(new_schema) || ');';
@@ -412,6 +426,8 @@ BEGIN
 	EXECUTE 'SELECT create_trigger_update_streak_badge_constraint(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_update_streak_achievement_constraint(' || quote_literal(new_schema) || ');';
 	EXECUTE 'SELECT create_trigger_update_streak_constraint(' || quote_literal(new_schema) || ');';
+
+
 
 END;
 $BODY$

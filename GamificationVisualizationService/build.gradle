@@ -71,6 +71,7 @@ jar {
         // Exclude signatures to be able to natively bundle signed jars
         exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 application {

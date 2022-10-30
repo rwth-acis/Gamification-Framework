@@ -420,4 +420,19 @@ public class GamificationVisualizationServiceTest {
 			System.exit(0);
 		}
 	}
+
+
+	@Test
+	public void testD1_getSuccessAwarenessGamified() {
+		try {
+			final String GAME_ID = "test";
+			final String MEMBER_NAME = "MemberSuccessTest";
+			ClientResponse result = c1.sendRequest("GET", mainPath + "successawarenessmodel/" + GAME_ID + "/" + MEMBER_NAME,"");
+			Assert.assertEquals(200, result.getHttpCode());
+			System.out.println(result.getResponse());
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail(e.toString());
+		}
+	}
 }
