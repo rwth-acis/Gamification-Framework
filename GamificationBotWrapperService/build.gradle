@@ -35,17 +35,17 @@ dependencies {
 
     // las2peer bundle which is not necessary in the runtime path
     // compileOnly will be moved into the lib dir afterwards
-    compileOnly "i5:las2peer-bundle:${project.property('core.version')}"
+    implementation "i5:las2peer-bundle:${project.property('core.version')}"
 
     // Add service dependencies here
 	
-	implementation "net.minidev:json-smart:1.3.1"
+	implementation group: 'org.json', name: 'json', version: '20210307'
 	implementation group: 'org.postgresql', name: 'postgresql', version: '42.3.0'
 	implementation "commons-logging:commons-logging:1.1.3"
 	implementation "commons-fileupload:commons-fileupload:1.3.1"
 	implementation "org.imgscalr:imgscalr-lib:4.2"
 	implementation "org.apache.httpcomponents:httpmime:4.3.1"
-	implementation "org.eclipse.jgit:org.eclipse.jgit:4.0.1.201506240215-r"
+	
 	implementation('javax.ws.rs:javax.ws.rs-api:2.0.1') {
         force = true
     }
@@ -55,15 +55,24 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-core:2.12.5'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
 	implementation "io.swagger:swagger-annotations:1.6.2"
+	implementation 'org.apache.commons:commons-lang3:3.10'
+	
+//	implementation project(':GamificationAchievementService')
+//	implementation project(':GamificationActionService')
+//	implementation project(':GamificationBadgeService')
+//	implementation project(':GamificationGameService')
+//	implementation project(':GamificationLevelService')
+//	implementation project(':GamificationPointService')
+//	implementation project(':GamificationQuestService')
+//	implementation project(':GamificationStreakService')
 
-    implementation project(":gamification-commons")
-	implementation project(":GamificationBadgeService")
-	implementation project(":GamificationPointService")
+  //  implementation project(":gamification-commons")
+
 }
 
 configurations {
     // This ensures las2peer is available in the tests, but won't be bundled
-    testCompile.extendsFrom compileOnly
+   // testCompile.extendsFrom compileOnly
 }
 
 jar {
@@ -106,17 +115,17 @@ javadoc {
 swagger {
     apiSource {
         springmvc = false
-        locations = ['i5.las2peer.services.gamificationGameService']
+        locations = ['i5.las2peer.services.gamificationBotWrapperService']
         schemes = ['http', 'https']
         host = 'www.example.com:8080'
-        basePath = '/gamification/games'
+        basePath = '/gamification/bots'
         swaggerDirectory = "${project.buildDir}/swagger-ui"
     }
 }
 
 convertSwagger2markup {
     swaggerInput file("${project.buildDir}/swagger-ui/swagger.json").getAbsolutePath()
-    outputDir file("${project.rootDir}/docs/api/game-service")
+    outputDir file("${project.rootDir}/docs/api/botwrappper-service")
     config = [
             'swagger2markup.markupLanguage' : 'ASCIIDOC',
             'swagger2markup.pathsGroupedBy' : 'TAGS',
@@ -132,9 +141,9 @@ compileJava {
     dependsOn "copyMain"
 }
 
-compileTestJava {
-    dependsOn "copyTest"
-}
+//compileTestJava {
+//    dependsOn "copyTest"
+//}
 
 // Copies .xml files into build directory
 task copyMain(type: Copy) {
@@ -143,10 +152,10 @@ task copyMain(type: Copy) {
 }
 
 // Copies .xml files into build directory
-task copyTest(type: Copy) {
-    from "src/test/java"
-    into "$buildDir/classes/java/test"
-}
+//task copyTest(type: Copy) {
+ //   from "src/test/java"
+  //  into "$buildDir/classes/java/test"
+//}
 
 // These two tasks restore the build and runtime environment used
 // in the ant environment
@@ -155,9 +164,9 @@ task copyJar(type: Copy) {
     into "$projectDir/service"
 }
 
-task copyJarToVis(type: Copy) {
+task copyJarToGame(type: Copy) {
     from jar // here it automatically reads jar file produced from jar task
-    into "$rootDir/GamificationVisualizationService/lib"
+    into "$rootDir/GamificationGameService/service"
 }
 
 task copyToLib(type: Copy) {
@@ -172,18 +181,14 @@ task importProperties(type: Copy){
 	from "$rootDir/GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties"
 	from "$rootDir/GamificationLevelService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties"
 	from "$rootDir/GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties"
-	from "$rootDir/GamificationVisualizationService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties"
-    from "$rootDir/GamificationBotWrapperService/etc/i5.las2peer.services.gamificationBotWrapperService.GamificationBotWrapperService.properties"
-	from "$rootDir/GamificationGamifierService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties"
 	from "$rootDir/GamificationStreakService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties"
 	into "$projectDir/etc"
 }
 
 build.dependsOn copyJar
 build.dependsOn copyToLib
-build.dependsOn copyJarToVis
+build.dependsOn copyJarToGame
 build.dependsOn importProperties
-
 
 task startscripts {
     new File("$projectDir/etc/bin", "start_network.sh").text = """#!/bin/bash
@@ -305,9 +310,9 @@ task cleanAll {
     }
 }
 
-test {
-    workingDir = file("$projectDir")
-}
+//test {
+ //   workingDir = file("$projectDir")
+//}
 
 // Only required when using Eclipse:
 // configuration for eclipse (this allows to import the project as a gradle project in eclipse without any problems)
