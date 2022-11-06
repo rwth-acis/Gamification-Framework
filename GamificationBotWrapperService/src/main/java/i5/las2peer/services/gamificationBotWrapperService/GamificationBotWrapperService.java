@@ -65,7 +65,7 @@ import net.minidev.json.parser.ParseException;
 @SwaggerDefinition(info = @Info(title = "Members Service", version = "0.1", description = "Member Service for Gamification Framework", termsOfService = "http://your-terms-of-service-url.com", contact = @Contact(name = "Muhammad Abduh Arifin", url = "dbis.rwth-aachen.de", email = "arifin@dbis.rwth-aachen.de"), license = @License(name = "your software license name", url = "http://your-software-license-url.com")))
 @ManualDeployment
 @ServicePath("/gamification/bots")
-public class GamificationBotWrapperService extends RESTService implements Runnable{
+public class GamificationBotWrapperService extends RESTService{
 
 	// instantiate the logger class
 	private final L2pLogger logger = L2pLogger.getInstance(GamificationBotWrapperService.class.getName());
@@ -97,21 +97,21 @@ public class GamificationBotWrapperService extends RESTService implements Runnab
 	}
 
 
-	@Override
+	/*@Override
 	public void run() {
 		try {
 			System.out.println("thread baby");
 			Thread.sleep(60000);
-			monitorWorkers();
+			monitorBotWorkers();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+	*/
 	/**
 	 * method for workerMonitorThread, kill worker as soon they expire
 	 */
-	private void monitorWorkers() {
+	/*private void monitorBotWorkers() {
 		List<String> workerCopy = new ArrayList<>(botWorkers);
 		for (String lrsWorker : workerCopy ) {
 			if (lrsWorker!= null) {
@@ -122,7 +122,7 @@ public class GamificationBotWrapperService extends RESTService implements Runnab
 			}
 		}
 	}
-
+*/
 
 	/**
 	 * Function to return http unauthorized message
@@ -160,6 +160,7 @@ public class GamificationBotWrapperService extends RESTService implements Runnab
 				JSONObject jsonBody = new JSONObject();
 				try{
 					jsonBody = (JSONObject) parser.parse(body);
+					LrsBotWorker test = new LrsBotWorker();
 				} catch (ParseException e){
 					e.printStackTrace();
 				}
