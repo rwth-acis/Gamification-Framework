@@ -8,22 +8,27 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import net.minidev.json.JSONArray;
+import  net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
 public class LrsBotWorker implements Runnable{
-	private String timeStamp = "";
+	private String timeStamp = "0";
 	private String lrsToken = "";
+	
+	public LrsBotWorker(){
+	}
+
 	@Override
 	public void run() {
+		System.out.println("10");
 		while (!Thread.currentThread().isInterrupted() ) {
 			try{
 			JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);	
 			JSONObject acc = (JSONObject) p.parse(new String("{'account': { 'name': '" + "f0cab264281fb07f6368f44064162fee95f4d511505dd09264131c6a19b6bd349d0cd8eb751d6363325d5432802690b5"
 				+ "', 'homePage': 'https://chat.tech4comp.dbis.rwth-aachen.de'}}"));
-		URL url = new URL("https://lrs.tech4comp.dbis.rwth-aachen.de" + "/data/xAPI/statements?agent=" + "f0cab264281fb07f6368f44064162fee95f4d511505dd09264131c6a19b6bd349d0cd8eb751d6363325d5432802690b5");
+		URL url = new URL("https://lrs.tech4comp.dbis.rwth-aachen.de" + "/data/xAPI/statements?agent=" + acc.toString() + "&since=" + timeStamp );
 		
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
@@ -44,7 +49,20 @@ public class LrsBotWorker implements Runnable{
 		JSONObject jsonBody = (JSONObject) p.parse(response.toString());
 
 		JSONArray statements = (JSONArray) jsonBody.get("statements");
-		System.out.println(statements);
+		System.out.println("statements coming" + statements.size());
+		for(Object statement : statements){
+			if(statement.toString().toLowerCase().contains("gamification")){
+				System.out.println("gamified statement");
+			}
+		}
+		if(statements.size() > 0){
+			System.out.println(statements.get(0));
+			System.out.println(((JSONObject) statements.get(0)).get("timestamp"));
+			timeStamp = ((JSONObject) statements.get(0)).get("timestamp").toString();
+
+		} else {
+			System.out.println("no statements");
+		}
 		} catch (Exception e){
 			e.printStackTrace();
 		}
