@@ -17,13 +17,17 @@ COPY --chown=las2peer:las2peer . /src
 WORKDIR /src
 
 # run the rest as unprivileged user
-USER las2peer
+#USER las2peer
 RUN dos2unix ./gradlew
 RUN dos2unix /src/main.sh
+
+RUN dos2unix /src/config/gamification.config
 
 RUN chmod +x ./gradlew
 RUN chmod +x /src/main.sh
 RUN ./main.sh -m build
+
+RUN dos2unix /src/GamificationGameService/start_network_in_a_node.sh
 
 EXPOSE $HTTP_PORT
 EXPOSE $HTTPS_PORT

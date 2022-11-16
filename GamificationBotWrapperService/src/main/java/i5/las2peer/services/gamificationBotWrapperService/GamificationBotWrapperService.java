@@ -42,8 +42,8 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 /**
@@ -80,6 +80,7 @@ public class GamificationBotWrapperService extends RESTService{
 	// will need to make so that every bot can choose its own token, and not an environment variable
 	private String LRSToken;
 
+	private static LrsBotWorker random; 
 
 	private static List<String> botWorkers;
 	// this header is not known to javax.ws.rs.core.HttpHeaders
@@ -141,10 +142,11 @@ public class GamificationBotWrapperService extends RESTService{
 	/**
 			 * Get a level data with specific ID from database
 			 * @return HTTP Response Returned as JSON object
+			 * @param body body
 			 */
 			@POST
 			@Path("/init")
-			@Consumes(MediaType.APPLICATION_JSON)
+			@Consumes(MediaType.TEXT_PLAIN)
 			@Produces(MediaType.TEXT_PLAIN)
 			@ApiResponses(value = {
 					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
@@ -159,8 +161,11 @@ public class GamificationBotWrapperService extends RESTService{
 				JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
 				JSONObject jsonBody = new JSONObject();
 				try{
+					System.out.println(body);
 					jsonBody = (JSONObject) parser.parse(body);
-					LrsBotWorker test = new LrsBotWorker();
+					LrsBotWorker random = new LrsBotWorker();
+					Thread t = new Thread(random);
+					t.start();
 				} catch (ParseException e){
 					e.printStackTrace();
 				}
