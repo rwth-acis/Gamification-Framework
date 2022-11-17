@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -46,6 +47,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
+
 /**
  * Member Service
  * 
@@ -65,7 +67,7 @@ import net.minidev.json.parser.ParseException;
 @SwaggerDefinition(info = @Info(title = "Members Service", version = "0.1", description = "Member Service for Gamification Framework", termsOfService = "http://your-terms-of-service-url.com", contact = @Contact(name = "Muhammad Abduh Arifin", url = "dbis.rwth-aachen.de", email = "arifin@dbis.rwth-aachen.de"), license = @License(name = "your software license name", url = "http://your-software-license-url.com")))
 @ManualDeployment
 @ServicePath("/gamification/bots")
-public class GamificationBotWrapperService extends RESTService{
+public class GamificationBotWrapperService extends RESTService {
 
 	// instantiate the logger class
 	private final L2pLogger logger = L2pLogger.getInstance(GamificationBotWrapperService.class.getName());
@@ -77,12 +79,13 @@ public class GamificationBotWrapperService extends RESTService{
 	private String jdbcPass;
 	private String jdbcUrl;
 	private String jdbcSchema;
-	// will need to make so that every bot can choose its own token, and not an environment variable
+	// will need to make so that every bot can choose its own token, and not an
+	// environment variable
 	private String LRSToken;
 
-	private static LrsBotWorker random; 
+	private static LrsBotWorker random;
 
-	private static List<String> botWorkers;
+	private static HashMap<String, LrsBotWorker> botWorkers;
 	// this header is not known to javax.ws.rs.core.HttpHeaders
 	public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
 	public static final String HEADER_CONTENT_TYPE = "Content-Type";
@@ -92,38 +95,41 @@ public class GamificationBotWrapperService extends RESTService{
 
 	public GamificationBotWrapperService() {
 		setFieldValues();
-		System.out.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema);
-	//	dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		System.out
+				.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema);
+		// dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass,
+		// jdbcUrl, jdbcSchema);
 
 	}
 
-
-	/*@Override
-	public void run() {
-		try {
-			System.out.println("thread baby");
-			Thread.sleep(60000);
-			monitorBotWorkers();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	*/
+	/*
+	 * @Override
+	 * public void run() {
+	 * try {
+	 * System.out.println("thread baby");
+	 * Thread.sleep(60000);
+	 * monitorBotWorkers();
+	 * } catch (Exception e) {
+	 * e.printStackTrace();
+	 * }
+	 * }
+	 */
 	/**
 	 * method for workerMonitorThread, kill worker as soon they expire
 	 */
-	/*private void monitorBotWorkers() {
-		List<String> workerCopy = new ArrayList<>(botWorkers);
-		for (String lrsWorker : workerCopy ) {
-			if (lrsWorker!= null) {
-				//if (lrsWorker.expired()) {
-				//	workers.remove(lrsWorker);
-				//}
-				System.out.println("bot is here "+lrsWorker );
-			}
-		}
-	}
-*/
+	/*
+	 * private void monitorBotWorkers() {
+	 * List<String> workerCopy = new ArrayList<>(botWorkers);
+	 * for (String lrsWorker : workerCopy ) {
+	 * if (lrsWorker!= null) {
+	 * //if (lrsWorker.expired()) {
+	 * // workers.remove(lrsWorker);
+	 * //}
+	 * System.out.println("bot is here "+lrsWorker );
+	 * }
+	 * }
+	 * }
+	 */
 
 	/**
 	 * Function to return http unauthorized message
@@ -140,47 +146,52 @@ public class GamificationBotWrapperService extends RESTService{
 	}
 
 	/**
-			 * Get a level data with specific ID from database
-			 * @return HTTP Response Returned as JSON object
-			 * @param body body
-			 */
-			@POST
-			@Path("/init")
-			@Consumes(MediaType.TEXT_PLAIN)
-			@Produces(MediaType.TEXT_PLAIN)
-			@ApiResponses(value = {
-					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
-					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
-					@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized")})
-			@ApiOperation(value = "getlevelWithNum", 
-						  notes = "Get level details with specific level number"
-						  )
-			public Response init(String body)
-			{
-				System.out.println(LRSToken);
-				JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
-				JSONObject jsonBody = new JSONObject();
-				try{
-					System.out.println(body);
-					jsonBody = (JSONObject) parser.parse(body);
-					LrsBotWorker random = new LrsBotWorker();
-					Thread t = new Thread(random);
-					t.start();
-				} catch (ParseException e){
-					e.printStackTrace();
-				}
-
-				// Request log
-			return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online").type(MediaType.APPLICATION_JSON).build();
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	@POST
+	@Path("/init")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.TEXT_PLAIN)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
+	public Response init(String body) {
+		System.out.println(LRSToken);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
+			System.out.println(body);
+			jsonBody = (JSONObject) parser.parse(body);
+			String botName = jsonBody.get("botName").toString();
+			if (!botWorkers.containsKey(botName)) {
+				LrsBotWorker random = new LrsBotWorker();
+				Thread t = new Thread(random);
+				botWorkers.put(botName, random);
+				t.start();
+				
 			}
 
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Request log
+		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
+				.type(MediaType.APPLICATION_JSON).build();
+	}
 
 }
 
-
-// will need to have a list of active users that has the key of the botchannel/name
-// to each user a list of timestamps will be kept to know from which point on we will need to check new statements
+// will need to have a list of active users that has the key of the
+// botchannel/name
+// to each user a list of timestamps will be kept to know from which point on we
+// will need to check new statements
 // otherwise the search will take way too long
 
-
-// for basic chat bot interaction: should i let users define points in sbf or pre define them? 
+// for basic chat bot interaction: should i let users define points in sbf or
+// pre define them?

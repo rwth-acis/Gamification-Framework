@@ -20,6 +20,11 @@ public class LrsBotWorker implements Runnable{
 	public LrsBotWorker(){
 	}
 
+
+	// here, the whole process of communicating with the GF should take place
+	// as to not repeat statements, it would be interesting to also store the statement id
+	// but this would not always work, as a student should not always get a point for the same action
+	// like prior knowledge activsation exercised
 	@Override
 	public void run() {
 		System.out.println("10");
