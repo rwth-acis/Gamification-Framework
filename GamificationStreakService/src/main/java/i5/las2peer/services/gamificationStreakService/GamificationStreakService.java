@@ -752,7 +752,7 @@ public class GamificationStreakService extends RESTService {
 				windowSize = totalNum;
 			}
 
-			streaks = streakAccess.getStreaksWithOffsetAndSearchPhrase(conn, gameId, offset, windowSize, searchPhrase);
+			streaks = streakAccess.getAllStreaks(conn, gameId);
 
 			JSONArray streakArray = new JSONArray();
 

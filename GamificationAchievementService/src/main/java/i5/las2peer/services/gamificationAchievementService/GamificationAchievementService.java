@@ -715,7 +715,7 @@ public class GamificationAchievementService extends RESTService {
 					windowSize = totalNum;
 				}
 				
-				achs = achievementAccess.getAchievementsWithOffsetAndSearchPhrase(conn,gameId, offset, windowSize, searchPhrase);
+				achs = achievementAccess.getAllAchievements(conn,gameId);
 
 				ObjectMapper objectMapper = new ObjectMapper();
 		    	//Set pretty printing of json

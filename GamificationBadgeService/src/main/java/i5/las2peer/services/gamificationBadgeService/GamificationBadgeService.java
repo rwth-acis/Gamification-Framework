@@ -799,6 +799,7 @@ public class GamificationBadgeService extends RESTService {
 				if(!LocalFileManager.deleteFile(LocalFileManager.getBasedir()+"/"+gameId+"/"+badgeId)){
 					
 					logger.info("Delete File Failed >> ");
+					System.out.println("WHoopsy nothing to delete");
 					objResponse.put("message", "Cannot delete badge. Delete File Failed");
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				//	return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();

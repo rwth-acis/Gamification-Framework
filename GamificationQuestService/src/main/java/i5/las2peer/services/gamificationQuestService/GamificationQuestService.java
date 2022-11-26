@@ -889,7 +889,7 @@ public class GamificationQuestService extends RESTService {
 						windowSize = totalNum;
 					}
 					
-					qs = questAccess.getQuestsWithOffsetAndSearchPhrase(conn,gameId, offset, windowSize, searchPhrase);
+					qs = questAccess.getAllQuests(conn,gameId);
 
 					ObjectMapper objectMapper = new ObjectMapper();
 			    	//Set pretty printing of json
