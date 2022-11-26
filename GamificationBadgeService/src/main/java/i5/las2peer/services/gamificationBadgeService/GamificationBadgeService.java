@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Random;
+import java.util.Base64;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.*;
@@ -800,7 +801,7 @@ public class GamificationBadgeService extends RESTService {
 					logger.info("Delete File Failed >> ");
 					objResponse.put("message", "Cannot delete badge. Delete File Failed");
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				//	return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 				}
 				objResponse.put("message", "File Deleted");
@@ -908,14 +909,30 @@ public class GamificationBadgeService extends RESTService {
 					windowSize = totalNum;
 				}
 				
-				badges = badgeAccess.getBadgesWithOffsetAndSearchPhrase(conn,gameId, offset, windowSize, searchPhrase);
+				badges = badgeAccess.getAllBadges(conn,gameId);
 				
 				
 				ObjectMapper objectMapper = new ObjectMapper();
 		    	//Set pretty printing of json
 		    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 		    	
-		    	String badgeString = objectMapper.writeValueAsString(badges);
+		    	
+				for(int i=0; i < badges.size();i++){
+					BadgeModel badge = badges.get(i);
+					System.out.println("searching for badge image" );
+					byte[] filecontent = getBadgeImageMethod(gameId, badge.getId());
+					
+					try{
+						byte[] encode = Base64.getEncoder().encode(filecontent);
+						String result = new String(encode);
+							badge.setBase64(result);
+							badges.set(i, badge);
+							System.out.println("badge img found" );
+					} catch (Exception e){
+						e.printStackTrace();
+					}
+				}
+				String badgeString = objectMapper.writeValueAsString(badges);
 				JSONArray badgeArray = (JSONArray) JSONValue.parse(badgeString);
 
 				objResponse.put("current", currentPage);

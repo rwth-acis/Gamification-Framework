@@ -22,6 +22,9 @@ public class BadgeModel{
 	private boolean use_notification;
 	@ApiModelProperty( value = "Notification Message") 
 	private String notif_message;
+
+	@ApiModelProperty( value = "Base64") 
+	private String base64;
 	
 	public BadgeModel(String id, String name, String description, boolean use_notification, String notif_message){
 		this.id = id;
@@ -49,6 +52,23 @@ public class BadgeModel{
 		this.id = id;
 	}
 	
+	/**
+	 * Setter for variable id
+	 * 
+	 */
+	public String getBase64(){
+		return this.base64;
+	}
+
+	/**
+	 * Setter for variable id
+	 * 
+	 * @param base64 base64 of a badge
+	 */
+	public void setBase64(String base64){
+		this.base64 = base64;
+	}
+
 	/**
 	 * Getter for variable name
 	 * 
