@@ -671,7 +671,7 @@ public class GamificationActionService extends RESTService {
 							windowSize = totalNum;
 						}
 						
-						achs = actionAccess.getActionsWithOffsetAndSearchPhrase(conn,gameId, offset, windowSize, searchPhrase);
+						achs = actionAccess.getAllActions(conn,gameId);
 
 						ObjectMapper objectMapper = new ObjectMapper();
 				    	//Set pretty printing of json
