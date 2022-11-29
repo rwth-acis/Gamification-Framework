@@ -318,6 +318,8 @@ public class GamificationQuestService extends RESTService {
 						return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 					}
+					System.out.println(content);
+					System.out.println(contentB);
 					
 					JSONObject obj = (JSONObject) JSONValue.parseWithException(content);
 					try {

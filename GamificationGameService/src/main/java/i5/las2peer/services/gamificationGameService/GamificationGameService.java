@@ -754,6 +754,86 @@ public class GamificationGameService extends RESTService {
 						
 				
 			}
+
+			// if time allows it, find a better implementation for this, where authentication is done
+
+			/**
+			 * Validate member and add to the database as the new member if he/she is not registered yet
+			 * @return HTTP Response status if validation success
+			 * @param memberId memberId
+			 */
+			@POST
+			@Path("/validation/{memberId}")
+			@Produces(MediaType.APPLICATION_JSON)
+			@ApiOperation(value = "memberLoginValidation",
+					notes = "Simple function to validate a member login.")
+			@ApiResponses(value = {
+					@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Member is registered"),
+					@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized"),
+					@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "User data error to be retrieved"),
+					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Cannot connect to database"),
+					@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "User data error to be retrieved. Not JSON object")
+			})
+			public Response memberLoginValidation(@ApiParam(value = "Member ID", required = true)@PathParam("memberId") String memberId) {
+				// Request log
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/games/validation", true);
+				
+				JSONObject objResponse = new JSONObject();
+					
+					MemberModel member;
+					Connection conn = null;
+					Agent agent = Context.getCurrent().getMainAgent();
+					if (agent instanceof AnonymousAgent) {
+						return unauthorizedMessage();
+					}
+					String name = memberId;
+					String email = memberId;
+					if (name != "" && email != "") {//userData != null
+						if (name != "" && email != ""){//jsonUserData instanceof JSONObject
+							String lastname ="";
+							String firstname ="";
+							member = new MemberModel(name,firstname,lastname,email);
+							try {
+								conn = dbm.getConnection();
+								if(!gameAccess.isMemberRegistered(conn,member.getId())){
+									gameAccess.registerMember(conn,member);
+									objResponse.put("message", "Welcome " + member.getId() + "!");
+									Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_7, ""+member.getId(), true);
+									return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+								}
+							} catch (SQLException e) {
+								e.printStackTrace();
+								objResponse.put("message", "Cannot validate member login. Database Error. " + e.getMessage());
+								Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+								return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+							}		 
+							// always close connections
+						    finally {
+						      try {
+								  if (conn != null) {
+									  conn.close();
+								  }
+							  } catch (SQLException e) {
+						        logger.printStackTrace(e);
+						      }
+						    }	
+						} else {
+							objResponse.put("message", "Cannot validate member login. User data error to be retrieved. Not JSON object.");
+							Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+							return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+						}
+						objResponse.put("message", "Member already registered");
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_8, ""+member.getId(), true);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					}
+					else{
+						objResponse.put("message", "Cannot validate member login. User data error to be retrieved.");
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+					}
+						
+				
+			}
 			
 			
 			/**

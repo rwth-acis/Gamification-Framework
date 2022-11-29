@@ -62,7 +62,7 @@ public class ActionDAO {
 		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".action");
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
-			ActionModel bmodel = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
+			ActionModel bmodel = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"),rs.getString("type"));
 			acts.add(bmodel);
 		}
 
@@ -103,7 +103,7 @@ public class ActionDAO {
 		stmt.setString(1, action_id);
 		ResultSet rs = stmt.executeQuery();
 		if (rs.next()){
-			return new ActionModel(action_id, rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
+			return new ActionModel(action_id, rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"), rs.getString("type"));
 		}
 		return null;
 	}
@@ -146,7 +146,7 @@ public class ActionDAO {
 		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".action WHERE action_id LIKE '"+pattern+"' ORDER BY action_id LIMIT "+window_size+" OFFSET "+offset);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
-			ActionModel a = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
+			ActionModel a = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"), rs.getString("type"));
 			achs.add(a);
 		}
 		return achs;
@@ -196,13 +196,14 @@ public class ActionDAO {
 	 * @throws SQLException sql exception
 	 */
 	public void addNewAction(Connection conn,String gameId, ActionModel action) throws SQLException {
-			stmt = conn.prepareStatement("INSERT INTO "+gameId+".action (action_id, name, description, point_value, use_notification, notif_message) VALUES (?, ?, ?, ?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT INTO "+gameId+".action (action_id, name, description, point_value, use_notification, notif_message, type) VALUES (?, ?, ?, ?, ?, ?, ?)");
 			stmt.setString(1, action.getId());
 			stmt.setString(2, action.getName());
 			stmt.setString(3, action.getDescription());
 			stmt.setInt(4, action.getPointValue());
 			stmt.setBoolean(5, action.isUseNotification());
 			stmt.setString(6, action.getNotificationMessage());
+			stmt.setString(7, action.getActionType());
 			stmt.executeUpdate();		
 	}
 	

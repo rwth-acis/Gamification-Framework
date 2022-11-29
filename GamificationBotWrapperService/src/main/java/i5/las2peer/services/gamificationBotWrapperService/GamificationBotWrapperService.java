@@ -2,14 +2,16 @@ package i5.las2peer.services.gamificationBotWrapperService;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-
+import java.security.NoSuchAlgorithmException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -85,7 +87,7 @@ public class GamificationBotWrapperService extends RESTService {
 
 	private static LrsBotWorker random;
 
-	private static HashMap<String, LrsBotWorker> botWorkers;
+	private static HashMap<String, LrsBotWorker> botWorkers = new HashMap<String, LrsBotWorker>();
 	// this header is not known to javax.ws.rs.core.HttpHeaders
 	public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
 	public static final String HEADER_CONTENT_TYPE = "Content-Type";
@@ -97,6 +99,7 @@ public class GamificationBotWrapperService extends RESTService {
 		setFieldValues();
 		System.out
 				.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema);
+		
 		// dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass,
 		// jdbcUrl, jdbcSchema);
 
@@ -161,19 +164,19 @@ public class GamificationBotWrapperService extends RESTService {
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
 	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
 	public Response init(String body) {
-		System.out.println(LRSToken);
 		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
 		JSONObject jsonBody = new JSONObject();
 		try {
 			System.out.println(body);
 			jsonBody = (JSONObject) parser.parse(body);
 			String botName = jsonBody.get("botName").toString();
+			String game = jsonBody.get("game").toString();
 			if (!botWorkers.containsKey(botName)) {
-				LrsBotWorker random = new LrsBotWorker();
+				LrsBotWorker random = new LrsBotWorker(game,botName);
 				Thread t = new Thread(random);
 				botWorkers.put(botName, random);
 				t.start();
-				
+
 			}
 
 		} catch (ParseException e) {
@@ -185,6 +188,86 @@ public class GamificationBotWrapperService extends RESTService {
 				.type(MediaType.APPLICATION_JSON).build();
 	}
 
+	/**
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	@POST
+	@Path("/init/player")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
+	public Response addPlayer(String body) {
+		System.out.println(body);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
+
+			jsonBody = (JSONObject) parser.parse(body);
+			String user = jsonBody.get("email").toString();
+			String botName = jsonBody.get("botName").toString();
+			for(String b : botWorkers.keySet()){
+				System.out.println(b);
+			}
+			if (!botWorkers.containsKey(botName)) {
+				JSONObject response = new JSONObject();
+				response.put("text","Bot Not Initialised correctly, please contact support!!!");
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+				.type(MediaType.APPLICATION_JSON).build();
+			} else {
+				botWorkers.get(botName).addMember(user);
+				botWorkers.get(botName).addUsers(encryptThisString(user));
+			}
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Request log
+		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
+				.type(MediaType.APPLICATION_JSON).build();
+	}
+	public static String encryptThisString(String input) {
+		try {
+			// getInstance() method is called with algorithm SHA-384
+			MessageDigest md = MessageDigest.getInstance("SHA-384");
+
+			// digest() method is called
+			// to calculate message digest of the input string
+			// returned as array of byte
+			byte[] messageDigest = md.digest(input.getBytes());
+
+			// Convert byte array into signum representation
+			BigInteger no = new BigInteger(1, messageDigest);
+
+			// Convert message digest into hex value
+			String hashtext = no.toString(16);
+
+			// Add preceding 0s to make it 32 bit
+			try {
+				System.out.println(hashtext.getBytes("UTF-16BE").length * 8);
+				while (hashtext.getBytes("UTF-16BE").length * 8 < 1536) {
+					hashtext = "0" + hashtext;
+				}
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+
+			// return the HashText
+			return hashtext;
+		}
+
+		// For specifying wrong message digest algorithms
+		catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
 
 // will need to have a list of active users that has the key of the

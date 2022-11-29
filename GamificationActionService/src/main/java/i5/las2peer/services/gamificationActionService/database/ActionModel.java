@@ -30,14 +30,17 @@ public class ActionModel{
 	private boolean use_notification;
 	@ApiModelProperty( value = "Notification Message") 
 	private String notif_message;
+	@ApiModelProperty( value = "Type of action") 
+	private String type;
 	
-	public ActionModel(String action_id, String name, String description, int point_value, boolean use_notification, String notif_message){
+	public ActionModel(String action_id, String name, String description, int point_value, boolean use_notification, String notif_message, String type){
 		this.action_id = action_id;
 		this.name = name;
 		this.description = description;
 		this.point_value = point_value;
 		this.use_notification = use_notification;
 		this.notif_message = notif_message;
+		this.type = type;
 	}
 	
 	/**
@@ -146,6 +149,24 @@ public class ActionModel{
 	 */
 	public void setNotificationMessage(String notif_message){
 		this.notif_message = notif_message;
+	}
+
+		/**
+	 * Getter for notification type
+	 * 
+	 * @return action type
+	 */
+	public String getActionType(){
+		return this.type;
+	}
+	
+	/**
+	 * Setter for notification message
+	 * 
+	 * @param type action type
+	 */
+	public void setActionType(String type){
+		this.type = type;
 	}
 	
 }
