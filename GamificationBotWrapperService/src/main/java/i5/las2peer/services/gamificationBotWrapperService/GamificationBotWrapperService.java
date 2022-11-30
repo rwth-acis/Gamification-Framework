@@ -29,10 +29,16 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
+import i5.las2peer.security.BotAgent;
+import i5.las2peer.tools.CryptoException;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.ManualDeployment;
 import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.AgentAccessDeniedException;
+import i5.las2peer.api.security.AgentAlreadyExistsException;
+import i5.las2peer.api.security.AgentLockedException;
+import i5.las2peer.api.security.AgentOperationFailedException;
 import i5.las2peer.api.security.AnonymousAgent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -172,7 +178,28 @@ public class GamificationBotWrapperService extends RESTService {
 			String botName = jsonBody.get("botName").toString();
 			String game = jsonBody.get("game").toString();
 			if (!botWorkers.containsKey(botName)) {
-				LrsBotWorker random = new LrsBotWorker(game,botName);
+				BotAgent restarterBot = null;
+				try {
+					restarterBot = BotAgent.createBotAgent("actingAgent");
+				} catch (AgentOperationFailedException | CryptoException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+					System.out.println("e2");
+				}
+				try {
+					restarterBot.unlock("actingAgent");
+					System.out.println("e4");
+					restarterBot.setLoginName(botName);
+					System.out.println("e3");
+					Context.getCurrent().storeAgent(restarterBot);
+				} catch (AgentAccessDeniedException | AgentAlreadyExistsException | AgentOperationFailedException
+						| AgentLockedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					System.out.println("e1");
+				}
+		
+				LrsBotWorker random = new LrsBotWorker(game,botName, restarterBot);
 				Thread t = new Thread(random);
 				botWorkers.put(botName, random);
 				t.start();

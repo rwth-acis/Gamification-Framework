@@ -36,9 +36,10 @@ public class LrsBotWorker implements Runnable {
 	private HashSet<String> users = new HashSet<String>();
 	private BotAgent restarterBot=null;
 
-	public LrsBotWorker(String game, String botName) {
+	public LrsBotWorker(String game, String botName, BotAgent restarterBot) {
 		this.game = game;
 		this.botName = botName;
+		this.restarterBot = restarterBot;
 	}
 
 	public void addUsers(String email) {
@@ -53,28 +54,13 @@ public class LrsBotWorker implements Runnable {
 	// like prior knowledge activsation exercised
 	@Override
 	public void run() {
-		System.out.println("10");
-		try {
-			restarterBot = BotAgent.createBotAgent(botName);
-		} catch (AgentOperationFailedException | CryptoException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		try {
-			
-			restarterBot.unlock("actingAgent");
-			restarterBot.setLoginName(botName);
-			Context.getCurrent().storeAgent(restarterBot);
-		} catch (AgentAccessDeniedException | AgentAlreadyExistsException | AgentOperationFailedException
-				| AgentLockedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
+		System.out.println("10" + this.botName);
+		
 		while (!Thread.currentThread().isInterrupted()) {
 
 			for (String user : users) {
 				System.out.println("Fetching for: " + user);
+				addMember(user);
 				try {
 					JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 					JSONObject acc = (JSONObject) p.parse(new String("{'account': { 'name': '" + user
