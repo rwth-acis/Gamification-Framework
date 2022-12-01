@@ -33,17 +33,24 @@ public class LrsBotWorker implements Runnable {
 	private String lrsToken = "";
 	private String botName = "";
 	private String game = "";
-	private HashSet<String> users = new HashSet<String>();
-	private BotAgent restarterBot=null;
 
-	public LrsBotWorker(String game, String botName, BotAgent restarterBot) {
+	private HashMap<String, Boolean> users = new HashMap<String, Boolean>();
+
+
+	private BotAgent restarterBot = null;
+	private HashSet<String> actionVerbs = new HashSet<String>();
+
+	public LrsBotWorker(String game, String botName, BotAgent restarterBot, String lrsToken,
+			HashSet<String> actionVerbs) {
 		this.game = game;
 		this.botName = botName;
 		this.restarterBot = restarterBot;
+		this.lrsToken = lrsToken;
+		this.actionVerbs = actionVerbs;
 	}
 
 	public void addUsers(String email) {
-		this.users.add(email);
+		this.users.put(email, false);
 	}
 
 	// here, the whole process of communicating with the GF should take place
@@ -55,17 +62,18 @@ public class LrsBotWorker implements Runnable {
 	@Override
 	public void run() {
 		System.out.println("10" + this.botName);
-		
 		while (!Thread.currentThread().isInterrupted()) {
-
-			for (String user : users) {
+			timeStamp = "0";
+			for (String user : users.keySet()) {
 				System.out.println("Fetching for: " + user);
-				addMember(user);
+
 				try {
 					JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
-					JSONObject acc = (JSONObject) p.parse(new String("{'account': { 'name': '" + user
+					JSONObject acc = (JSONObject) p.parse(new String("{'account': { 'name': '" +
+							user
 							+ "', 'homePage': 'https://chat.tech4comp.dbis.rwth-aachen.de'}}"));
-					URL url = new URL("https://lrs.tech4comp.dbis.rwth-aachen.de" + "/data/xAPI/statements?agent="
+					URL url = new URL("https://lrs.tech4comp.dbis.rwth-aachen.de" +
+							"/data/xAPI/statements?agent="
 							+ acc.toString() + "&since=" + timeStamp);
 
 					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -73,7 +81,8 @@ public class LrsBotWorker implements Runnable {
 					conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 					conn.setRequestProperty("X-Experience-API-Version", "1.0.3");
 					conn.setRequestProperty("Authorization", "Basic "
-							+ "gyNGEzOGU5NjVjNDQxNjliODMyYjk5YjQ5ZGEyMTg3MmIyZmU3NDpiZTc1MGMzODMxZjFjNmM0MGViYzk5ZDMxYzk0N2NmZDI4NjA1ODI1");
+							+
+							this.lrsToken);
 					conn.setRequestProperty("Cache-Control", "no-cache");
 					conn.setUseCaches(false);
 					BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -88,9 +97,25 @@ public class LrsBotWorker implements Runnable {
 
 					JSONArray statements = (JSONArray) jsonBody.get("statements");
 					System.out.println("statements coming" + statements.size());
+					if (statements.size() > 0) {
+						int occ = 0;
+						for (Object statement : statements) {
+							JSONObject s = (JSONObject) statement;
+							String verbId = ((JSONObject) s.get("verb")).get("id").toString();
+							if (this.actionVerbs.contains(verbId.split("verb/")[1])) {
+								occ++;
+							}
+						}
+						timeStamp = ((JSONObject) statements.get(0)).get("timestamp").toString();
+						System.out.println("found " + occ + "statemetns");
+
+					} else {
+						System.out.println("no statements");
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+
 				try {
 					Thread.sleep(10000);
 				} catch (InterruptedException e) {
@@ -114,7 +139,7 @@ public class LrsBotWorker implements Runnable {
 		 * conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 		 * conn.setRequestProperty("X-Experience-API-Version", "1.0.3");
 		 * conn.setRequestProperty("Authorization", "Basic " +
-		 * "IxNGI2NThkNDMyOWI4MmQ2ODEyZmJmNmM3MjVhY2JkZjdjMDIzYToxMmZiMGIwNTY4YzgwNmYyZmQ3NmNjODc2MGVhODQxMTVlOWNkNzkw"
+		 * "YjIxNGI2NThkNDMyOWI4MmQ2ODEyZmJmNmM3MjVhY2JkZjdjMDIzYToxMmZiMGIwNTY4YzgwNmYyZmQ3NmNjODc2MGVhODQxMTVlOWNkNzkw"
 		 * );
 		 * conn.setRequestProperty("Cache-Control", "no-cache");
 		 * conn.setUseCaches(false);
@@ -152,24 +177,44 @@ public class LrsBotWorker implements Runnable {
 		 * }
 		 */
 	}
-	public void addMember(String user){
-		try{
-			MiniClient client = new MiniClient();
-			// client.setLogin(, password);
-			client.setConnectorEndpoint("http://127.0.0.1:8080/gamification/games/validation/" + user);
 
-			HashMap<String, String> headers = new HashMap<String, String>();
-
-			client.setLogin(botName, "actingAgent");
-			JSONObject body = new JSONObject();
-			ClientResponse result = client.sendRequest("POST", "",
-					body.toString(),"", MediaType.APPLICATION_JSON, headers);
-			System.out.println(result.getResponse());
-		} catch(Exception e){
+	public void addMember(String user) {
+		try {
+			System.out.println("attempting to add player");
+			try{
+				Context.get().invokeInternally("i5.las2peer.services.gamificationGameService.GamificationGameService",
+					"memberLoginValidation", user);
+			} catch (Exception e1){
+				e1.printStackTrace();
+			}
+			
+			System.out.println("worked?");
+			Context.get().invokeInternally("i5.las2peer.services.gamificationGameService.GamificationGameService",
+			"addMemberToGame", this.game,user);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	public BotAgent getBotAgent() {
+		return this.restarterBot;
+	}
 
 
+	
+	public String getGame() {
+		return game;
+	}
+
+	public HashMap<String, Boolean> getUsers() {
+		return users;
+	}
+
+	public  Boolean isRegistered(String user) {
+		if(this.users.keySet().contains(user)){
+			return true;
+		}
+		return false;
+	}
+	
 }

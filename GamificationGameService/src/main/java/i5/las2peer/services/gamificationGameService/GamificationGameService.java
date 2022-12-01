@@ -764,6 +764,7 @@ public class GamificationGameService extends RESTService {
 			 */
 			@POST
 			@Path("/validation/{memberId}")
+			@Consumes(MediaType.TEXT_PLAIN)
 			@Produces(MediaType.APPLICATION_JSON)
 			@ApiOperation(value = "memberLoginValidation",
 					notes = "Simple function to validate a member login.")

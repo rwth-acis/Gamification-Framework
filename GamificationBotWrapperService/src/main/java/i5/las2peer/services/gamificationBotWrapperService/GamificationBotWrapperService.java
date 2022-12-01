@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.security.NoSuchAlgorithmException;
@@ -34,12 +35,21 @@ import i5.las2peer.tools.CryptoException;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.logging.MonitoringEvent;
 import i5.las2peer.api.ManualDeployment;
+import i5.las2peer.api.execution.InternalServiceException;
+import i5.las2peer.api.execution.ServiceAccessDeniedException;
+import i5.las2peer.api.execution.ServiceInvocationFailedException;
+import i5.las2peer.api.execution.ServiceMethodNotFoundException;
+import i5.las2peer.api.execution.ServiceNotAuthorizedException;
+import i5.las2peer.api.execution.ServiceNotAvailableException;
+import i5.las2peer.api.execution.ServiceNotFoundException;
 import i5.las2peer.api.security.Agent;
 import i5.las2peer.api.security.AgentAccessDeniedException;
 import i5.las2peer.api.security.AgentAlreadyExistsException;
 import i5.las2peer.api.security.AgentLockedException;
 import i5.las2peer.api.security.AgentOperationFailedException;
 import i5.las2peer.api.security.AnonymousAgent;
+import i5.las2peer.connectors.webConnector.client.ClientResponse;
+import i5.las2peer.connectors.webConnector.client.MiniClient;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -177,6 +187,7 @@ public class GamificationBotWrapperService extends RESTService {
 			jsonBody = (JSONObject) parser.parse(body);
 			String botName = jsonBody.get("botName").toString();
 			String game = jsonBody.get("game").toString();
+			String lrsToken = jsonBody.get("lrsToken").toString();
 			if (!botWorkers.containsKey(botName)) {
 				BotAgent restarterBot = null;
 				try {
@@ -198,8 +209,38 @@ public class GamificationBotWrapperService extends RESTService {
 					e1.printStackTrace();
 					System.out.println("e1");
 				}
-		
-				LrsBotWorker random = new LrsBotWorker(game,botName, restarterBot);
+				HashSet<String> actionVerbs = new HashSet<>();
+				try {
+					System.out.println("e6");
+					MiniClient client = new MiniClient();
+					
+					
+					client.setConnectorEndpoint(
+					"http://host.docker.internal:8080/gamification/actions/" + game);
+					
+					HashMap<String, String> headers = new HashMap<String, String>();
+					System.out.println("user");
+					client.setLogin(restarterBot.getLoginName(), restarterBot.getPassphrase());
+					ClientResponse result = client.sendRequest("GET", "",
+					"",MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON, headers);
+					System.out.println(result.getResponse());
+					JSONObject answer = (JSONObject) parser.parse(result.getResponse());
+					// https://tech4comp.de/xapi/verb/compared_words
+					for(Object o : (JSONArray) answer.get("rows")){
+						JSONObject jsonO = (JSONObject) o;
+						if(jsonO.get("actionType") != null){
+							if(jsonO.get("actionType").toString().equals("LRS")){
+								actionVerbs.add(jsonO.get("id").toString());
+							}
+						}
+						
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					System.out.println("e7");
+				}
+				LrsBotWorker random = new LrsBotWorker(game,botName, restarterBot, lrsToken, actionVerbs);
 				Thread t = new Thread(random);
 				botWorkers.put(botName, random);
 				t.start();
@@ -248,8 +289,77 @@ public class GamificationBotWrapperService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 				.type(MediaType.APPLICATION_JSON).build();
 			} else {
-				botWorkers.get(botName).addMember(user);
+				botWorkers.get(botName).addMember(encryptThisString(user));
 				botWorkers.get(botName).addUsers(encryptThisString(user));
+			}
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Request log
+		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
+				.type(MediaType.APPLICATION_JSON).build();
+	}
+
+		/**
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	// idea, player can ask for profile, and in path, if not yet added, ask player if they want to be added to game
+	@POST
+	@Path("/init/player/getProfile")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
+	public Response getProfile(String body) {
+		System.out.println(body);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
+
+			jsonBody = (JSONObject) parser.parse(body);
+			String user = jsonBody.get("email").toString();
+			String botName = jsonBody.get("botName").toString();
+			
+			if (!botWorkers.containsKey(botName)) {
+				JSONObject response = new JSONObject();
+				response.put("text","Bot Not Initialised correctly, please contact support!!!");
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+				.type(MediaType.APPLICATION_JSON).build();
+			} else {
+				if(!this.botWorkers.get(botName).isRegistered(user)){
+					addPlayer(body);
+				}
+				BotAgent restarterBot = this.botWorkers.get(botName).getBotAgent();
+				MiniClient client = new MiniClient();
+					
+					
+				client.setConnectorEndpoint(
+				"http://host.docker.internal:8080/gamification/visualization/status/" + this.botWorkers.get(botName).getGame() +"/"+ encryptThisString(user));
+				
+				HashMap<String, String> headers = new HashMap<String, String>();
+				System.out.println("user");
+				try{
+					client.setLogin(restarterBot.getLoginName(), restarterBot.getPassphrase());
+					ClientResponse result = client.sendRequest("GET", "",
+					"",MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON, headers);
+					System.out.println(result.getResponse());
+					JSONObject answer = (JSONObject) parser.parse(result.getResponse());
+					JSONObject response = new JSONObject();
+					response.put("text",answer.toJSONString());
+					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+					.type(MediaType.APPLICATION_JSON).build();
+				} catch (Exception e){
+					e.printStackTrace();
+				}
+
 			}
 
 		} catch (ParseException e) {

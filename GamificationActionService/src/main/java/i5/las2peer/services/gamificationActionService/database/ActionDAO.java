@@ -62,8 +62,15 @@ public class ActionDAO {
 		stmt = conn.prepareStatement("SELECT * FROM "+gameId+".action");
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
-			ActionModel bmodel = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"),rs.getString("type"));
-			acts.add(bmodel);
+			try{
+				ActionModel bmodel = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"),rs.getString("type"));
+				acts.add(bmodel);
+			} catch (Exception e ){
+				ActionModel bmodel = new ActionModel(rs.getString("action_id"), rs.getString("name"), rs.getString("description"), rs.getInt("point_value"), rs.getBoolean("use_notification"), rs.getString("notif_message"));
+				acts.add(bmodel);
+			}
+			
+
 		}
 
 		return acts;

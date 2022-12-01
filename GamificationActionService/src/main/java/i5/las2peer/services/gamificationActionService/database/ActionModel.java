@@ -33,6 +33,16 @@ public class ActionModel{
 	@ApiModelProperty( value = "Type of action") 
 	private String type;
 	
+	public ActionModel(String action_id, String name, String description, int point_value, boolean use_notification, String notif_message){
+		this.action_id = action_id;
+		this.name = name;
+		this.description = description;
+		this.point_value = point_value;
+		this.use_notification = use_notification;
+		this.notif_message = notif_message;
+		this.type = "default";
+	}
+
 	public ActionModel(String action_id, String name, String description, int point_value, boolean use_notification, String notif_message, String type){
 		this.action_id = action_id;
 		this.name = name;
