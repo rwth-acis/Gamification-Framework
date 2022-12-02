@@ -18,6 +18,7 @@ import java.util.HashSet;
 
 import javax.ws.rs.core.MediaType;
 
+import ch.qos.logback.core.net.server.Client;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.security.AgentAccessDeniedException;
 import i5.las2peer.api.security.AgentAlreadyExistsException;
@@ -35,7 +36,6 @@ public class LrsBotWorker implements Runnable {
 	private String game = "";
 
 	private HashMap<String, Boolean> users = new HashMap<String, Boolean>();
-
 
 	private BotAgent restarterBot = null;
 	private HashSet<String> actionVerbs = new HashSet<String>();
@@ -63,10 +63,10 @@ public class LrsBotWorker implements Runnable {
 	public void run() {
 		System.out.println("10" + this.botName);
 		while (!Thread.currentThread().isInterrupted()) {
-			timeStamp = "0";
+			// will need to do timestamp per user and not per instance of bot
 			for (String user : users.keySet()) {
 				System.out.println("Fetching for: " + user);
-
+				JSONParser parser = new JSONParser(0);
 				try {
 					JSONParser p = new JSONParser(JSONParser.MODE_PERMISSIVE);
 					JSONObject acc = (JSONObject) p.parse(new String("{'account': { 'name': '" +
@@ -103,6 +103,40 @@ public class LrsBotWorker implements Runnable {
 							JSONObject s = (JSONObject) statement;
 							String verbId = ((JSONObject) s.get("verb")).get("id").toString();
 							if (this.actionVerbs.contains(verbId.split("verb/")[1])) {
+								try {
+									System.out.println("http://host.docker.internal:8080/gamification/visualization/actions/"
+									+ this.game + "/"+verbId.split("verb/")[1]+"/"
+									+ user);
+									MiniClient client = new MiniClient();
+
+									client.setConnectorEndpoint(
+											"http://host.docker.internal:8080/gamification/visualization/actions/"
+													+ this.game + "/"+verbId.split("verb/")[1]+"/"
+													+ user);
+
+									HashMap<String, String> headers = new HashMap<String, String>();
+									System.out.println("user");
+									try {
+										client.setLogin(restarterBot.getLoginName(), restarterBot.getPassphrase());
+										ClientResponse result = client.sendRequest("POST", "", "");
+										System.out.println(result.toString());
+										System.out.println(result.getHttpCode());
+										System.out.println(result.getRawResponse());
+									//	JSONObject answer = (JSONObject) parser.parse(result.getResponse());
+									//	System.out.println(answer);
+									} catch (Exception e) {
+										e.printStackTrace();
+										System.out.println("pepe");
+									}
+								// Context.get().invokeInternally(
+								// 			"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
+								// 			"triggerAction", this.game, verbId.split("verb/")[1], user);
+									System.out.println("done triggering action1");
+								} catch (Exception e3) {
+									e3.printStackTrace();
+									System.out.println("done triggering action");
+								}
+
 								occ++;
 							}
 						}
@@ -181,16 +215,16 @@ public class LrsBotWorker implements Runnable {
 	public void addMember(String user) {
 		try {
 			System.out.println("attempting to add player");
-			try{
+			try {
 				Context.get().invokeInternally("i5.las2peer.services.gamificationGameService.GamificationGameService",
-					"memberLoginValidation", user);
-			} catch (Exception e1){
+						"memberLoginValidation", user);
+			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-			
+
 			System.out.println("worked?");
 			Context.get().invokeInternally("i5.las2peer.services.gamificationGameService.GamificationGameService",
-			"addMemberToGame", this.game,user);
+					"addMemberToGame", this.game, user);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -200,8 +234,6 @@ public class LrsBotWorker implements Runnable {
 		return this.restarterBot;
 	}
 
-
-	
 	public String getGame() {
 		return game;
 	}
@@ -210,11 +242,11 @@ public class LrsBotWorker implements Runnable {
 		return users;
 	}
 
-	public  Boolean isRegistered(String user) {
-		if(this.users.keySet().contains(user)){
+	public Boolean isRegistered(String user) {
+		if (this.users.keySet().contains(user)) {
 			return true;
 		}
 		return false;
 	}
-	
+
 }

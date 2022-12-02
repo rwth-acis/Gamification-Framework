@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -1135,6 +1136,7 @@ public class GamificationVisualizationService extends RESTService {
 	 */
 	@POST
 	@Path("/actions/{gameId}/{actionId}/{memberId}")
+	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "{\"status\": 3, \"message\": \"Action upload success ( (actionid) )\"}"),
@@ -1151,12 +1153,13 @@ public class GamificationVisualizationService extends RESTService {
 		long randomLong = new Random().nextLong(); // To be able to match
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
-
+		System.out.println("11");
 		Agent agent = Context.getCurrent().getMainAgent();
 		if (agent instanceof AnonymousAgent) {
 			return unauthorizedMessage();
 		}
 		try {
+			System.out.println("1 + " + actionId);
 			conn = dbm.getConnection();
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_38, "" + randomLong, true);
 			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
@@ -1167,6 +1170,7 @@ public class GamificationVisualizationService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
+			System.out.println("2");
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
@@ -1175,6 +1179,7 @@ public class GamificationVisualizationService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
+			System.out.println("3");
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
 				logger.info("Member is not registered in Game >> ");
 				objResponse.put("message", "Member is not registered in Game");
@@ -1183,7 +1188,7 @@ public class GamificationVisualizationService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-
+			System.out.println("4");
 			// RMI call with parameters
 			String result = "";
 			try {
@@ -1197,6 +1202,7 @@ public class GamificationVisualizationService extends RESTService {
 							true);
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_45, "" + memberId,
 							true);
+							System.out.println("5");
 					return Response.status(HttpURLConnection.HTTP_OK).entity(result).type(MediaType.APPLICATION_JSON)
 							.build();
 				}

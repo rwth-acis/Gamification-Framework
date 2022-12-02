@@ -335,6 +335,7 @@ public class GamificationBotWrapperService extends RESTService {
 				.type(MediaType.APPLICATION_JSON).build();
 			} else {
 				if(!this.botWorkers.get(botName).isRegistered(user)){
+					System.out.println("adding player");
 					addPlayer(body);
 				}
 				BotAgent restarterBot = this.botWorkers.get(botName).getBotAgent();
@@ -342,7 +343,7 @@ public class GamificationBotWrapperService extends RESTService {
 					
 					
 				client.setConnectorEndpoint(
-				"http://host.docker.internal:8080/gamification/visualization/status/" + this.botWorkers.get(botName).getGame() +"/"+ encryptThisString(user));
+				"http://host.docker.internal:8080/gamification/visualization/status/" + botWorkers.get(botName).getGame() +"/"+ encryptThisString(user));
 				
 				HashMap<String, String> headers = new HashMap<String, String>();
 				System.out.println("user");
