@@ -1,5 +1,8 @@
 package i5.las2peer.services.gamificationBotWrapperService;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -8,6 +11,7 @@ import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,9 +22,13 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.imageio.ImageIO;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.io.FileUtils;
+
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -354,7 +362,12 @@ public class GamificationBotWrapperService extends RESTService {
 					System.out.println(result.getResponse());
 					JSONObject answer = (JSONObject) parser.parse(result.getResponse());
 					JSONObject response = new JSONObject();
-					response.put("text",answer.toJSONString());
+					String base64 = pic(answer);
+					response.put("text","User Profile:");
+					response.put("fileBody",base64);
+					response.put("fileName","User Profile");
+					response.put("fileType","png");
+
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 					.type(MediaType.APPLICATION_JSON).build();
 				} catch (Exception e){
@@ -371,6 +384,43 @@ public class GamificationBotWrapperService extends RESTService {
 		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
 				.type(MediaType.APPLICATION_JSON).build();
 	}
+
+
+
+	public String pic(JSONObject json) {
+		try {
+			System.out.println("pcitute");
+			String filePath = new File("").getAbsolutePath();
+			System.out.println("pcitute" + filePath);
+			BufferedImage image = ImageIO.read(new File(filePath + "/etc/mockupUserProfile.drawio.png"));
+			Font font = new Font("Arial", Font.BOLD, 10);
+			System.out.println("Working Directory = " + System.getProperty("user.dir"));
+			System.out.println("Working Directory = " + image.getWidth() + image.getHeight());
+			Graphics g = image.getGraphics();
+			g.setFont(font);
+			g.setColor(Color.BLACK);
+			g.drawString("Player", 4, 20);
+			g.drawString(json.get("memberLevel").toString(), (int) (image.getWidth() * 0.9), (int) (image.getHeight() * 0.1));
+			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.9), (int) (image.getHeight() * 0.25));
+			g.drawString(json.get("progress").toString()+"%", (int) (image.getWidth() * 0.7), (int) (image.getHeight() * 0.5));
+			g.drawString("NaN", (int) (image.getWidth() * 0.8), (int) (image.getHeight() * 0.7));
+			g.drawString("NaN", (int) (image.getWidth() * 0.8), (int) (image.getHeight() * 0.9));
+			File outputfile = new File(filePath + "/etc/img.png");
+			ImageIO.write(image, "png", outputfile);
+			// have to delete file afterwards
+			byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath + "/etc/img.png"));
+			String encodedString = Base64.getEncoder().encodeToString(fileContent);
+			return encodedString;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("SOmething went wrong with image uwu");
+		}
+		return "error";
+
+	}
+
+
 	public static String encryptThisString(String input) {
 		try {
 			// getInstance() method is called with algorithm SHA-384
