@@ -102,16 +102,17 @@ public class LrsBotWorker implements Runnable {
 						for (Object statement : statements) {
 							JSONObject s = (JSONObject) statement;
 							String verbId = ((JSONObject) s.get("verb")).get("id").toString();
+							String objectId = ((JSONObject) ((JSONObject) ((JSONObject) s.get("object")).get("definition")).get("name")).get("en-US").toString();
 							if (this.actionVerbs.contains(verbId.split("verb/")[1])) {
 								try {
 									System.out.println("http://host.docker.internal:8080/gamification/visualization/actions/"
-									+ this.game + "/"+verbId.split("verb/")[1]+"/"
+									+ this.game + "/"+verbId.split("verb/")[1]+":"+objectId+"/"
 									+ user);
 									MiniClient client = new MiniClient();
 
 									client.setConnectorEndpoint(
 											"http://host.docker.internal:8080/gamification/visualization/actions/"
-													+ this.game + "/"+verbId.split("verb/")[1]+"/"
+													+ this.game + "/"+verbId.split("verb/")[1]+":"+objectId+"/"
 													+ user);
 
 									HashMap<String, String> headers = new HashMap<String, String>();

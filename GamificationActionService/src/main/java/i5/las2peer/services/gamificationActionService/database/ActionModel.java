@@ -32,7 +32,18 @@ public class ActionModel{
 	private String notif_message;
 	@ApiModelProperty( value = "Type of action") 
 	private String type;
+	@ApiModelProperty( value = "Type of action") 
+	private String lrsOccString;
+
 	
+	public String getLrsOccString() {
+		return lrsOccString;
+	}
+
+	public void setLrsOccString(String lrsOccString) {
+		this.lrsOccString = lrsOccString;
+	}
+
 	public ActionModel(String action_id, String name, String description, int point_value, boolean use_notification, String notif_message){
 		this.action_id = action_id;
 		this.name = name;
@@ -43,7 +54,7 @@ public class ActionModel{
 		this.type = "default";
 	}
 
-	public ActionModel(String action_id, String name, String description, int point_value, boolean use_notification, String notif_message, String type){
+	public ActionModel(String action_id, String name, String description, int point_value, boolean use_notification, String notif_message, String type, String lrsOccString){
 		this.action_id = action_id;
 		this.name = name;
 		this.description = description;
@@ -51,6 +62,7 @@ public class ActionModel{
 		this.use_notification = use_notification;
 		this.notif_message = notif_message;
 		this.type = type;
+		this.lrsOccString = lrsOccString;
 	}
 	
 	/**

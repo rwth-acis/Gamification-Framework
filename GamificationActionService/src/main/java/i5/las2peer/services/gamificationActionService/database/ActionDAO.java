@@ -76,6 +76,8 @@ public class ActionDAO {
 		return acts;
 	}
 
+		System.out.println("verbObj is "+verbObj);
+				System.out.println(rs.getString("action_id") + rs.getString("object_id"));
 	/**
 	 * Check whether an action with action id is already exist
 	 * 
