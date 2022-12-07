@@ -140,7 +140,9 @@ public class GamificationActionService extends RESTService {
 			@ApiParam(value = "Action Notification Boolean - Boolean - Option whether use notification or not. NOTE: semantics are a little strange (because of backwards compatibility)! If the parameter is present, any value is considered as true. In order to set the value to value, you have to NOT send the parameter.") @FormDataParam("actionnotificationcheck") String actionnotifcheckStr,
 			@ApiParam(value = "Action Notification Message - String") @FormDataParam("actionnotificationmessage") @DefaultValue("") String actionnotifmessage,
 			@ApiParam(value = "Action Type - String") @FormDataParam("actiontype") @DefaultValue("LRS") String actiontype,
-			@ApiParam(value = "Action Type - String") @FormDataParam("actionLRSOccurence") @DefaultValue("") String lrsOccurence) {
+			@ApiParam(value = "Action Type - String") @FormDataParam("actionLRSOccurence") @DefaultValue("") String lrsOccurence,
+			@ApiParam(value = "Action Type - String") @FormDataParam("actionLRSAttribute") @DefaultValue("") String actionLRSAttribute,
+			@ApiParam(value = "Action Type - String") @FormDataParam("actionLRSAttributeValue") @DefaultValue("") String actionLRSAttributeValue) {
 		/*
 		 * TODO Consider breaking change and using default 'boolean' semantics (param
 		 * needs to be string 'true' for true value)
@@ -201,7 +203,7 @@ public class GamificationActionService extends RESTService {
 				}
 
 				ActionModel action = new ActionModel(actionid, actionname, actiondesc, actionpointvalue,
-						actionnotifcheck, actionnotifmessage, actiontype, lrsOccurence);
+						actionnotifcheck, actionnotifmessage, actiontype, lrsOccurence, actionLRSAttribute, actionLRSAttributeValue);
 
 				try {
 					actionAccess.addNewAction(conn, gameId, action);

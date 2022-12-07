@@ -217,7 +217,8 @@ public class GamificationBotWrapperService extends RESTService {
 					e1.printStackTrace();
 					System.out.println("e1");
 				}
-				HashSet<String> actionVerbs = new HashSet<>();
+			//	HashSet<String> actionVerbs = new HashSet<>();
+				HashMap<String,JSONArray> actionVerbs = new HashMap<String,JSONArray>();
 				try {
 					System.out.println("e6");
 					MiniClient client = new MiniClient();
@@ -238,7 +239,16 @@ public class GamificationBotWrapperService extends RESTService {
 						JSONObject jsonO = (JSONObject) o;
 						if(jsonO.get("actionType") != null){
 							if(jsonO.get("actionType").toString().equals("LRS")){
-								actionVerbs.add(jsonO.get("id").toString());
+								if(actionVerbs.containsKey(jsonO.get("name").toString())){
+									JSONArray arr = actionVerbs.get(jsonO.get("name").toString());
+									arr.add(jsonO);
+									actionVerbs.put(jsonO.get("name").toString(), arr);
+								} else {
+									JSONArray arr = new JSONArray();
+									arr.add(jsonO);
+									actionVerbs.put(jsonO.get("name").toString(), arr);
+								}
+								
 							}
 						}
 						
@@ -298,7 +308,7 @@ public class GamificationBotWrapperService extends RESTService {
 				.type(MediaType.APPLICATION_JSON).build();
 			} else {
 				botWorkers.get(botName).addMember(encryptThisString(user));
-				botWorkers.get(botName).addUsers(encryptThisString(user));
+				botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
 			}
 
 		} catch (ParseException e) {
