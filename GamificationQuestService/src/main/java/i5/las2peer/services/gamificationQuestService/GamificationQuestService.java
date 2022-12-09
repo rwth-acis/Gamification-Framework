@@ -1001,5 +1001,119 @@ public class GamificationQuestService extends RESTService {
 			      }
 			    }
 			}
+
+			public String getQuestListRMI(
+				@ApiParam(value = "Game ID to return")@PathParam("gameId") String gameId,
+				@ApiParam(value = "Page number for retrieving data")@QueryParam("current") int currentPage,
+				@ApiParam(value = "Number of data size")@QueryParam("rowCount") int windowSize,
+				@ApiParam(value = "Search phrase parameter")@QueryParam("searchPhrase") String searchPhrase)
+		{
+			
+			// Request log
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "GET " + "gamification/quests/"+gameId, true);
+			long randomLong = new Random().nextLong(); //To be able to match 
+
+			List<QuestModel> qs = null;
+			Connection conn = null;
+
+			JSONObject objResponse = new JSONObject();
+			String name = null;
+			Agent agent = Context.getCurrent().getMainAgent();
+			if (agent instanceof AnonymousAgent) {
+				return unauthorizedMessage().toString();
+			}
+			else if (agent instanceof UserAgent) {
+				UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
+				name = userAgent.getLoginName();
+			}
+			else {
+				name = agent.getIdentifier();
+			}
+			try {
+				conn = dbm.getConnection();			
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_46, ""+randomLong, true);
+
+				
+				try {
+					if(!questAccess.isGameIdExist(conn,gameId)){
+						objResponse.put("message", "Cannot get quests. Game not found");
+						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+						return objResponse.toString();
+					}
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+					objResponse.put("message", "Cannot get quests. Cannot check whether game ID exist or not. Database error. " + e1.getMessage());
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					return objResponse.toString();
+				}
+				int offset = (currentPage - 1) * windowSize;
+				int totalNum = questAccess.getNumberOfQuests(conn,gameId);
+
+				if(windowSize == -1){
+					offset = 0;
+					windowSize = totalNum;
+				}
+				
+				qs = questAccess.getAllQuests(conn,gameId);
+
+				ObjectMapper objectMapper = new ObjectMapper();
+				//Set pretty printing of json
+				objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+				
+				String questString = objectMapper.writeValueAsString(qs);
+				JSONArray questArray = (JSONArray) JSONValue.parse(questString);
+				//logger.info(questArray.toJSONString());
+				
+				
+				for(int i = 0; i < qs.size(); i++){
+					JSONArray actionArray = listPairtoJSONArray(qs.get(i).getActionIds());
+					
+					JSONObject questObject = (JSONObject) questArray.get(i);
+					
+					questObject.replace("actionIds", actionArray);
+					
+					questArray.set(i,questObject);
+				}
+				
+			
+				objResponse.put("current", currentPage);
+				objResponse.put("rowCount", windowSize);
+				objResponse.put("rows", questArray);
+				objResponse.put("total", totalNum);
+
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_47, ""+randomLong, true);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_48, ""+name, true);
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_49, ""+gameId, true);
+				return objResponse.toString();
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+				objResponse.put("message", "Cannot get quests. Database error. " + e.getMessage());
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				return objResponse.toJSONString();
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+				objResponse.put("message", "Cannot get quests. JSON process error. " + e.getMessage());
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				return objResponse.toJSONString();
+
+			} catch (IOException e) {
+				e.printStackTrace();
+				objResponse.put("message", "Cannot get quests. IO Exception. " + e.getMessage());
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+				return objResponse.toJSONString();
+
+			}		 
+			// always close connections
+			finally {
+			  try {
+				  if (conn != null) {
+					  conn.close();
+				  }
+			  } catch (SQLException e) {
+				logger.printStackTrace(e);
+			  }
+			}
+		}
 	  //}
 }

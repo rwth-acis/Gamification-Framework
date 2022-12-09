@@ -108,7 +108,9 @@ public class LrsBotWorker implements Runnable {
 									.get("definition")).get("name")).get("en-US").toString();
 							if (this.actionVerbs.keySet().contains(verbId.split("verb/")[1])) {
 								for(Object o : this.actionVerbs.get(verbId.split("verb/")[1])){
+									
 									JSONObject jsonO = (JSONObject) o;
+									System.out.println("checking stuff for action id: " + jsonO.get("id").toString());
 									if(jsonO.containsKey("lrsAttribute") && !jsonO.get("lrsAttribute").toString().equals("")){
 										System.out.println("to match attribute is:+ "+ jsonO.get("lrsAttribute").toString()  +" with value "+jsonO.get("lrsAttributeValue").toString());
 										if(!jsonO.get("lrsAttributeValue").toString().equals(recursive(s, jsonO.get("lrsAttribute").toString()))){
@@ -117,7 +119,7 @@ public class LrsBotWorker implements Runnable {
 										}
 									}
 									try {
-										String actionId = ((JSONObject)this.actionVerbs.get(verbId.split("verb/")[1]).get(0)).get("id").toString();
+										String actionId = jsonO.get("id").toString();
 										System.out.println(
 												"http://host.docker.internal:8080/gamification/visualization/actions/"
 														+ this.game + "/" + actionId + ":" + objectId + "/"
@@ -243,7 +245,6 @@ public class LrsBotWorker implements Runnable {
 		} else {
 			for(String s : j.keySet()){
 				try{
-					System.out.println(s);
 					String r = recursive((JSONObject) j.get(s), key);
 					if(!r.equals("")){
 						return r;

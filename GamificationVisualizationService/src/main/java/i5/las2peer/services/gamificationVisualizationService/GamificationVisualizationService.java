@@ -49,6 +49,8 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
+
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -981,6 +983,116 @@ public class GamificationVisualizationService extends RESTService {
 				e.printStackTrace();
 				logger.info("Cannot find badge with " + questId + ". " + e.getMessage());
 				objResponse.put("message", "Cannot find badge with " + questId + ". " + e.getMessage());
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.info("DB Error >> " + e.getMessage());
+			objResponse.put("message", "DB Error. " + e.getMessage());
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+					.type(MediaType.APPLICATION_JSON).build();
+
+		}
+		// always close connections
+		finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				logger.printStackTrace(e);
+			}
+		}
+
+	}
+
+	// Get all quest information of member
+	/**
+	 * Get a quest data with specific ID from database
+	 * 
+	 * @param gameId   gameId
+	 * @param memberId member id
+	 * @return HTTP Response Returned as JSON object
+	 */
+	@GET
+	@Path("/quests/{gameId}/{memberId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a quest"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "Find quest for specific Game ID and quest ID", notes = "Returns a quest", response = QuestModel.class, authorizations = @Authorization(value = "api_key"))
+	public Response getQuestDetailAll(@ApiParam(value = "Game ID") @PathParam("gameId") String gameId,
+			@ApiParam(value = "Member ID", required = true) @PathParam("memberId") String memberId) {
+		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+		Agent agent = Context.getCurrent().getMainAgent();
+		if (agent instanceof AnonymousAgent) {
+			return unauthorizedMessage();
+		}
+
+		try {
+			conn = dbm.getConnection();
+			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			// RMI call with parameters
+			String result;
+			JSONObject result2;
+			JSONObject finalResp  = new JSONObject();
+			try {
+				result = (String) Context.getCurrent().invoke(
+						"i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1",
+						"getQuestListRMI", new Serializable[] { gameId,0,0,""});
+				if (result != null) {
+					System.out.println(result);
+					JSONObject jsonResult = new JSONObject(result);
+					for(Object quest : (JSONArray) jsonResult.get("rows")){
+						JSONObject jsonQuest = (JSONObject) quest;
+						result2 = visualizationAccess.getMemberQuestProgress(conn,gameId,memberId, jsonQuest.getString("id"));
+						System.out.println(result2);
+						finalResp.put(jsonQuest.getString("id"), result2);
+
+					}
+					return Response.status(HttpURLConnection.HTTP_OK).entity(finalResp.toString()).type(MediaType.APPLICATION_JSON)
+							.build();
+				}
+				logger.info("Cannot find badge with ");
+				objResponse.put("message", "Cannot find badge with ");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.info("Cannot find badge with . " + e.getMessage());
+				objResponse.put("message", "Cannot find badge with . " + e.getMessage());
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
 						(String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
