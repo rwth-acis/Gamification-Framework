@@ -315,7 +315,7 @@ public class VisualizationDAO {
 
 		JSONArray resArr = new JSONArray();
 		JSONObject outObj = new JSONObject();
-		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,completed,times FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) WHERE "+gameId+".member_quest_action.quest_id=? AND member_id=?");
+		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,completed,times,"+gameId+".achievement.description FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) JOIN "+gameId+".quest ON ("+gameId+".member_quest_action.quest_id="+gameId+".quest.quest_id) JOIN "+gameId+".achievement ON ("+gameId+".quest.achievement_id="+gameId+".achievement.achievement_id) WHERE "+gameId+".member_quest_action.quest_id=? AND member_id=?");
 		stmt.setString(1, questId);
 		stmt.setString(2, memberId);
 		ResultSet rs = stmt.executeQuery();
@@ -327,7 +327,7 @@ public class VisualizationDAO {
 			resObj.put("maxTimes", rs.getInt("times"));
 			resObj.put("action", rs.getString("action_id"));
 			resObj.put("isCompleted", rs.getBoolean("completed"));
-			
+			resObj.put("description", rs.getString("description"));
 			//check if action is completed
 			if(rs.getBoolean("completed")){
 				

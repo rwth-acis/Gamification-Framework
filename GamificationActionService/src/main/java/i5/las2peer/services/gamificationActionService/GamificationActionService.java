@@ -835,7 +835,7 @@ public class GamificationActionService extends RESTService {
 			int windowSize = totalNum;
 
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-2");
-			achs = actionAccess.getActionsWithOffsetAndSearchPhrase(conn, gameId, offset, windowSize, "");
+			achs = actionAccess.getAllActions(conn, gameId);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.RMI_SUCCESSFUL, "getActionsRMI-3");
 			ObjectMapper objectMapper = new ObjectMapper();
 			// Set pretty printing of json

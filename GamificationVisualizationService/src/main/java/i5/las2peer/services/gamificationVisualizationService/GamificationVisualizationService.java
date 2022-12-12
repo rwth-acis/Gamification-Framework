@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
@@ -317,7 +318,7 @@ public class GamificationVisualizationService extends RESTService {
 
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
-
+		
 		List<BadgeModel> badges = new ArrayList<BadgeModel>();
 		Agent agent = Context.getCurrent().getMainAgent();
 		if (agent instanceof AnonymousAgent) {
@@ -376,6 +377,96 @@ public class GamificationVisualizationService extends RESTService {
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
+		}
+		// always close connections
+		finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				logger.printStackTrace(e);
+			}
+		}
+	}
+
+	public String getBadgesOfMemberRMI(String gameId,
+			String memberId) {
+		long randomLong = new Random().nextLong(); // To be able to match
+
+		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+		
+		List<BadgeModel> badges = new ArrayList<BadgeModel>();
+		Agent agent = Context.getCurrent().getMainAgent();
+		if (agent instanceof AnonymousAgent) {
+			return unauthorizedMessage().toString();
+		}
+
+		try {
+			conn = dbm.getConnection();
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_38, "" + randomLong, true);
+
+			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				return objResponse.toString();
+			}
+			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			// Add Member to Game
+			badges = visualizationAccess.getObtainedBadges(conn, gameId, memberId);
+			for(int i=0; i < badges.size();i++){
+				BadgeModel badge = badges.get(i);
+				System.out.println("searching for badge image" );
+			
+				
+				try{
+
+					String result =  (Context.getCurrent().invoke(
+						"i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1",
+						"getBadgeImageMethodRMI", gameId, badge.getId())).toString();
+						badge.setBase64(result);
+						badges.set(i, badge);
+						System.out.println("badge img found" );
+				} catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+			ObjectMapper objectMapper = new ObjectMapper();
+			// Set pretty printing of json
+			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+			String response = objectMapper.writeValueAsString(badges);
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_39, "" + randomLong, true);
+			return response;
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+
+			logger.info("SQLException >> " + e.getMessage());
+			objResponse.put("message", "Database Error");
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return objResponse.toString();
+		} catch (JsonProcessingException e) {
+			// Object mapper
+			e.printStackTrace();
+
+			logger.info("JsonProcessingException >> " + e.getMessage());
+			objResponse.put("message", "Failed to parse JSON internally");
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return objResponse.toString();
 		}
 		// always close connections
 		finally {
@@ -1106,6 +1197,99 @@ public class GamificationVisualizationService extends RESTService {
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
 					.type(MediaType.APPLICATION_JSON).build();
+
+		}
+		// always close connections
+		finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				logger.printStackTrace(e);
+			}
+		}
+
+	}
+
+
+	// Get all quest information of member
+	/**
+	 * Get a quest data with specific ID from database
+	 * 
+	 */
+		public String getQuestDetailAllRMI(String gameId,String memberId) {
+		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+		Agent agent = Context.getCurrent().getMainAgent();
+		if (agent instanceof AnonymousAgent) {
+			return unauthorizedMessage().toString();
+		}
+
+		try {
+			conn = dbm.getConnection();
+			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			// RMI call with parameters
+			String result;
+			JSONObject result2;
+			JSONObject finalResp  = new JSONObject();
+			try {
+				result = (String) Context.getCurrent().invoke(
+						"i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1",
+						"getQuestListRMI", new Serializable[] { gameId,0,0,""});
+				if (result != null) {
+					System.out.println(result);
+					JSONObject jsonResult = new JSONObject(result);
+					for(Object quest : (JSONArray) jsonResult.get("rows")){
+						JSONObject jsonQuest = (JSONObject) quest;
+						result2 = visualizationAccess.getMemberQuestProgress(conn,gameId,memberId, jsonQuest.getString("id"));
+						System.out.println(result2);
+						finalResp.put(jsonQuest.getString("id"), result2);
+
+					}
+					return finalResp.toString();
+				}
+				logger.info("Cannot find badge with ");
+				objResponse.put("message", "Cannot find badge with ");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.info("Cannot find badge with . " + e.getMessage());
+				objResponse.put("message", "Cannot find badge with . " + e.getMessage());
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.info("DB Error >> " + e.getMessage());
+			objResponse.put("message", "DB Error. " + e.getMessage());
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return objResponse.toString();
 
 		}
 		// always close connections

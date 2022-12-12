@@ -69,6 +69,7 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.util.Json;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -123,7 +124,7 @@ public class GamificationBotWrapperService extends RESTService {
 		setFieldValues();
 		System.out
 				.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema);
-		
+
 		// dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass,
 		// jdbcUrl, jdbcSchema);
 
@@ -217,29 +218,28 @@ public class GamificationBotWrapperService extends RESTService {
 					e1.printStackTrace();
 					System.out.println("e1");
 				}
-			//	HashSet<String> actionVerbs = new HashSet<>();
-				HashMap<String,JSONArray> actionVerbs = new HashMap<String,JSONArray>();
+				// HashSet<String> actionVerbs = new HashSet<>();
+				HashMap<String, JSONArray> actionVerbs = new HashMap<String, JSONArray>();
 				try {
 					System.out.println("e6");
 					MiniClient client = new MiniClient();
-					
-					
+
 					client.setConnectorEndpoint(
-					"http://host.docker.internal:8080/gamification/actions/" + game);
-					
+							"http://host.docker.internal:8080/gamification/actions/" + game);
+
 					HashMap<String, String> headers = new HashMap<String, String>();
 					System.out.println("user");
 					client.setLogin(restarterBot.getLoginName(), restarterBot.getPassphrase());
 					ClientResponse result = client.sendRequest("GET", "",
-					"",MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON, headers);
+							"", MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON, headers);
 					System.out.println(result.getResponse());
 					JSONObject answer = (JSONObject) parser.parse(result.getResponse());
 					// https://tech4comp.de/xapi/verb/compared_words
-					for(Object o : (JSONArray) answer.get("rows")){
+					for (Object o : (JSONArray) answer.get("rows")) {
 						JSONObject jsonO = (JSONObject) o;
-						if(jsonO.get("actionType") != null){
-							if(jsonO.get("actionType").toString().equals("LRS")){
-								if(actionVerbs.containsKey(jsonO.get("name").toString())){
+						if (jsonO.get("actionType") != null) {
+							if (jsonO.get("actionType").toString().equals("LRS")) {
+								if (actionVerbs.containsKey(jsonO.get("name").toString())) {
 									JSONArray arr = actionVerbs.get(jsonO.get("name").toString());
 									arr.add(jsonO);
 									actionVerbs.put(jsonO.get("name").toString(), arr);
@@ -248,17 +248,17 @@ public class GamificationBotWrapperService extends RESTService {
 									arr.add(jsonO);
 									actionVerbs.put(jsonO.get("name").toString(), arr);
 								}
-								
+
 							}
 						}
-						
+
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					System.out.println("e7");
 				}
-				LrsBotWorker random = new LrsBotWorker(game,botName, restarterBot, lrsToken, actionVerbs);
+				LrsBotWorker random = new LrsBotWorker(game, botName, restarterBot, lrsToken, actionVerbs);
 				Thread t = new Thread(random);
 				botWorkers.put(botName, random);
 				t.start();
@@ -298,14 +298,14 @@ public class GamificationBotWrapperService extends RESTService {
 			jsonBody = (JSONObject) parser.parse(body);
 			String user = jsonBody.get("email").toString();
 			String botName = jsonBody.get("botName").toString();
-			for(String b : botWorkers.keySet()){
+			for (String b : botWorkers.keySet()) {
 				System.out.println(b);
 			}
 			if (!botWorkers.containsKey(botName)) {
 				JSONObject response = new JSONObject();
-				response.put("text","Bot Not Initialised correctly, please contact support!!!");
+				response.put("text", "Bot Not Initialised correctly, please contact support!!!");
 				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
-				.type(MediaType.APPLICATION_JSON).build();
+						.type(MediaType.APPLICATION_JSON).build();
 			} else {
 				botWorkers.get(botName).addMember(encryptThisString(user));
 				botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
@@ -320,13 +320,14 @@ public class GamificationBotWrapperService extends RESTService {
 				.type(MediaType.APPLICATION_JSON).build();
 	}
 
-		/**
+	/**
 	 * Get a level data with specific ID from database
 	 * 
 	 * @return HTTP Response Returned as JSON object
 	 * @param body body
 	 */
-	// idea, player can ask for profile, and in path, if not yet added, ask player if they want to be added to game
+	// idea, player can ask for profile, and in path, if not yet added, ask player
+	// if they want to be added to game
 	@POST
 	@Path("/init/player/getProfile")
 	@Consumes(MediaType.TEXT_PLAIN)
@@ -345,42 +346,42 @@ public class GamificationBotWrapperService extends RESTService {
 			jsonBody = (JSONObject) parser.parse(body);
 			String user = jsonBody.get("email").toString();
 			String botName = jsonBody.get("botName").toString();
-			
+
 			if (!botWorkers.containsKey(botName)) {
 				JSONObject response = new JSONObject();
-				response.put("text","Bot Not Initialised correctly, please contact support!!!");
+				response.put("text", "Bot Not Initialised correctly, please contact support!!!");
 				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
-				.type(MediaType.APPLICATION_JSON).build();
+						.type(MediaType.APPLICATION_JSON).build();
 			} else {
-				if(!this.botWorkers.get(botName).isRegistered(user)){
+				if (!this.botWorkers.get(botName).isRegistered(user)) {
 					System.out.println("adding player");
 					addPlayer(body);
 				}
 				BotAgent restarterBot = this.botWorkers.get(botName).getBotAgent();
 				MiniClient client = new MiniClient();
-					
-					
+
 				client.setConnectorEndpoint(
-				"http://host.docker.internal:8080/gamification/visualization/status/" + botWorkers.get(botName).getGame() +"/"+ encryptThisString(user));
-				
+						"http://host.docker.internal:8080/gamification/visualization/status/"
+								+ botWorkers.get(botName).getGame() + "/" + encryptThisString(user));
+
 				HashMap<String, String> headers = new HashMap<String, String>();
 				System.out.println("user");
-				try{
+				try {
 					client.setLogin(restarterBot.getLoginName(), restarterBot.getPassphrase());
 					ClientResponse result = client.sendRequest("GET", "",
-					"",MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON, headers);
+							"", MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON, headers);
 					System.out.println(result.getResponse());
 					JSONObject answer = (JSONObject) parser.parse(result.getResponse());
 					JSONObject response = new JSONObject();
 					String base64 = pic(answer);
-					response.put("text","User Profile:");
-					response.put("fileBody",base64);
-					response.put("fileName","User Profile");
-					response.put("fileType","png");
+					response.put("text", "User Profile:");
+					response.put("fileBody", base64);
+					response.put("fileName", "User Profile");
+					response.put("fileType", "png");
 
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
-					.type(MediaType.APPLICATION_JSON).build();
-				} catch (Exception e){
+							.type(MediaType.APPLICATION_JSON).build();
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 
@@ -395,7 +396,157 @@ public class GamificationBotWrapperService extends RESTService {
 				.type(MediaType.APPLICATION_JSON).build();
 	}
 
+	/**
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	@POST
+	@Path("/player/achievementProgress")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
+	public Response achievementProgress(String body) {
+		System.out.println(body);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
 
+			jsonBody = (JSONObject) parser.parse(body);
+			String user = jsonBody.get("email").toString();
+			String botName = jsonBody.get("botName").toString();
+			for (String b : botWorkers.keySet()) {
+				System.out.println(b);
+			}
+			if (!botWorkers.containsKey(botName)) {
+				JSONObject response = new JSONObject();
+				response.put("text", "Bot Not Initialised correctly, please contact support!!!");
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+			} else {
+				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
+					botWorkers.get(botName).addMember(encryptThisString(user));
+					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
+				}
+				try {
+					Serializable result = Context.get().invokeInternally(
+							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
+							"getQuestDetailAllRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
+					System.out.println(result.toString());
+					JSONObject j = (JSONObject) parser.parse(result.toString());
+					String message = "";
+					for (String key : j.keySet()) {
+						JSONObject quest = (JSONObject) j.get(key);
+						String desc = ((JSONObject)((JSONArray) quest.get("actionArray")).get(0)).get("description").toString();
+						message += "*Achievement "+key+ " ("+desc+")" + " progress:* \n";
+						System.out.println(message);
+						for (Object o : (JSONArray) ((JSONObject) j.get(key)).get("actionArray")) {
+							JSONObject jsonO = (JSONObject) o;
+							message += "- Action " + jsonO.get("action").toString() + ":"
+									+ jsonO.get("times").toString() + "/" + jsonO.get("maxTimes").toString() + "\n";
+						}
+					}
+					JSONObject response = new JSONObject();
+					response.put("text", message);
+					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+							.type(MediaType.APPLICATION_JSON).build();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+
+			}
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Request log
+		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
+				.type(MediaType.APPLICATION_JSON).build();
+	}
+
+
+/**
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	@POST
+	@Path("/player/badges")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
+	public Response getBadges(String body) {
+		System.out.println(body);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
+
+			jsonBody = (JSONObject) parser.parse(body);
+			String user = jsonBody.get("email").toString();
+			String botName = jsonBody.get("botName").toString();
+			for (String b : botWorkers.keySet()) {
+				System.out.println(b);
+			}
+			if (!botWorkers.containsKey(botName)) {
+				JSONObject response = new JSONObject();
+				response.put("text", "Bot Not Initialised correctly, please contact support!!!");
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+			} else {
+				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
+					botWorkers.get(botName).addMember(encryptThisString(user));
+					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
+				}
+				try {
+					Serializable result = Context.get().invokeInternally(
+							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
+							"getBadgesOfMemberRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
+					System.out.println(result.toString());
+					JSONArray j = (JSONArray) parser.parse(result.toString());
+					String message = "";
+					String base64 = "";
+					for (Object o : j) {
+						JSONObject jsonO = (JSONObject) o;
+						System.out.println(base64);
+						if(jsonO.containsKey("base64") && jsonO.get("base64") != null){
+							message +=  jsonO.get("name").toString()+ "\n";
+							base64 = jsonO.get("base64").toString();
+						}
+						
+					}
+					JSONObject response = new JSONObject();
+					response.put("text", message);
+					response.put("fileBody", base64);
+					response.put("fileName", "badge");
+					response.put("fileType", "png");
+					System.out.println(response);
+					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+							.type(MediaType.APPLICATION_JSON).build();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+
+			}
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Request log
+		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
+				.type(MediaType.APPLICATION_JSON).build();
+	}
 
 	public String pic(JSONObject json) {
 		try {
@@ -410,9 +561,12 @@ public class GamificationBotWrapperService extends RESTService {
 			g.setFont(font);
 			g.setColor(Color.BLACK);
 			g.drawString("Player", 4, 20);
-			g.drawString(json.get("memberLevel").toString(), (int) (image.getWidth() * 0.9), (int) (image.getHeight() * 0.1));
-			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.9), (int) (image.getHeight() * 0.25));
-			g.drawString(json.get("progress").toString()+"%", (int) (image.getWidth() * 0.7), (int) (image.getHeight() * 0.5));
+			g.drawString(json.get("memberLevel").toString(), (int) (image.getWidth() * 0.9),
+					(int) (image.getHeight() * 0.1));
+			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.9),
+					(int) (image.getHeight() * 0.25));
+			g.drawString(json.get("progress").toString() + "%", (int) (image.getWidth() * 0.7),
+					(int) (image.getHeight() * 0.5));
 			g.drawString("NaN", (int) (image.getWidth() * 0.8), (int) (image.getHeight() * 0.7));
 			g.drawString("NaN", (int) (image.getWidth() * 0.8), (int) (image.getHeight() * 0.9));
 			File outputfile = new File(filePath + "/etc/img.png");
@@ -429,7 +583,6 @@ public class GamificationBotWrapperService extends RESTService {
 		return "error";
 
 	}
-
 
 	public static String encryptThisString(String input) {
 		try {

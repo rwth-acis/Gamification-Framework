@@ -176,9 +176,9 @@ public class GamificationBadgeService extends RESTService {
 		 * @throws NullPointerException null pointer exception
 		 */
 		private byte[] resizeImage(InputStream inputImageRaw) throws IllegalArgumentException, IOException, NullPointerException{
-
+			System.out.println("resizing image");
 			BufferedImage img = ImageIO.read(inputImageRaw);
-			BufferedImage newImg = Scalr.resize(img,Mode.AUTOMATIC,300,300);
+			BufferedImage newImg = Scalr.resize(img,Mode.AUTOMATIC,200,200);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ImageIO.write(newImg, "png", baos);
 			baos.flush();
@@ -1065,6 +1065,20 @@ public class GamificationBadgeService extends RESTService {
 		public byte[] getBadgeImageMethod(String gameId, String badgeId){
 			byte[] filecontent = LocalFileManager.getFile(gameId+"/"+badgeId);
 			return filecontent;
+		}
+
+				/**
+		 * RMI function to get the badge image
+		 * @param gameId Game ID obtained from Gamification Game Service
+		 * @param badgeId badge id
+		 * @return badge image as byte array
+		 */
+		public String getBadgeImageMethodRMI(String gameId, String badgeId){
+			byte[] filecontent = LocalFileManager.getFile(gameId+"/"+badgeId);
+			
+			byte[] encode = Base64.getEncoder().encode(filecontent);
+			String result = new String(encode);
+			return result;
 		}
 		
 		// RMI
