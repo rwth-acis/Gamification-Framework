@@ -1617,8 +1617,7 @@ public class GamificationVisualizationService extends RESTService {
 
 			int offset = (currentPage - 1) * windowSize;
 			int totalNum = visualizationAccess.getNumberOfMembers(conn, gameId);
-			JSONArray arrResult = visualizationAccess.getMemberLocalLeaderboard(conn, gameId, offset, windowSize,
-					searchPhrase);
+			JSONArray arrResult = visualizationAccess.getMemberLocalLeaderboard(conn, gameId);
 
 			for (int i = 0; i < arrResult.length() ; i++) {
 				JSONObject object = (JSONObject) arrResult.get(i);
@@ -1714,8 +1713,7 @@ public class GamificationVisualizationService extends RESTService {
 
 			int offset = (currentPage - 1) * windowSize;
 			int totalNum = visualizationAccess.getNumberOfMembers(conn, gameId);
-			JSONArray arrResult = visualizationAccess.getMemberGlobalLeaderboard(conn, gameId, offset, windowSize,
-					searchPhrase);
+			JSONArray arrResult = visualizationAccess.getMemberGlobalLeaderboard(conn, gameId);
 
 			objResponse.put("current", currentPage);
 			objResponse.put("rowCount", windowSize);

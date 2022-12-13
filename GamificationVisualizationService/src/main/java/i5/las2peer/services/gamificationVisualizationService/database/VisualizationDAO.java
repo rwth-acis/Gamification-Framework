@@ -328,6 +328,8 @@ public class VisualizationDAO {
 			resObj.put("action", rs.getString("action_id"));
 			resObj.put("isCompleted", rs.getBoolean("completed"));
 			resObj.put("description", rs.getString("description"));
+			resObj.put("points", rs.getString("point_value"));
+			resObj.put("badge", rs.getString("badge_id"));
 			//check if action is completed
 			if(rs.getBoolean("completed")){
 				
@@ -480,6 +482,31 @@ public class VisualizationDAO {
 		
 		return arr;
 	}
+
+	/**
+	 * Get local leaderboard of a member
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberLocalLeaderboard(Connection conn,String gameId) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+gameId+".member_point) SELECT * FROM sorted");
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("pointValue", rs.getInt("point_value"));
+			arr.put(obj);
+		}
+		
+		return arr;
+	}
 	
 	/**
 	 * Get global leaderboard of a member
@@ -507,6 +534,40 @@ public class VisualizationDAO {
 		}
 		
 		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM global_leaderboard."+commType+") SELECT * FROM sorted WHERE member_id LIKE '"+pattern+"' LIMIT "+window_size+" OFFSET "+offset);
+		rs = stmt.executeQuery();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("pointValue", rs.getInt("point_value"));
+			arr.put(obj);
+		}
+		
+		return arr;
+	}
+
+		/**
+	 * Get global leaderboard of a member
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberGlobalLeaderboard(Connection conn,String gameId) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		String commType = null;
+		
+		// Get community type from an game
+		stmt = conn.prepareStatement("SELECT community_type FROM manager.game_info WHERE game_id = ?");
+		stmt.setString(1, gameId);
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) {
+			commType = rs.getString("community_type");
+		}
+		
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM global_leaderboard."+commType+") SELECT * FROM sorted");
 		rs = stmt.executeQuery();
 		while (rs.next()) {
 			JSONObject obj = new JSONObject();

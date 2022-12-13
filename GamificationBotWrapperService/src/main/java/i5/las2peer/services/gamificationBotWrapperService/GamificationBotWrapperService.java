@@ -329,7 +329,7 @@ public class GamificationBotWrapperService extends RESTService {
 	// idea, player can ask for profile, and in path, if not yet added, ask player
 	// if they want to be added to game
 	@POST
-	@Path("/init/player/getProfile")
+	@Path("player/getProfile")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
@@ -442,13 +442,19 @@ public class GamificationBotWrapperService extends RESTService {
 					String message = "";
 					for (String key : j.keySet()) {
 						JSONObject quest = (JSONObject) j.get(key);
-						String desc = ((JSONObject)((JSONArray) quest.get("actionArray")).get(0)).get("description").toString();
-						message += "*Achievement "+key+ " ("+desc+")" + " progress:* \n";
+						String desc = ((JSONObject) ((JSONArray) quest.get("actionArray")).get(0)).get("description")
+								.toString();
+						message += "*Achievement " + key + " (" + desc + ")" + " progress:* \n";
 						System.out.println(message);
 						for (Object o : (JSONArray) ((JSONObject) j.get(key)).get("actionArray")) {
 							JSONObject jsonO = (JSONObject) o;
 							message += "- Action " + jsonO.get("action").toString() + ":"
 									+ jsonO.get("times").toString() + "/" + jsonO.get("maxTimes").toString() + "\n";
+							message += "Rewards: \n" + "- " + jsonO.get("points").toString() + " points \n";
+							if (jsonO.get("badge") != null) {
+								message += "- Badge: " + jsonO.get("badge").toString() + " \n";
+							}
+
 						}
 					}
 					JSONObject response = new JSONObject();
@@ -470,8 +476,7 @@ public class GamificationBotWrapperService extends RESTService {
 				.type(MediaType.APPLICATION_JSON).build();
 	}
 
-
-/**
+	/**
 	 * Get a level data with specific ID from database
 	 * 
 	 * @return HTTP Response Returned as JSON object
@@ -516,21 +521,22 @@ public class GamificationBotWrapperService extends RESTService {
 					JSONArray j = (JSONArray) parser.parse(result.toString());
 					String message = "";
 					String base64 = "";
+					JSONArray multiFiles = new JSONArray();
 					for (Object o : j) {
 						JSONObject jsonO = (JSONObject) o;
 						System.out.println(base64);
-						if(jsonO.containsKey("base64") && jsonO.get("base64") != null){
-							message +=  jsonO.get("name").toString()+ "\n";
-							base64 = jsonO.get("base64").toString();
+						if (jsonO.containsKey("base64") && jsonO.get("base64") != null) {
+							jsonO.put("text", jsonO.get("name").toString() + "\n");
+							jsonO.put("fileBody", jsonO.get("base64").toString());
+							jsonO.put("fileName", "badge");
+							jsonO.put("fileType", "png");
+							multiFiles.add(jsonO);
 						}
-						
+
 					}
 					JSONObject response = new JSONObject();
-					response.put("text", message);
-					response.put("fileBody", base64);
-					response.put("fileName", "badge");
-					response.put("fileType", "png");
-					System.out.println(response);
+					response.put("multiFiles", multiFiles);
+					response.put("channel", jsonBody.get("channel").toString());
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 							.type(MediaType.APPLICATION_JSON).build();
 				} catch (Exception e1) {
