@@ -559,7 +559,14 @@ public class GamificationBotWrapperService extends RESTService {
 			System.out.println("pcitute");
 			String filePath = new File("").getAbsolutePath();
 			System.out.println("pcitute" + filePath);
-			BufferedImage image = ImageIO.read(new File(filePath + "/etc/mockupUserProfile.drawio.png"));
+			BufferedImage image = null;
+			for(double i=0; i <= 101.0; i+=2.5){
+				if(Integer.valueOf(json.get("progress").toString())<= i){
+					System.out.println("/etc/mockupUserProfile"+ ((int)(i*10.0)) +".drawio.png");
+					image = ImageIO.read(new File(filePath + "/etc/mockupUserProfile"+ ((int)(i*10.0)) +".drawio.png"));
+					break;
+				}
+			}
 			Font font = new Font("Arial", Font.BOLD, 10);
 			System.out.println("Working Directory = " + System.getProperty("user.dir"));
 			System.out.println("Working Directory = " + image.getWidth() + image.getHeight());
@@ -571,7 +578,7 @@ public class GamificationBotWrapperService extends RESTService {
 					(int) (image.getHeight() * 0.1));
 			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.9),
 					(int) (image.getHeight() * 0.25));
-			g.drawString(json.get("progress").toString() + "%", (int) (image.getWidth() * 0.7),
+			g.drawString(json.get("progress").toString() + "%", (int) (image.getWidth() * 0.6),
 					(int) (image.getHeight() * 0.5));
 			g.drawString("NaN", (int) (image.getWidth() * 0.8), (int) (image.getHeight() * 0.7));
 			g.drawString("NaN", (int) (image.getWidth() * 0.8), (int) (image.getHeight() * 0.9));
