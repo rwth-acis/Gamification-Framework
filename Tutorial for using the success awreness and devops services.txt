@@ -1,0 +1,17 @@
+Gamification Devops Model Service:
+1. To start the service, ensure that all the services which want to test its devops model are being passed as a dependency in the gradle file. This ensures that the GamificationDevopsService can contact the provided services URLs. For each service add it to the configuration file (comma separated). Like such: serviceclass:version:pass,servicelass2:version2:pass2,.... Example: devopsServices=i5.las2peer.services.gamificationDevopsTestService.GamificationDevopsTestService:1.0:a pass,etc...  Now the service is ready to be deployed.
+2.Define what needs to be tested out. Rank each test according to its influence, importance etc.
+3.Create your game and add its members. Now head up do the JSONGenerators/DevopsServiceJSONGenerator in order to generate the json to gamify your devops step. Open read.me and do the commands depending on your Operating system.
+4.After the last step is completed, head up to postman. Select POST as the http method and on the body tab of the http request select raw and past the output of step 3. Now for link put <your_server_url>/gamification/devops/<your_game_id>?member=<your_member_id>
+
+Gamification Success Awareness Model Service:
+1. Start the service. Go to postman and select POST as the http method and send the following: <your_server_url>/gamification/successawarenessmodel/setup -> This ensures that the service is a node observer and the success_awareness user is added to your gamification database.
+2. Define the success awareness model to be gamified.
+3. Create your game and add its members.
+4. Now head up do the JSONGenerators/SuccessAwarenessModelJSONGenerator in order to generate the json to gamify your success awareness model. Open read.me and do the commands depending on your Operating system.
+5. After the last step is completed, head up to postman. Select POST as the http method and on the body tab of the http request select raw and past the output of step 4. Now for link put <your_server_url>gamification/successawarenessmodel/<your_game_id>?member=<your_member_id>
+
+
+To visualize what you have done do the following:
+-Success awarenss model service: <your_server_url/gamification/visualization/successawareness/<your_game_id>/<your_member_id>
+-Devops model service: <your_server_url/gamification/visualization/devops/<your_game_id>/<your_member_id>
