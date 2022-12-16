@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -50,7 +51,9 @@ import i5.las2peer.api.security.AgentAccessDeniedException;
 import i5.las2peer.api.security.AgentLockedException;
 import i5.las2peer.api.security.AgentNotFoundException;
 import i5.las2peer.api.security.AgentOperationFailedException;
+import i5.las2peer.connectors.ConnectorException;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
+import i5.las2peer.execution.ExecutionContext;
 import i5.las2peer.logging.NodeObserver;
 import i5.las2peer.logging.monitoring.MonitoringMessage;
 import i5.las2peer.p2p.LocalNode;
@@ -64,6 +67,7 @@ import i5.las2peer.services.gamificationSuccessAwarenessModelService.database.Da
 import i5.las2peer.services.gamificationSuccessAwarenessModelService.helper.AchievementGamifiedMeasure;
 import i5.las2peer.services.gamificationSuccessAwarenessModelService.helper.ActionGamifiedMeasure;
 import i5.las2peer.services.gamificationSuccessAwarenessModelService.helper.GamifiedMeasure;
+import i5.las2peer.services.gamificationSuccessAwarenessModelService.helper.Pair;
 import i5.las2peer.services.gamificationSuccessAwarenessModelService.helper.model.Chart;
 import i5.las2peer.services.gamificationSuccessAwarenessModelService.helper.model.Chart.ChartType;
 import i5.las2peer.services.gamificationSuccessAwarenessModelService.helper.model.KPI;
@@ -81,14 +85,10 @@ import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
 
 /**
- * las2peer-Template-Service
+ * Gamification Success Awareness Model
  * 
- * This is a template for a very basic las2peer service that uses the las2peer WebConnector for RESTful access to it.
- * 
- * Note: If you plan on using Swagger you should adapt the information below in the SwaggerDefinition annotation to suit
- * your project. If you do not intend to provide a Swagger documentation of your service API, the entire Api and
- * SwaggerDefinition annotation should be removed.
- * 
+ * This service gamifies a given success awareness model. 
+ * @author David Almeida
  */
 @Api
 @SwaggerDefinition(
@@ -146,53 +146,24 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 				gamificationJdbcLogin,
 				gamificationJdbcPass,
 				gamificationJdbcUrl,
-				gamificationJdbcSchema);	
-
+				gamificationJdbcSchema);
 	}
 
-
-	/**
-	 * Adds a success awareness model to be gamified.
-	 * 
-	 * @param gameId the id of the game
-	 * @param formData a map that uses as key the path of a call to the gamification framework to add
-	 * a the gamified measure.
-	 * @return Returns an HTTP response with 200 if everything was performed successfully, or 500 if something 
-	 * unexpected happened.
-	 */
-	@POST
-	@Path("/{gameId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_OK,
-					message = "Added success awareness model successfully") })
-	@ApiOperation(
-			value = "addSuccessModel",
-			notes = "This method gamifies a success awareness model")
-	public Response gamifiySuccessModel(@PathParam("gameId") String gameId,
-			@ApiParam(value = "member") @QueryParam("member") String member,
-			@ApiParam(value = "Achievement data in multiple/form-data type", required = true)
-	@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
-	byte[] formData) {
+	private Response handleGamifiySuccessModel(String gameId,
+			String member, String contentType, 
+			byte[] formData) throws ConnectorException, InterruptedException {
 		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/successawareness/"+gameId, true);
 
 		JSONObject objResponse = new JSONObject();
 		//try to add the game member to the gamification framework
-		if(!GamificationSuccessAwarenessServiceState.getInstance().getGameIds().contains(gameId)) {
+		if(!GamificationSuccessAwarenessModelServiceState.getInstance().getGameIds().contains(gameId)) {
 			try(Statement stmn = gamificationDb.getConnection().createStatement()) {
-
-				int res = stmn.executeUpdate("INSERT INTO manager.member_info (member_id,first_name,last_name,email) "
-						+ "VALUES (\'" + GAMIFICATION_MEMBER_ID + "\',\'" + gamificationMemberFirstName + "\',\'" + gamificationMemberLastName + "\',\'" + gamificationMemberEmail + "\')"
-						+ "ON CONFLICT DO NOTHING");
-				if(res == 1) {
-					ClientResponse response = GamificationSuccessAwarenessServiceState.getInstance().sendRequest("POST"
-							, "gamification/games/data/" + gameId + "/" + GAMIFICATION_MEMBER_ID);
-					if(response.getHttpCode() != 200) {
-						objResponse.put("message", response.getResponse());
-						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-						return Response.serverError().entity(objResponse).build();
-					}
+				ClientResponse response = GamificationSuccessAwarenessModelServiceState.getInstance().sendRequest("POST"
+						, "gamification/games/data/" + gameId + "/" + GAMIFICATION_MEMBER_ID);
+				if(response.getHttpCode() != 200) {
+					objResponse.put("message", response.getResponse());
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					return Response.serverError().entity(objResponse).build();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -274,11 +245,11 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 				//add gamification object
 				Map<String, i5.las2peer.services.gamificationActionService.helper.FormDataPart> parts = i5.las2peer.services.gamificationActionService.helper.MultipartHelper.getParts(out.toString().getBytes(), gamificationContentType);
 
-				ClientResponse response = GamificationSuccessAwarenessServiceState.getInstance().sendRequest("POST",gamifiedMeasure.getServiceRootUrl() + gameId, out.toString(), gamificationContentType, gamificationHeaders);
+				ClientResponse response = GamificationSuccessAwarenessModelServiceState.getInstance().sendRequest("POST",gamifiedMeasure.getServiceRootUrl() + gameId, out.toString(), gamificationContentType, gamificationHeaders);
 				String body = (String)((JSONObject)parser.parse(response.getResponse())).get("message").toString();
 				if(response.getHttpCode() == 201) {
 					String gamificationId = body.substring(body.indexOf("(") + 1,body.lastIndexOf(")"));
-					
+
 					//now insert into the gamification table
 					try(PreparedStatement stmn = gamificationDb.getConnection().prepareStatement(
 							"INSERT INTO " + gameId + ".success_awareness_gamified_measure VALUES(?,?,?,?,?)")) {
@@ -291,15 +262,15 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 							throw new SQLException("error adding success awareness model to db");
 					}catch(SQLException e) {
 						e.printStackTrace();
-						
+
 						//since an error occurred delete all the previously added ones
 						deleteGamifiedMeasures(gameId,receivedMeasures);
-						
+
 						objResponse.put("message", e.getMessage());
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 						return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse).build();
 					}
-					
+
 					long randomLong = new Random().nextLong(); //To be able to match 
 					gamifiedMeasure.setGamificationId(body.substring(body.indexOf("(") + 1,body.lastIndexOf(")")));
 					Context.getCurrent().monitorEvent(this,MonitoringEvent.SERVICE_CUSTOM_MESSAGE_15, ""+randomLong, true);
@@ -309,7 +280,7 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 				}else {
 					//since an error occurred delete all the previously added ones
 					deleteGamifiedMeasures(gameId,receivedMeasures);
-					
+
 					objResponse.put("message", body);
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse).build();
@@ -317,10 +288,10 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 			}
 		}catch(Exception e) {
 			e.printStackTrace();
-			
+
 			//since an error occurred delete all the previously added ones
 			deleteGamifiedMeasures(gameId,receivedMeasures);
-			
+
 			objResponse.put("message", e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 			return Response.serverError().entity(objResponse).build();
@@ -328,21 +299,95 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 
 		//everything went well, add things
 		for(GamifiedMeasure measure: receivedMeasures) {	
-			GamificationSuccessAwarenessServiceState.getInstance().addGamifiedMeasure(gameId, measure);
+			GamificationSuccessAwarenessModelServiceState.getInstance().addGamifiedMeasure(gameId, measure);
 		}
-		return Response.ok().build();
+		objResponse.put("message", "Everything was gamified succefully");
+		return Response.ok().entity(objResponse).build();
 	}
-	
-	private void deleteGamifiedMeasures(String gameId, Set<GamifiedMeasure> measures) {
+
+
+	@POST
+	@Path("/setup")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(
+			value = { @ApiResponse(
+					code = HttpURLConnection.HTTP_OK,
+					message = "Setup completed successfully") })
+	@ApiOperation(
+			value = "setup",
+			notes = "This method setups the success awareness model service")
+	/**
+	 * 
+	 * @return 200 ok if the setup was done successfully
+	 */
+	public Response setup(){
+		if(!GamificationSuccessAwarenessModelServiceState.getInstance().isObsever()) {
+			((ExecutionContext)Context.getCurrent()).getCallerContext().getLocalNode().addObserver(this);
+			GamificationSuccessAwarenessModelServiceState.getInstance().setIsObserver(true);
+			
+			try(Statement stmn = gamificationDb.getConnection().createStatement()) {
+				int res = stmn.executeUpdate("INSERT INTO manager.member_info (member_id,first_name,last_name,email) "
+						+ "VALUES (\'" + GAMIFICATION_MEMBER_ID + "\',\'" + gamificationMemberFirstName + "\',\'" + gamificationMemberLastName + "\',\'" + gamificationMemberEmail + "\')"
+						+ "ON CONFLICT DO NOTHING");
+				if(res != 1) {
+					return Response.serverError().entity("success awareness member already existed").build();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return Response.serverError().entity(e.getMessage()).build();
+			}
+			
+			
+			return Response.ok().entity("Setup completed successfully").build();
+		}
+		return Response.serverError().entity("Already is an observer").build();
+	}
+
+	/**
+	 * Adds a success awareness model to be gamified.
+	 * 
+	 * @param gameId the id of the game
+	 * @param member the member that is gamifying the model
+	 * @param formData the data of the model and the action
+	 * @return Returns an HTTP response with 200 if everything was performed successfully, or 500 if something 
+	 * unexpected happened.
+	 * @throws InterruptedException 
+	 * @throws ConnectorException 
+	 */
+	@POST
+	@Path("/{gameId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(
+			value = { @ApiResponse(
+					code = HttpURLConnection.HTTP_OK,
+					message = "Added success awareness model successfully") })
+	@ApiOperation(
+			value = "addSuccessModel",
+			notes = "This method gamifies a success awareness model")
+	public Response gamifiySuccessModel(@PathParam("gameId") String gameId,
+			@ApiParam(value = "member") @QueryParam("member") String member,
+			@ApiParam(value = "action data in multiple/form-data type", required = true)
+	@HeaderParam(value = HttpHeaders.CONTENT_TYPE) String contentType, 
+	byte[] formData) throws ConnectorException, InterruptedException {		
+		Response res = handleGamifiySuccessModel(gameId, member, contentType, formData);
+		try {
+			GamificationSuccessAwarenessModelServiceState.getInstance().stop();
+		} catch (ConnectorException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	private void deleteGamifiedMeasures(String gameId, Set<GamifiedMeasure> measures) throws ConnectorException, InterruptedException {
 		for(GamifiedMeasure measure: measures) {
 			removeMeasureFromGame(gameId, measure.getMeasure().getName());
 		}
 	}
-	
+
 	private static String getElementXml(Element element) {
 		Document document = element.getOwnerDocument();
 		DOMImplementationLS domImplLS = (DOMImplementationLS) document
-		    .getImplementation();
+				.getImplementation();
 		LSSerializer serializer = domImplLS.createLSSerializer();
 		return serializer.writeToString(element);
 	}
@@ -358,7 +403,7 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 				Map<String, String> queries = new HashMap<>();
 				Visualization visualization = null;
 				String description = null;
-				
+
 				if (!measureElement.hasAttribute("name")) {
 					throw new MalformedXMLException(
 							"Catalog contains a measure without a name!");
@@ -368,7 +413,7 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 					throw new MalformedXMLException(
 							"Catalog already contains a measure " + measureName + "!");
 				}
-				
+
 				NodeList mChildren = measureElement.getChildNodes();
 				for (int measureChildCount = 0; measureChildCount < mChildren.getLength(); measureChildCount++) {
 					if (mChildren.item(measureChildCount).getNodeType() == Node.ELEMENT_NODE) {
@@ -531,8 +576,14 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 			headers.put("Accept-Encoding","gzip, deflate");
 			headers.put("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
 			headers.put("Content-Type","application/json");
-			GamificationSuccessAwarenessServiceState.getInstance().sendRequest("POST","gamification/successawarenessmodel/_listen",json.toJSONString(),
-					"multipart/form-data",headers);
+
+			try {
+				GamificationSuccessAwarenessModelServiceState.getInstance().sendRequest("POST","gamification/successawarenessmodel/_listen",json.toJSONString(),
+						"multipart/form-data",headers);
+				//				GamificationSuccessAwarenessModelServiceState.getInstance().stop();
+			} catch (ConnectorException | InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -552,7 +603,7 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 					code = HttpURLConnection.HTTP_OK,
 					message = "REPLACE THIS WITH YOUR OK MESSAGE") })
 	public Response listenToMessage(byte[] formData) {		
-		GamificationSuccessAwarenessServiceState state = GamificationSuccessAwarenessServiceState.getInstance();
+		GamificationSuccessAwarenessModelServiceState state = GamificationSuccessAwarenessModelServiceState.getInstance();
 		String json = new String(formData, StandardCharsets.UTF_8);
 		JSONParser parser = new JSONParser();
 		JSONObject jsonObj = null;
@@ -594,6 +645,7 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 					state.stopListening();
 				}
 				if(state.canListen()) {
+					List<Pair<String,String>> measuresToRemove = new LinkedList<>();
 					try(Connection conn = successAwarenessModelDb.getConnection()){
 						for(String gameId: state.getGameIds()) {
 							for(GamifiedMeasure measure: state.getGamifiedMeasures(gameId)) {
@@ -602,12 +654,20 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 									//trigger action
 									Context.getCurrent().invoke("i5.las2peer.services.gamificationActionService.GamificationActionService"
 											, "triggerActionRMI", gameId, GAMIFICATION_MEMBER_ID, measure.getGamificationId());
+
+									//add the measure to be removed since it was already gamified
+									measuresToRemove.add(new Pair<String,String>(gameId,measure.getMeasure().getName()));
 								}
 							}
-						}
-
+						}						
 					} catch (Exception e) {
 						e.printStackTrace();
+					}
+
+					//remove the measures
+					for(Pair<String,String> pair: measuresToRemove) {
+						GamificationSuccessAwarenessModelServiceState.getInstance()
+						.removeMeasureFromGame(pair.getFirst(),pair.getSecond());
 					}
 				}
 			}
@@ -627,6 +687,8 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 	 * @param measureName the measure to remove
 	 * @return Returns an HTTP response with 200 if everything was performed successfully, or 500 if something 
 	 * unexpected happened.
+	 * @throws InterruptedException 
+	 * @throws ConnectorException 
 	 */
 	@DELETE
 	@Path("/{gameId}/{measureName}")
@@ -639,13 +701,29 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 			value = "deleteSuccessModelMeasure",
 			notes = "This removes a gamified measure from the previously gamified success awareness model")
 	public Response removeMeasureFromGame(@PathParam("gameId") String gameId,
-			@PathParam("measureName") String measureName) {
+			@PathParam("measureName") String measureName) throws ConnectorException, InterruptedException {
+		Response res = handleRemoveMeasureFromGame(gameId, measureName);
+		try {
+			GamificationSuccessAwarenessModelServiceState.getInstance().stop();
+		} catch (ConnectorException e) {
+			e.printStackTrace();
+		}
+
+		return res;
+	}
+
+	private Response handleRemoveMeasureFromGame(String gameId,
+			String measureName) throws ConnectorException, InterruptedException {
 		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "DELETE" + "gamification/successawareness/" + gameId + "/" + measureName, true);
 
 		JSONObject objResponse = new JSONObject();
 
-		GamificationSuccessAwarenessServiceState state = GamificationSuccessAwarenessServiceState.getInstance();
+		GamificationSuccessAwarenessModelServiceState state = GamificationSuccessAwarenessModelServiceState.getInstance();
 		GamifiedMeasure measure = state.getGamifiedMeasure(gameId,measureName);
+		if(measure == null) {
+			objResponse.put("measure", "the measure or game does not exist");	
+			return Response.status(404).entity(objResponse).build();
+		}
 
 		ClientResponse response = state.sendRequest("DELETE", measure.getServiceRootUrl() + gameId + "/" + measure.getGamificationId());
 		if(response.getHttpCode() != 200) {
@@ -664,6 +742,8 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 	 * @param gameId the id of the game
 	 * @return Returns an HTTP response with 200 if everything was performed successfully, or 500 if something 
 	 * unexpected happened.
+	 * @throws InterruptedException 
+	 * @throws ConnectorException 
 	 */
 	@DELETE
 	@Path("/{gameId}")
@@ -675,12 +755,22 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 	@ApiOperation(
 			value = "deleteSuccessModelGame",
 			notes = "This removes all gamified measures from the previously gamified success awareness model")
-	public Response removeGame(@PathParam("gameId") String gameId) {
+	public Response removeGame(@PathParam("gameId") String gameId) throws ConnectorException, InterruptedException {
+		Response res = handleRemoveGame(gameId);
+		try {
+			GamificationSuccessAwarenessModelServiceState.getInstance().stop();
+		} catch (ConnectorException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	private Response handleRemoveGame(String gameId) throws ConnectorException, InterruptedException {
 		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "DELETE" + "gamification/successawareness/" + gameId, true);
 
 		JSONObject objResponse = new JSONObject();
 
-		GamificationSuccessAwarenessServiceState state = GamificationSuccessAwarenessServiceState.getInstance();
+		GamificationSuccessAwarenessModelServiceState state = GamificationSuccessAwarenessModelServiceState.getInstance();
 		for(GamifiedMeasure measure: state.getGamifiedMeasures(gameId)) {
 			Response response = removeMeasureFromGame(gameId,measure.getMeasure().getName());
 			if(response.getStatus() != 200) {
@@ -710,6 +800,16 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 			value = "deleteSuccessModelMember",
 			notes = "This removes a gamified measure from the previously gamified success awareness model")
 	public Response removeMember(@PathParam("gameId") String gameId) {
+		Response res = handleRemoveMember(gameId);
+		try {
+			GamificationSuccessAwarenessModelServiceState.getInstance().stop();
+		} catch (ConnectorException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	private Response handleRemoveMember(String gameId) {
 		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "DELETE" + "gamification/successawareness/member/" + gameId, true);
 
 		JSONObject objResponse = new JSONObject();
@@ -718,7 +818,7 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 			stmn.setString(1, GAMIFICATION_MEMBER_ID);
 			stmn.setString(2, gameId);
 			int res = stmn.executeUpdate();
-			if(res != 1) {
+			if(res < 1) {
 				objResponse.put("message", "game or member not found");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				return Response.status(HttpURLConnection.HTTP_NOT_FOUND).entity(objResponse).build();
@@ -732,7 +832,7 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 		objResponse.put("measure", "The success awareness member have been deleted successfully from game " + gameId);
 		return Response.ok().entity(objResponse).build();
 	}
-	
+
 	public DatabaseManager getGamificationDatabase() {
 		return gamificationDb;
 	}

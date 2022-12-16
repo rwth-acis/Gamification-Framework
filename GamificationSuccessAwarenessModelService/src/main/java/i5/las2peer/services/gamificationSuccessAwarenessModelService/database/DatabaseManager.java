@@ -21,7 +21,12 @@ public class DatabaseManager {
 		dataSource.setDriverClassName(jdbcDriverClassName);
 		dataSource.setUsername(jdbcLogin);
 		dataSource.setPassword(jdbcPass);
-		dataSource.setUrl(jdbcUrl + jdbcSchema);
+		if(jdbcDriverClassName.contains("mysql"))
+			dataSource.setUrl(jdbcUrl + jdbcSchema + "?autoReconnect=true&useSSL=false&serverTimezone=UTC");
+		else 
+			dataSource.setUrl(jdbcUrl + jdbcSchema);
+			
+		
 		dataSource.setValidationQuery("SELECT 1");
 		dataSource.setDefaultQueryTimeout(1000);
 		dataSource.setMaxConnLifetimeMillis(100000);

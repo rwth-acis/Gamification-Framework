@@ -400,11 +400,27 @@ BEGIN
 		game_id character varying(20) NOT NULL,
 		member_id character varying(20) NOT NULL,
 		measure_xml character varying(1000) NOT NULL,
-		CONSTRAINT success_awareness_gamified_pkey PRIMARY KEY(measure_name),
+		CONSTRAINT success_awareness_gamified_pkey PRIMARY KEY(measure_name,game_id),
 		CONSTRAINT member_id FOREIGN KEY (game_id,member_id) REFERENCES manager.member_game (game_id,member_id) ON UPDATE CASCADE ON DELETE CASCADE,
 		CONSTRAINT action_id FOREIGN KEY (action_id) REFERENCES ' || new_schema || '.action (action_id) ON UPDATE CASCADE ON DELETE CASCADE
 	);';
 	-----------------------------SUCCESS AWARENESS MODEL TABLES END------------------------------------------------------------------------------------------------------------
+
+	-----------------------------DEVOPS MODEL TABLES START------------------------------------------------------------------------------------------------------------
+	EXECUTE 'CREATE TABLE ' || new_schema || '.devops_model (
+		scope character varying(100) NOT NULL,
+		action_id  character varying(20) NOT NULL UNIQUE,
+		rating float NOT NULL,
+		game_id character varying(20) NOT NULL,
+		member_id character varying(20) NOT NULL,
+		CONSTRAINT devops_model_pkey PRIMARY KEY(game_id,action_id),
+		CONSTRAINT devops_model_member_id FOREIGN KEY (game_id,member_id) REFERENCES manager.member_game (game_id,member_id) ON UPDATE CASCADE ON DELETE CASCADE,
+		CONSTRAINT devops_model_action_id FOREIGN KEY (action_id) REFERENCES ' || new_schema || '.action (action_id) ON UPDATE CASCADE ON DELETE CASCADE,
+		CONSTRAINT ck_devops_model_rating CHECK(rating >= 0 AND rating <= 5),
+		CONSTRAINT ck_devops_model_scope CHECK(scope=''code'' OR scope=''build'' OR scope=''test'' OR scope=''release'' OR scope=''deploy'' OR scope=''operate'' OR scope=''monitor'')
+	);';
+	-----------------------------DEVOPS MODEL MODEL TABLES END------------------------------------------------------------------------------------------------------------
+
 
 
 	-- trigger
