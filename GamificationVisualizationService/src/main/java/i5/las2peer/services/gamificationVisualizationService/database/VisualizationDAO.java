@@ -507,6 +507,32 @@ public class VisualizationDAO {
 		
 		return arr;
 	}
+
+
+	/**
+	 * Get local leaderboard of a member over actions done
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberLocalLeaderboardOverAction(Connection conn,String gameId, String action_id) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT * from "+gameId+".member_action where action_id='"+action_id+"') SELECT member_id,count(action_id), row_number() OVER (ORDER BY COUNT(action_id) DESC) from sorted GROUP BY member_id;");
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("actioncount", rs.getInt("count"));
+			arr.put(obj);
+		}
+		
+		return arr;
+	}
 	
 	/**
 	 * Get global leaderboard of a member

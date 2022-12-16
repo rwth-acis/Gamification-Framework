@@ -41,6 +41,8 @@ public class LrsBotWorker implements Runnable {
 	private BotAgent restarterBot = null;
 	private HashMap<String,JSONArray> actionVerbs = new HashMap<String,JSONArray>();
 
+
+
 	public LrsBotWorker(String game, String botName, BotAgent restarterBot, String lrsToken,
 	HashMap<String,JSONArray> actionVerbs) {
 		this.game = game;
@@ -53,6 +55,10 @@ public class LrsBotWorker implements Runnable {
 	public void addUsers(String email, String channel) {
 		this.users.put(email, false);
 		this.usersChannel.put(email, channel);
+	}
+
+	public HashMap<String, JSONArray> getActionVerbs() {
+		return actionVerbs;
 	}
 
 	// here, the whole process of communicating with the GF should take place
@@ -199,7 +205,7 @@ public class LrsBotWorker implements Runnable {
 		JSONObject information = new JSONObject();
 		for(Object o : notification){
 			JSONObject json = (JSONObject) o;
-			message += "*"+json.get("message").toString()+"*";
+			message += "*"+json.get("message").toString()+"* \n";
 
 		}
 		information.put("message", message);

@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -106,11 +107,8 @@ public class GamificationBotWrapperService extends RESTService {
 	private String jdbcPass;
 	private String jdbcUrl;
 	private String jdbcSchema;
-	// will need to make so that every bot can choose its own token, and not an
-	// environment variable
-	private String LRSToken;
 
-	private static LrsBotWorker random;
+	private static HashMap<String, Boolean> userContext = new HashMap<String, Boolean>();
 
 	private static HashMap<String, LrsBotWorker> botWorkers = new HashMap<String, LrsBotWorker>();
 	// this header is not known to javax.ws.rs.core.HttpHeaders
@@ -459,6 +457,73 @@ public class GamificationBotWrapperService extends RESTService {
 					}
 					JSONObject response = new JSONObject();
 					response.put("text", message);
+
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+
+			}
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Request log
+		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
+				.type(MediaType.APPLICATION_JSON).build();
+	}
+
+	/**
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	@POST
+	@Path("/player/actions")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
+	public Response actions(String body) {
+		System.out.println(body);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
+
+			jsonBody = (JSONObject) parser.parse(body);
+			String user = jsonBody.get("email").toString();
+			String botName = jsonBody.get("botName").toString();
+			for (String b : botWorkers.keySet()) {
+				System.out.println(b);
+			}
+			if (!botWorkers.containsKey(botName)) {
+				JSONObject response = new JSONObject();
+				response.put("text", "Bot Not Initialised correctly, please contact support!!!");
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+			} else {
+				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
+					botWorkers.get(botName).addMember(encryptThisString(user));
+					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
+				}
+				try {
+					String message = "";
+					int i = 1;
+					Collection<JSONArray> values = botWorkers.get(botName).getActionVerbs().values();
+					for (JSONArray arr : values) {
+						for (Object o : arr) {
+							JSONObject jsonO = (JSONObject) o;
+							message += i + ". " + jsonO.get("id").toString() + " (" + jsonO.get("description").toString()
+									+ ") \n";
+							i++;
+						}
+					}
+					JSONObject response = jsonBody;
+					response.put("text", message);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 							.type(MediaType.APPLICATION_JSON).build();
 				} catch (Exception e1) {
@@ -475,6 +540,114 @@ public class GamificationBotWrapperService extends RESTService {
 		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
 				.type(MediaType.APPLICATION_JSON).build();
 	}
+
+	/**
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	@POST
+	@Path("/player/leaderboard")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
+	public Response leaderboard(String body) {
+		System.out.println(body);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
+
+			jsonBody = (JSONObject) parser.parse(body);
+			String user = jsonBody.get("email").toString();
+			String botName = jsonBody.get("botName").toString();
+			String userMessage = jsonBody.get("msg").toString();
+			if (!userContext.containsKey(user) && !userMessage.contains("!")) {
+				Response r = actions(body);
+				JSONObject response = (JSONObject) r.getEntity();
+				response.put("closeContext", false);
+				userContext.put(user, true);
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+
+			try {
+				System.out.println("monkey");
+				int i = 1;
+				Collection<JSONArray> values = botWorkers.get(botName).getActionVerbs().values();
+				JSONObject chosen = null;
+				String splitMessage = userMessage;
+				if(userMessage.contains("!")){
+					splitMessage = userMessage.split("\\s")[1];
+					System.out.println(splitMessage);
+				}
+				for (JSONArray arr : values) {
+					for (Object o : arr) {
+						System.out.println(o);
+						JSONObject jsonO = (JSONObject) o;
+						
+						if (userMessage.toLowerCase().contains(String.valueOf(i)) || jsonO.get("id").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
+							chosen = jsonO;
+							break;
+						}
+						i++;
+
+					}
+				}
+				if(chosen == null){
+					String error = jsonBody.get("error").toString();
+					Response r = actions(body);
+					JSONObject response = (JSONObject) r.getEntity();
+
+					response.put("text",error +"\n"+response.get("text").toString());
+					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+
+				}
+				Serializable result = Context.get().invokeInternally(
+						"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
+						"getLocalLeaderboardOverActionRMI", botWorkers.get(botName).getGame(), encryptThisString(user),
+						chosen.get("id").toString());
+				JSONObject j = (JSONObject) parser.parse(result.toString());
+				JSONArray ranks = (JSONArray) j.get("rows");
+				String message = "";
+				for (Object o : ranks) {
+					JSONObject jsonO = (JSONObject) o;
+					if (encryptThisString(user).equals(jsonO.get("memberId").toString())) {
+						message += "*Rank: " + jsonO.get("rank").toString() + " | Count: "
+								+ jsonO.get("actioncount").toString() + " | Player: YOU!* \n";
+
+					} else {
+						message += "Rank: " + jsonO.get("rank").toString() + " | Count: "
+								+ jsonO.get("actioncount").toString() + " | Player: "
+								+ jsonO.get("memberId").toString() + " \n";
+
+					}
+				}
+				JSONObject response = jsonBody;
+				response.put("text", message);
+				userContext.remove(user);
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+
+			} catch (Exception e1) {
+				userContext.remove(user);
+				e1.printStackTrace();
+			}
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Request log
+		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
+				.type(MediaType.APPLICATION_JSON).build();
+	}
+
 
 	/**
 	 * Get a level data with specific ID from database
@@ -560,10 +733,11 @@ public class GamificationBotWrapperService extends RESTService {
 			String filePath = new File("").getAbsolutePath();
 			System.out.println("pcitute" + filePath);
 			BufferedImage image = null;
-			for(double i=0; i <= 101.0; i+=2.5){
-				if(Integer.valueOf(json.get("progress").toString())<= i){
-					System.out.println("/etc/mockupUserProfile"+ ((int)(i*10.0)) +".drawio.png");
-					image = ImageIO.read(new File(filePath + "/etc/mockupUserProfile"+ ((int)(i*10.0)) +".drawio.png"));
+			for (double i = 0; i <= 101.0; i += 2.5) {
+				if (Integer.valueOf(json.get("progress").toString()) <= i) {
+					System.out.println("/etc/mockupUserProfile" + ((int) (i * 10.0)) + ".drawio.png");
+					image = ImageIO
+							.read(new File(filePath + "/etc/mockupUserProfile" + ((int) (i * 10.0)) + ".drawio.png"));
 					break;
 				}
 			}

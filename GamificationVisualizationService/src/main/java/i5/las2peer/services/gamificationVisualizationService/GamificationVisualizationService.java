@@ -1652,6 +1652,161 @@ public class GamificationVisualizationService extends RESTService {
 		}
 	}
 
+		// Leaderboard
+	/**
+	 * Get local leaderboard
+	 * 
+	 * @param gameId       gameId
+	 * @param memberId     member id
+	 * @param actionId		actionId to search
+	 * @return HHTP Response Returned as JSON object
+	 */
+	@GET
+	@Path("/leaderboard/local/{gameId}/{memberId}/{actionId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Return local leaderboard"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "Get the local leaderboard", notes = "Returns a leaderboard array", authorizations = @Authorization(value = "api_key"))
+	public Response getLocalLeaderboardOverAction(@ApiParam(value = "Game ID") @PathParam("gameId") String gameId,
+			@ApiParam(value = "Member ID", required = true) @PathParam("memberId") String memberId, @ApiParam(value = "Member ID", required = true) @PathParam("actionId") String actionId) {
+		long randomLong = new Random().nextLong(); // To be able to match
+		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+
+		Agent agent = Context.getCurrent().getMainAgent();
+		if (agent instanceof AnonymousAgent) {
+			return unauthorizedMessage();
+		}
+
+		try {
+			conn = dbm.getConnection();
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_34, "" + randomLong, true);
+
+			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+
+
+			int totalNum = visualizationAccess.getNumberOfMembers(conn, gameId);
+			JSONArray arrResult = visualizationAccess.getMemberLocalLeaderboardOverAction(conn, gameId, actionId);
+
+
+
+			objResponse.put("rows", arrResult);
+			objResponse.put("total", totalNum);
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_35, "" + randomLong, true);
+			return Response.status(HttpURLConnection.HTTP_OK).entity(objResponse.toString())
+					.type(MediaType.APPLICATION_JSON).build();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.info("DB Error >> " + e.getMessage());
+			objResponse.put("message", "DB Error. " + e.getMessage());
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
+					.type(MediaType.APPLICATION_JSON).build();
+		}
+		// always close connections
+		finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				logger.printStackTrace(e);
+			}
+		}
+	}
+
+	public String getLocalLeaderboardOverActionRMI(String gameId,
+			String memberId, String actionId) {
+		long randomLong = new Random().nextLong(); // To be able to match
+		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+
+		Agent agent = Context.getCurrent().getMainAgent();
+		if (agent instanceof AnonymousAgent) {
+			return unauthorizedMessage().toString();
+		}
+
+		try {
+			conn = dbm.getConnection();
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_34, "" + randomLong, true);
+
+			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString().toString();
+			}
+			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+
+
+			int totalNum = visualizationAccess.getNumberOfMembers(conn, gameId);
+			JSONArray arrResult = visualizationAccess.getMemberLocalLeaderboardOverAction(conn, gameId, actionId);
+
+
+
+			objResponse.put("rows", arrResult);
+			objResponse.put("total", totalNum);
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_35, "" + randomLong, true);
+			return objResponse.toString().toString();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.info("DB Error >> " + e.getMessage());
+			objResponse.put("message", "DB Error. " + e.getMessage());
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return objResponse.toString();
+		}
+		// always close connections
+		finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				logger.printStackTrace(e);
+			}
+		}
+	}
+
 	/**
 	 * Get global leaderboard
 	 * 

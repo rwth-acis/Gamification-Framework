@@ -522,7 +522,9 @@ public class GameDAO {
 		Statement statement;
 
 		statement = conn.createStatement();
+		System.out.println("statement");
 		ResultSet rs = statement.executeQuery("SELECT init_member_to_game('"+ member_id +"','"+ game_id +"')");
+		System.out.println("statement2");
 		if(rs.next()){
 			return true;				
 		}
