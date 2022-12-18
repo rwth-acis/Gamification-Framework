@@ -252,7 +252,7 @@ public class GamificationVisualizationServiceTest {
 		}
 	}
 
-	@Test
+/* 	@Test
 	public void testA7_getBadgeImageDetail() {
 		System.out.println("Test --- Get Badge Image Detail");
 		try {
@@ -265,9 +265,9 @@ public class GamificationVisualizationServiceTest {
 			fail("Exception: " + e);
 			System.exit(0);
 		}
-	}
+	}*/
 
-	@Test
+	/*@Test
 	public void testA8_getBadgeDetailWithId() {
 		System.out.println("Test --- Get Badge Detail With ID");
 		try {
@@ -280,9 +280,9 @@ public class GamificationVisualizationServiceTest {
 			fail("Exception: " + e);
 			System.exit(0);
 		}
-	}
+	}*/
 
-	@Test
+	/*  @Test
 	public void testA9_getQuestDetailWithId() {
 		System.out.println("Test --- Get Quest Detail With ID");
 		try {
@@ -295,37 +295,24 @@ public class GamificationVisualizationServiceTest {
 			fail("Exception: " + e);
 			System.exit(0);
 		}
-	}
+	}*/
 
-	@Test
-	public void testB1_getAchievementDetailWithId() {
-		System.out.println("Test --- Get Achievement Detail With ID");
-		try {
-			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "achievements/" + appId + "/" + memberId + "/" + achievementId, ""); 
-			System.out.println(result.getResponse());
-			assertEquals(200, result.getHttpCode());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception: " + e);
-			System.exit(0);
-		}
-	}
+	
 
-	@Test
-	public void testB2_triggerAction() {
-		System.out.println("Test --- Trigger Action");
-		try {
-			ClientResponse result = c1.sendRequest("POST",
-					mainPath + "actions/" + appId + "/" + actionId + "/" + memberId, ""); 
-			System.out.println(result.getResponse());
-			assertEquals(200, result.getHttpCode());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception: " + e);
-			System.exit(0);
-		}
-	}
+	// @Test
+	// public void testB2_triggerAction() {
+	// 	System.out.println("Test --- Trigger Action");
+	// 	try {
+	// 		ClientResponse result = c1.sendRequest("POST",
+	// 				mainPath + "actions/" + appId + "/" + actionId + "/" + memberId, ""); 
+	// 		System.out.println(result.getResponse());
+	// 		assertEquals(200, result.getHttpCode());
+	// 	} catch (Exception e) {
+	// 		e.printStackTrace();
+	// 		fail("Exception: " + e);
+	// 		System.exit(0);
+	// 	}
+	// }
 
 	@Test
 	public void testB3_getLocalLeaderboard() {
@@ -376,20 +363,20 @@ public class GamificationVisualizationServiceTest {
 		}
 	}
 
-	@Test
-	public void testC7_getStreakDetailWithId() {
-		System.out.println("Test --- Get Streak Detail With ID");
-		try {
-			ClientResponse result = c1.sendRequest("GET",
-					mainPath + "streaks/" + appId + "/" + memberId + "/" + streakId, ""); 
-			System.out.println(result.getResponse());
-			assertEquals(200, result.getHttpCode());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception: " + e);
-			System.exit(0);
-		}
-	}
+	// @Test
+	// public void testC7_getStreakDetailWithId() {
+	// 	System.out.println("Test --- Get Streak Detail With ID");
+	// 	try {
+	// 		ClientResponse result = c1.sendRequest("GET",
+	// 				mainPath + "streaks/" + appId + "/" + memberId + "/" + streakId, ""); 
+	// 		System.out.println(result.getResponse());
+	// 		assertEquals(200, result.getHttpCode());
+	// 	} catch (Exception e) {
+	// 		e.printStackTrace();
+	// 		fail("Exception: " + e);
+	// 		System.exit(0);
+	// 	}
+	// }
 
 	@Test
 	public void testC8_getStreakProgressOfMember() {

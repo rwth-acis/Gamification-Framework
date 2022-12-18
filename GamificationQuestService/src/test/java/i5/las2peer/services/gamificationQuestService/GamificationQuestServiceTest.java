@@ -47,7 +47,7 @@ public class GamificationQuestServiceTest {
 
 	private static String gameId = "test";
 	private static String achievementId = "achievement1";
-	private static String actionId = "actionquestid";
+	private static String actionId = "action1";
 	private static String questId = "quest_test_id";
 	private static final String mainPath = "gamification/quests/";
 	
@@ -135,6 +135,13 @@ public class GamificationQuestServiceTest {
 
 	@Test
 	public void testF1_createNewQuest(){
+		try
+		{
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + gameId + "/" + questId, "");
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 		System.out.println("Test --- Create New Quest");
 		try
 		{

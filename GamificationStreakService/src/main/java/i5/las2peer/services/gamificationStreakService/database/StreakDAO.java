@@ -260,7 +260,7 @@ public class StreakDAO {
 	public List<StreakModel> getAllStreaks(Connection conn, String gameId) throws SQLException, IOException {
 		List<StreakModel> streaks = new ArrayList<StreakModel>();
 
-		stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak WHERE streak_id LIKE '");
+		stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak");
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			StreakModel streak = new StreakModel();
