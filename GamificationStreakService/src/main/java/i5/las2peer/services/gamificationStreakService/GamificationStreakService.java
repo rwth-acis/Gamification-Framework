@@ -206,8 +206,13 @@ public class GamificationStreakService extends RESTService {
 				streak.setStreakLevel(obj.getInt("streakLevel"));
 				streak.setStatus(StreakSatstus.valueOf(obj.getString("status")));
 				streak.setPointThreshold(obj.getInt("pointThreshold"));
-				streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
-				streak.setDueDate(LocalDateTime.parse(obj.getString("dueDate")));
+				if (obj.has("lockedDate")) {
+					streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
+				}
+				if (obj.has("dueDate")) {
+					streak.setDueDate(LocalDateTime.parse(obj.getString("dueDate")));
+				}
+
 				streak.setPeriod(Period.parse(obj.getString("period")));
 				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
 				streak.setNotificationMessage(obj.getString("notificationMessage"));
@@ -224,7 +229,7 @@ public class GamificationStreakService extends RESTService {
 
 				List<String> actions = new ArrayList<String>();
 				JSONArray actionArr = obj.getJSONArray("actions");
-				for(int i = 0; i < actionArr.length(); i++) {
+				for (int i = 0; i < actionArr.length(); i++) {
 					actions.add(actionArr.getJSONObject(i).getString("actionId"));
 				}
 				streak.setActions(actions);
@@ -376,11 +381,12 @@ public class GamificationStreakService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 			JSONObject streakObject = serializeStreak(streak);
-			
+
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_17, "" + randomLong, true);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_26, "" + name, true);
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_27, "" + gameId, true);
-			return Response.status(HttpURLConnection.HTTP_OK).entity(streakObject.toString()).type(MediaType.APPLICATION_JSON)
+			return Response.status(HttpURLConnection.HTTP_OK).entity(streakObject.toString())
+					.type(MediaType.APPLICATION_JSON)
 					.build();
 
 		} catch (SQLException e) {
@@ -529,7 +535,7 @@ public class GamificationStreakService extends RESTService {
 
 				List<String> actions = new ArrayList<String>();
 				JSONArray actionArr = obj.getJSONArray("actions");
-				for(int i = 0; i < actionArr.length(); i++) {
+				for (int i = 0; i < actionArr.length(); i++) {
 					actions.add(actionArr.getJSONObject(i).getString("actionId"));
 				}
 				streak.setActions(actions);
@@ -849,7 +855,7 @@ public class GamificationStreakService extends RESTService {
 			}
 		}
 	}
-	
+
 	private JSONObject serializeStreak(StreakModel streak) {
 		JSONObject streakObject = new JSONObject();
 		streakObject.put("streakId", streak.getStreakId());
@@ -865,7 +871,7 @@ public class GamificationStreakService extends RESTService {
 			achievements.put(achievement);
 		}
 		streakObject.put("achievements", achievements);
-		
+
 		JSONArray badges = new JSONArray();
 		for (Entry<Integer, String> entry : streak.getBadges().entrySet()) {
 			JSONObject badge = new JSONObject();
@@ -874,7 +880,7 @@ public class GamificationStreakService extends RESTService {
 			badges.put(badge);
 		}
 		streakObject.put("badges", badges);
-		
+
 		JSONArray actions = new JSONArray();
 		for (String entry : streak.getActions()) {
 			JSONObject action = new JSONObject();
@@ -889,6 +895,6 @@ public class GamificationStreakService extends RESTService {
 		streakObject.put("notificationCheck", streak.isNotificationCheck());
 		streakObject.put("notificationMessage", streak.getNotificationMessage());
 		return streakObject;
-		
+
 	}
 }
