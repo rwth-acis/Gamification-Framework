@@ -205,8 +205,11 @@ public class LrsBotWorker implements Runnable {
 		JSONObject information = new JSONObject();
 		for(Object o : notification){
 			JSONObject json = (JSONObject) o;
-			message += "*"+json.get("message").toString()+"* \n";
+			if(!json.get("message").toString().equals("")){
+				message += "*"+json.get("message").toString()+"* \n";
 
+			}
+			
 		}
 		information.put("message", message);
 		information.put("channel",this.usersChannel.get(user));
