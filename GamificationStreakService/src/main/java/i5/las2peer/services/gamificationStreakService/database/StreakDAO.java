@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
@@ -427,11 +428,16 @@ public class StreakDAO {
 		stmt.executeUpdate();
 	}
 
-	private PGInterval parsePeriodToInterval(Period period) {
-		return new PGInterval(period.getYears(), period.getMonths(), period.getDays(), 0, 0, 0);
+	private PGInterval parsePeriodToInterval(Duration period) {
+		return new PGInterval(0, 0, (int) period.toDaysPart(), period.toHoursPart(), period.toMinutesPart(), period.toSecondsPart());
 	}
 
-	private Period parseIntervaltoPeriod(PGInterval interval) {
-		return Period.of(interval.getYears(), interval.getMonths(), interval.getDays());
+	private Duration parseIntervaltoPeriod(PGInterval interval) {
+		Duration days = Duration.ofDays(interval.getDays());
+		Duration hours = Duration.ofHours(interval.getHours());
+		Duration minutes = Duration.ofMinutes(interval.getMinutes());
+		Duration seconds = Duration.ofSeconds((long) interval.getSeconds());
+		Duration time = days.plus(hours).plus(minutes).plus(seconds);
+		return time;
 	}
 }

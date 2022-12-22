@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
@@ -206,26 +207,33 @@ public class GamificationStreakService extends RESTService {
 				streak.setStreakLevel(obj.getInt("streakLevel"));
 				streak.setStatus(StreakSatstus.valueOf(obj.getString("status")));
 				streak.setPointThreshold(obj.getInt("pointThreshold"));
+				System.out.println("set to equalddd");
 				if (obj.has("lockedDate")) {
 					streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
 				}
 				if (obj.has("dueDate")) {
 					streak.setDueDate(LocalDateTime.parse(obj.getString("dueDate")));
+					if (streak.getDueDate().isBefore(streak.getLockedDate())
+					|| streak.getDueDate().isEqual(streak.getLockedDate())) {
+				objResponse.put("message",
+						"Cannot create streak. Due date cannot be less or equal to locked date.");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+				} else {
+					// a bit ugly, but the idea is that if no due lock date is set, the lock date gets set to the current time when the action is triggered
+					streak.setLockedDate(LocalDateTime.parse("2020-12-13T12:00:00"));
+					streak.setDueDate(LocalDateTime.parse("2020-12-13T12:00:00"));
+					System.out.println("set to equal");
 				}
 
-				streak.setPeriod(Period.parse(obj.getString("period")));
+				streak.setPeriod(Duration.parse(obj.getString("period")));
 				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
 				streak.setNotificationMessage(obj.getString("notificationMessage"));
 
-				if (streak.getDueDate().isBefore(streak.getLockedDate())
-						|| streak.getDueDate().isEqual(streak.getLockedDate())) {
-					objResponse.put("message",
-							"Cannot create streak. Due date cannot be less or equal to locked date.");
-					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
-							(String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toString())
-							.type(MediaType.APPLICATION_JSON).build();
-				}
+	
 
 				List<String> actions = new ArrayList<String>();
 				JSONArray actionArr = obj.getJSONArray("actions");
@@ -519,7 +527,7 @@ public class GamificationStreakService extends RESTService {
 				streak.setPointThreshold(obj.getInt("pointThreshold"));
 				streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
 				streak.setDueDate(LocalDateTime.parse(obj.getString("dueDate")));
-				streak.setPeriod(Period.parse(obj.getString("period")));
+				streak.setPeriod(Duration.parse(obj.getString("period")));
 				streak.setNotificationCheck(obj.getBoolean("notificationCheck"));
 				streak.setNotificationMessage(obj.getString("notificationMessage"));
 
