@@ -788,6 +788,10 @@ public class GamificationActionService extends RESTService {
 									}
 
 								//	actionAccess.
+								} else {
+									if(actionId.contains(":")){
+										actionId = actionId.split(":")[0];
+									}
 								}
 							}
 						}

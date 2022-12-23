@@ -195,6 +195,10 @@ public class GamificationBotWrapperService extends RESTService {
 			String botName = jsonBody.get("botName").toString();
 			String game = jsonBody.get("game").toString();
 			String lrsToken = jsonBody.get("lrsToken").toString();
+			String streakReminder = "1";
+			if(jsonBody.containsKey("streakReminder")){
+				streakReminder = jsonBody.get("streakReminder").toString();
+			}
 			if (!botWorkers.containsKey(botName)) {
 				BotAgent restarterBot = null;
 				try {
@@ -252,11 +256,12 @@ public class GamificationBotWrapperService extends RESTService {
 
 					}
 				} catch (Exception e) {
+					
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					System.out.println("e7");
 				}
-				LrsBotWorker random = new LrsBotWorker(game, botName, restarterBot, lrsToken, actionVerbs);
+				LrsBotWorker random = new LrsBotWorker(game, botName, restarterBot, lrsToken, actionVerbs, streakReminder);
 				Thread t = new Thread(random);
 				botWorkers.put(botName, random);
 				t.start();

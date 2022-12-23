@@ -2282,6 +2282,83 @@ public class GamificationVisualizationService extends RESTService {
 			}
 		}
 	}
+
+	/**
+	 * Get gamification streaks progress for a specific member
+	 * 
+	 * @param gameId   gameId
+	 * @param memberId member id
+	 * @param streakId  streak id
+	 * @return HTTP Response with the returnString
+	 */
+	public String getStreakProgressOfMemberRMI(String gameId,String memberId,String streakId) {
+
+		JSONObject objResponse = new JSONObject();
+		Connection conn = null;
+
+		Agent agent = Context.getCurrent().getMainAgent();
+		if (agent instanceof AnonymousAgent) {
+			return unauthorizedMessage().toString();
+		}
+		try {
+			conn = dbm.getConnection();
+			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
+				logger.info("Game not found >> ");
+				objResponse.put("message", "Game not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
+				logger.info("Member ID not found >> ");
+				objResponse.put("message", "Member ID not found");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
+				logger.info("Member is not registered in Game >> ");
+				objResponse.put("message", "Member is not registered in Game");
+				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
+						(String) objResponse.get("message"));
+				return objResponse.toString();
+			}
+			JSONObject outObj = visualizationAccess.getMemberStreakProgress(conn, gameId, memberId, streakId);
+			return outObj.toString();
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+
+			logger.info("SQLException >> " + e.getMessage());
+			objResponse.put("message", "Database Error");
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return objResponse.toString();
+		} catch (JsonProcessingException e) {
+			// Object mapper
+			e.printStackTrace();
+
+			logger.info("JsonProcessingException >> " + e.getMessage());
+			objResponse.put("message", "Failed to parse JSON internally");
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return objResponse.toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.info("IOException >> " + e.getMessage());
+			objResponse.put("message", "Error when getting streaks ");
+			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+			return objResponse.toString();
+		}
+		// always close connections
+		finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				logger.printStackTrace(e);
+			}
+		}
+	}
 	
 	/**
 	 * Get accumulative information of a streak for a member, e.g  retruns all achievement info instead of achievementId

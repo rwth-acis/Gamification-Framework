@@ -1,10 +1,12 @@
 package i5.las2peer.services.gamificationBotWrapperService;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -20,12 +22,20 @@ import javax.ws.rs.core.MediaType;
 
 import ch.qos.logback.core.net.server.Client;
 import i5.las2peer.api.Context;
+import i5.las2peer.api.execution.InternalServiceException;
+import i5.las2peer.api.execution.ServiceAccessDeniedException;
+import i5.las2peer.api.execution.ServiceInvocationFailedException;
+import i5.las2peer.api.execution.ServiceMethodNotFoundException;
+import i5.las2peer.api.execution.ServiceNotAuthorizedException;
+import i5.las2peer.api.execution.ServiceNotAvailableException;
+import i5.las2peer.api.execution.ServiceNotFoundException;
 import i5.las2peer.api.security.AgentAccessDeniedException;
 import i5.las2peer.api.security.AgentAlreadyExistsException;
 import i5.las2peer.api.security.AgentLockedException;
 import i5.las2peer.api.security.AgentOperationFailedException;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
 import i5.las2peer.connectors.webConnector.client.MiniClient;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.security.BotAgent;
 import i5.las2peer.tools.CryptoException;
 
@@ -34,22 +44,23 @@ public class LrsBotWorker implements Runnable {
 	private String lrsToken = "";
 	private String botName = "";
 	private String game = "";
-
+	private int streakReminder;
 	private HashMap<String, Boolean> users = new HashMap<String, Boolean>();
 	private HashMap<String, String> usersChannel = new HashMap<String, String>();
 
 	private BotAgent restarterBot = null;
-	private HashMap<String,JSONArray> actionVerbs = new HashMap<String,JSONArray>();
+	private HashMap<String, JSONArray> actionVerbs = new HashMap<String, JSONArray>();
 
-
+	private HashMap<String, JSONObject> userStreaks = new HashMap<String, JSONObject>();
 
 	public LrsBotWorker(String game, String botName, BotAgent restarterBot, String lrsToken,
-	HashMap<String,JSONArray> actionVerbs) {
+			HashMap<String, JSONArray> actionVerbs, String streakReminder) {
 		this.game = game;
 		this.botName = botName;
 		this.restarterBot = restarterBot;
 		this.lrsToken = lrsToken;
 		this.actionVerbs = actionVerbs;
+		this.streakReminder = Integer.valueOf(streakReminder);
 	}
 
 	public void addUsers(String email, String channel) {
@@ -113,13 +124,17 @@ public class LrsBotWorker implements Runnable {
 							String objectId = ((JSONObject) ((JSONObject) ((JSONObject) s.get("object"))
 									.get("definition")).get("name")).get("en-US").toString();
 							if (this.actionVerbs.keySet().contains(verbId.split("verb/")[1])) {
-								for(Object o : this.actionVerbs.get(verbId.split("verb/")[1])){
-									
+								for (Object o : this.actionVerbs.get(verbId.split("verb/")[1])) {
+
 									JSONObject jsonO = (JSONObject) o;
 									System.out.println("checking stuff for action id: " + jsonO.get("id").toString());
-									if(jsonO.containsKey("lrsAttribute") && !jsonO.get("lrsAttribute").toString().equals("")){
-										System.out.println("to match attribute is:+ "+ jsonO.get("lrsAttribute").toString()  +" with value "+jsonO.get("lrsAttributeValue").toString());
-										if(!jsonO.get("lrsAttributeValue").toString().equals(recursive(s, jsonO.get("lrsAttribute").toString()))){
+									if (jsonO.containsKey("lrsAttribute")
+											&& !jsonO.get("lrsAttribute").toString().equals("")) {
+										System.out.println(
+												"to match attribute is:+ " + jsonO.get("lrsAttribute").toString()
+														+ " with value " + jsonO.get("lrsAttributeValue").toString());
+										if (!jsonO.get("lrsAttributeValue").toString()
+												.equals(recursive(s, jsonO.get("lrsAttribute").toString()))) {
 											System.out.println("attributes do not match");
 											continue;
 										}
@@ -131,12 +146,12 @@ public class LrsBotWorker implements Runnable {
 														+ this.game + "/" + actionId + ":" + objectId + "/"
 														+ user);
 										MiniClient client = new MiniClient();
-	
+
 										client.setConnectorEndpoint(
-												"http://host.docker.internal:8080/gamification/visualization/actions/"
+												"http://127.0.0.1:8080/gamification/visualization/actions/"
 														+ this.game + "/" + actionId + ":" + objectId + "/"
 														+ user);
-	
+
 										HashMap<String, String> headers = new HashMap<String, String>();
 										System.out.println("user");
 										try {
@@ -147,10 +162,10 @@ public class LrsBotWorker implements Runnable {
 											System.out.println(result.getRawResponse());
 											System.out.println(result.getResponse());
 											JSONObject rJSON = (JSONObject) p.parse(result.getResponse());
-											if(rJSON.containsKey("notification")){
+											if (rJSON.containsKey("notification")) {
 												this.sendNotification(user, (JSONArray) rJSON.get("notification"));
 											}
-																				
+
 											// JSONObject asnswer = (JSONObject) parser.parse(result.getResponse());
 											// System.out.println(answer);
 										} catch (Exception e) {
@@ -165,17 +180,39 @@ public class LrsBotWorker implements Runnable {
 										e3.printStackTrace();
 										System.out.println("done triggering action");
 									}
-	
+
 									occ++;
 								}
-								
+
 							}
 						}
+	
+
 						timeStamp = ((JSONObject) statements.get(0)).get("timestamp").toString();
 						System.out.println("found " + occ + "statemetns");
 
 					} else {
 						System.out.println("no statements");
+					}
+					if (userStreaks.containsKey(user)) {
+						for (String streakId : userStreaks.get(user).keySet()) {
+						
+							JSONObject streak = (JSONObject) ((JSONObject) userStreaks.get(user)).get(streakId);
+							LocalDateTime now = LocalDateTime.now();
+							System.out.println("difference in hourse is " + ChronoUnit.MINUTES.between(now,
+									LocalDateTime.parse(streak.get("dueDate").toString()))+ " " +ChronoUnit.MINUTES.between(LocalDateTime.parse(streak.get("dueDate").toString()),
+									now));
+							if(ChronoUnit.MINUTES.between(now,LocalDateTime.parse(streak.get("dueDate").toString()))<streakReminder){
+								String action = ((JSONObject)((JSONArray)streak.get("openActions")).get(0)).get("actionId").toString();
+								String message = "oh no, you are about to lose your " + streak.get("currentStreakLevel").toString()+ " streak for the activity " + action;
+								JSONArray notification = new JSONArray();
+								JSONObject jsonObject  = new JSONObject();
+								jsonObject.put("message", message);
+								notification.add(jsonObject);
+								sendNotification(user, notification);
+								userStreaks.get(user).remove(streakId);
+							}
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -191,32 +228,66 @@ public class LrsBotWorker implements Runnable {
 
 	}
 
-	public void sendNotification(String user, JSONArray notification) {
+	public void sendNotification(String user, JSONArray notification) throws AgentLockedException {
 		MiniClient client = new MiniClient();
-		http://127.0.0.1:8090/SBFManager/bots/Botty/webhook
+		// http://127.0.0.1:8090/SBFManager/bots/Botty/webhook
 		client.setConnectorEndpoint(
 				"http://host.docker.internal:8090/SBFManager/bots/"
 						+ this.botName + "/webhook");
 		System.out.println("http://host.docker.internal:8090/SBFManager/bots/"
-		+ this.botName + "/webhook");
+				+ this.botName + "/webhook");
 		HashMap<String, String> headers = new HashMap<String, String>();
 		System.out.println("user");
 		String message = "";
 		JSONObject information = new JSONObject();
-		for(Object o : notification){
+		for (Object o : notification) {
 			JSONObject json = (JSONObject) o;
-			if(!json.get("message").toString().equals("")){
-				message += "*"+json.get("message").toString()+"* \n";
+			if (json.containsKey("type") && json.get("type").toString().equals("STREAK")) {
+				MiniClient client2 = new MiniClient();
+				System.out.println(json);
+				client2.setConnectorEndpoint(
+						"http://127.0.0.1:8080/gamification/visualization/streaks/"
+								+ this.game + "/" + user + "/progress/"
+								+ json.get("typeId").toString());
+				client2.setLogin(restarterBot.getLoginName(), restarterBot.getPassphrase());
+				ClientResponse result1 = client2.sendRequest("GET", "", "");
 
+				JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+
+				JSONObject jsonResult = new JSONObject();
+				System.out.println(result1.getResponse());
+				System.out.println(result1.getHttpCode());
+				try {
+					System.out.println("parsing jsonresult now");
+					jsonResult = (JSONObject) parser.parse(result1.getResponse());
+					System.out.println("parsing worked");
+					System.out.println(jsonResult);
+					if (userStreaks.containsKey(user)) {
+						userStreaks.put(user,
+								(JSONObject) userStreaks.get(user).put(json.get("typeId").toString(), jsonResult));
+					} else {
+						JSONObject allStreaks = new JSONObject();
+						allStreaks.put(json.get("typeId").toString(), jsonResult);
+						userStreaks.put(user, allStreaks);
+					}
+
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				continue;
 			}
-			
+			if (!json.get("message").toString().equals("")) {
+				message += "*" + json.get("message").toString() + "* \n";
+			}
 		}
 		information.put("message", message);
-		information.put("channel",this.usersChannel.get(user));
-		information.put("event","chat_message");
+		information.put("channel", this.usersChannel.get(user));
+		information.put("event", "chat_message");
 		try {
 			ClientResponse result = client.sendRequest("POST", "",
-			information.toJSONString(), MediaType.TEXT_PLAIN , "", headers);
+					information.toJSONString(), MediaType.TEXT_PLAIN, "", headers);
 			System.out.println(result.toString());
 			System.out.println(result.getHttpCode());
 			System.out.println(result.getRawResponse());
@@ -248,23 +319,22 @@ public class LrsBotWorker implements Runnable {
 	}
 
 	// seaerch through entire json for attribute value
-	public String recursive(JSONObject j, String key){
-		if(j.containsKey(key)){
+	public String recursive(JSONObject j, String key) {
+		if (j.containsKey(key)) {
 			return j.get(key).toString();
 		} else {
-			for(String s : j.keySet()){
-				try{
+			for (String s : j.keySet()) {
+				try {
 					String r = recursive((JSONObject) j.get(s), key);
-					if(!r.equals("")){
+					if (!r.equals("")) {
 						return r;
-					} 
-				} catch(Exception e){				
-				}			
+					}
+				} catch (Exception e) {
+				}
 			}
 		}
 		return "";
 	}
-
 
 	public BotAgent getBotAgent() {
 		return this.restarterBot;
