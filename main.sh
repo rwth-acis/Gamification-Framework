@@ -168,6 +168,7 @@ elif [ "$1" == "-r" ]; then
 		set_in_service_config jdbcLogin ${DATABASE_USER}
 		set_in_service_config jdbcPass ${DATABASE_PASSWORD}
 		echo ${DATABASE_NAME}
+		configure_function
 		run_one_node_function
 	elif [ "$2" == "join_one_node" ]; then
 		if [ "$3" == "start" ]; then
