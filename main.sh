@@ -34,7 +34,7 @@ function configure_function {
 	cp -f GamificationVisualizationService/etc/bin/join_network.sh GamificationVisualizationService/join_network.sh
 	cp -f GamificationGamifierService/etc/bin/join_network.sh GamificationGamifierService/join_network.sh
 	cp -f GamificationGameService/etc/bin/join_network.sh GamificationGameService/join_network.sh
-	cp -f GamificationGameService/bin/start_network.sh GamificationGameService/start_network.sh
+	cp -f GamificationGameService/etc/bin/start_network.sh GamificationGameService/start_network.sh
 
 	echo "Adjusting shell configuration"
 
