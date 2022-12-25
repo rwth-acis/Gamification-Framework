@@ -53,14 +53,19 @@ public class LrsBotWorker implements Runnable {
 
 	private HashMap<String, JSONObject> userStreaks = new HashMap<String, JSONObject>();
 
+	private String sbmURL="";
+	private String gameURL="";
+
 	public LrsBotWorker(String game, String botName, BotAgent restarterBot, String lrsToken,
-			HashMap<String, JSONArray> actionVerbs, String streakReminder) {
+			HashMap<String, JSONArray> actionVerbs, String streakReminder, String sbmURL, String gameURL) {
 		this.game = game;
 		this.botName = botName;
 		this.restarterBot = restarterBot;
 		this.lrsToken = lrsToken;
 		this.actionVerbs = actionVerbs;
 		this.streakReminder = Integer.valueOf(streakReminder);
+		this.sbmURL = sbmURL;
+		this.gameURL = gameURL;
 	}
 
 	public void addUsers(String email, String channel) {
@@ -141,14 +146,14 @@ public class LrsBotWorker implements Runnable {
 									}
 									try {
 										String actionId = jsonO.get("id").toString();
-										System.out.println(
-												"http://host.docker.internal:8080/gamification/visualization/actions/"
+										System.out.println(this.gameURL+
+												"/gamification/visualization/actions/"
 														+ this.game + "/" + actionId + ":" + objectId + "/"
 														+ user);
 										MiniClient client = new MiniClient();
 
-										client.setConnectorEndpoint(
-												"http://127.0.0.1:8080/gamification/visualization/actions/"
+										client.setConnectorEndpoint(this.gameURL+
+											"/gamification/visualization/actions/"
 														+ this.game + "/" + actionId + ":" + objectId + "/"
 														+ user);
 
@@ -202,7 +207,7 @@ public class LrsBotWorker implements Runnable {
 							System.out.println("difference in hourse is " + ChronoUnit.MINUTES.between(now,
 									LocalDateTime.parse(streak.get("dueDate").toString()))+ " " +ChronoUnit.MINUTES.between(LocalDateTime.parse(streak.get("dueDate").toString()),
 									now));
-							if(ChronoUnit.MINUTES.between(now,LocalDateTime.parse(streak.get("dueDate").toString()))<streakReminder){
+							if(ChronoUnit.MINUTES.between(now,LocalDateTime.parse(streak.get("dueDate").toString()))<streakReminder*60){
 								String action = ((JSONObject)((JSONArray)streak.get("openActions")).get(0)).get("actionId").toString();
 								String message = "oh no, you are about to lose your " + streak.get("currentStreakLevel").toString()+ " streak for the activity " + action;
 								JSONArray notification = new JSONArray();
@@ -231,8 +236,8 @@ public class LrsBotWorker implements Runnable {
 	public void sendNotification(String user, JSONArray notification) throws AgentLockedException {
 		MiniClient client = new MiniClient();
 		// http://127.0.0.1:8090/SBFManager/bots/Botty/webhook
-		client.setConnectorEndpoint(
-				"http://host.docker.internal:8090/SBFManager/bots/"
+		client.setConnectorEndpoint(this.sbmURL+
+				"/SBFManager/bots/"
 						+ this.botName + "/webhook");
 		System.out.println("http://host.docker.internal:8090/SBFManager/bots/"
 				+ this.botName + "/webhook");
@@ -245,8 +250,8 @@ public class LrsBotWorker implements Runnable {
 			if (json.containsKey("type") && json.get("type").toString().equals("STREAK")) {
 				MiniClient client2 = new MiniClient();
 				System.out.println(json);
-				client2.setConnectorEndpoint(
-						"http://127.0.0.1:8080/gamification/visualization/streaks/"
+				client2.setConnectorEndpoint(this.gameURL+
+						"/gamification/visualization/streaks/"
 								+ this.game + "/" + user + "/progress/"
 								+ json.get("typeId").toString());
 				client2.setLogin(restarterBot.getLoginName(), restarterBot.getPassphrase());
