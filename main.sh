@@ -23,17 +23,17 @@ function configure_function {
 	printf $CONF_APP_PROPERTIES > GamificationGamifierService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties
 
 	echo "Copying executable shell"
-	cp -f GamificationAchievementService/bin/join_network.sh GamificationAchievementService/join_network.sh
-	cp -f GamificationActionService/bin/join_network.sh GamificationActionService/join_network.sh
-	cp -f GamificationBadgeService/bin/join_network.sh GamificationBadgeService/join_network.sh
-	cp -f GamificationBotWrapperService/bin/join_network.sh GamificationBotWrapperService/join_network.sh
-	cp -f GamificationLevelService/bin/join_network.sh GamificationLevelService/join_network.sh
-	cp -f GamificationPointService/bin/join_network.sh GamificationPointService/join_network.sh
-	cp -f GamificationQuestService/bin/join_network.sh GamificationQuestService/join_network.sh
-	cp -f GamificationStreakService/bin/join_network.sh GamificationStreakService/join_network.sh
-	cp -f GamificationVisualizationService/bin/join_network.sh GamificationVisualizationService/join_network.sh
-	cp -f GamificationGamifierService/bin/join_network.sh GamificationGamifierService/join_network.sh
-	cp -f GamificationGameService/bin/join_network.sh GamificationGameService/join_network.sh
+	cp -f GamificationAchievementService/etc/bin/join_network.sh GamificationAchievementService/join_network.sh
+	cp -f GamificationActionService/etc/bin/join_network.sh GamificationActionService/join_network.sh
+	cp -f GamificationBadgeService/etc/bin/join_network.sh GamificationBadgeService/join_network.sh
+	cp -f GamificationBotWrapperService/etc/bin/join_network.sh GamificationBotWrapperService/join_network.sh
+	cp -f GamificationLevelService/etc/bin/join_network.sh GamificationLevelService/join_network.sh
+	cp -f GamificationPointService/etc/bin/join_network.sh GamificationPointService/join_network.sh
+	cp -f GamificationQuestService/etc/bin/join_network.sh GamificationQuestService/join_network.sh
+	cp -f GamificationStreakService/etc/bin/join_network.sh GamificationStreakService/join_network.sh
+	cp -f GamificationVisualizationService/etc/bin/join_network.sh GamificationVisualizationService/join_network.sh
+	cp -f GamificationGamifierService/etc/bin/join_network.sh GamificationGamifierService/join_network.sh
+	cp -f GamificationGameService/etc/bin/join_network.sh GamificationGameService/join_network.sh
 	cp -f GamificationGameService/bin/start_network.sh GamificationGameService/start_network.sh
 
 	echo "Adjusting shell configuration"
