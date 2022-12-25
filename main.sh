@@ -159,6 +159,15 @@ elif [ "$1" == "-s" ]; then
 elif [ "$1" == "-r" ]; then
 	echo "[Run]"
 	if [ "$2" == "start_one_node" ]; then
+		export SERVICE_PROPERTY_FILE='config/gamification.config'
+		function set_in_service_config {
+			sed -i "s?${1}[[:blank:]]*=.*?${1}=${2}?g" ${SERVICE_PROPERTY_FILE}
+		}
+		set_in_service_config jdbcSchema ${DATABASE_NAME}
+		set_in_service_config jdbcUrl ${DATABASE_HOST}
+		set_in_service_config jdbcLogin ${DATABASE_USER}
+		set_in_service_config jdbcPass ${DATABASE_PASSWORD}
+		echo ${DATABASE_NAME}
 		run_one_node_function
 	elif [ "$2" == "join_one_node" ]; then
 		if [ "$3" == "start" ]; then
