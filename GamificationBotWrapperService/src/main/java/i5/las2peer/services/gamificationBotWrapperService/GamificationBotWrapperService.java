@@ -365,7 +365,7 @@ public class GamificationBotWrapperService extends RESTService {
 				BotAgent restarterBot = this.botWorkers.get(botName).getBotAgent();
 				MiniClient client = new MiniClient();
 
-				client.setConnectorEndpoint(this.botWorkers.get(botName).getGameURL+
+				client.setConnectorEndpoint(this.botWorkers.get(botName).getGameURL()+
 						"/gamification/visualization/status/"
 								+ botWorkers.get(botName).getGame() + "/" + encryptThisString(user));
 
