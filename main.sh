@@ -176,7 +176,7 @@ elif [ "$1" == "-r" ]; then
 		replace_properties_function
 		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties'
 		replace_properties_function
-		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties^'
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties'
 		replace_properties_function
 		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties'
 		replace_properties_function
