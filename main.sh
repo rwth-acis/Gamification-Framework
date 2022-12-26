@@ -85,6 +85,8 @@ function configure_function {
 
 }
 
+
+
 function run_one_node_function {
 	echo "[Start One Node]"
 	cd GamificationGameService && sh start_network_in_a_node.sh
@@ -117,6 +119,17 @@ function run_join_node_function {
 function stop_join_node_function {
 	echo "[Stop Join Node]"
 	cd script && sh stop_join.sh
+}
+function set_in_service_config {
+	sed -i "s?${1}[[:blank:]]*=.*?${1}=${2}?g" ${SERVICE_PROPERTY_FILE}
+}
+
+function replace_properties_function {
+	echo "[replacing properties file]"
+	set_in_service_config jdbcSchema ${DATABASE_NAME}
+	set_in_service_config jdbcUrl ${DATABASE_HOST}
+	set_in_service_config jdbcLogin ${DATABASE_USER}
+	set_in_service_config jdbcPass ${DATABASE_PASSWORD}
 }
 
 function help {
@@ -159,16 +172,29 @@ elif [ "$1" == "-s" ]; then
 elif [ "$1" == "-r" ]; then
 	echo "[Run]"
 	if [ "$2" == "start_one_node" ]; then
-		export SERVICE_PROPERTY_FILE='config/gamification.config'
-		function set_in_service_config {
-			sed -i "s?${1}[[:blank:]]*=.*?${1}=${2}?g" ${SERVICE_PROPERTY_FILE}
-		}
-		set_in_service_config jdbcSchema ${DATABASE_NAME}
-		set_in_service_config jdbcUrl ${DATABASE_HOST}
-		set_in_service_config jdbcLogin ${DATABASE_USER}
-		set_in_service_config jdbcPass ${DATABASE_PASSWORD}
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties^'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationGameService.GamificationGameService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties'
+		replace_properties_function	
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationBotWrapperService.GamificationBotWrapperService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties'
+		replace_properties_function
 		echo ${DATABASE_NAME}
-		configure_function
 		run_one_node_function
 	elif [ "$2" == "join_one_node" ]; then
 		if [ "$3" == "start" ]; then
