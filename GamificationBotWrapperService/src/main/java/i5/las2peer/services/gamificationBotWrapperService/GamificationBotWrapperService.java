@@ -228,8 +228,8 @@ public class GamificationBotWrapperService extends RESTService {
 					System.out.println("e6");
 					MiniClient client = new MiniClient();
 
-					client.setConnectorEndpoint(
-							"http://host.docker.internal:8080/gamification/actions/" + game);
+					client.setConnectorEndpoint(gameURL +
+							"/gamification/actions/" + game);
 
 					HashMap<String, String> headers = new HashMap<String, String>();
 					System.out.println("user");
@@ -365,8 +365,8 @@ public class GamificationBotWrapperService extends RESTService {
 				BotAgent restarterBot = this.botWorkers.get(botName).getBotAgent();
 				MiniClient client = new MiniClient();
 
-				client.setConnectorEndpoint(
-						"http://host.docker.internal:8080/gamification/visualization/status/"
+				client.setConnectorEndpoint(this.botWorkers.get(botName).getGameURL+
+						"/gamification/visualization/status/"
 								+ botWorkers.get(botName).getGame() + "/" + encryptThisString(user));
 
 				HashMap<String, String> headers = new HashMap<String, String>();

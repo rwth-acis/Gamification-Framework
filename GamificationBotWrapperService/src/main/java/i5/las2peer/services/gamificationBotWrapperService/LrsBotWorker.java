@@ -68,6 +68,11 @@ public class LrsBotWorker implements Runnable {
 		this.gameURL = gameURL;
 	}
 
+	public String getGameURL()
+	{
+		return this.gameURL;
+	}
+
 	public void addUsers(String email, String channel) {
 		this.users.put(email, false);
 		this.usersChannel.put(email, channel);
