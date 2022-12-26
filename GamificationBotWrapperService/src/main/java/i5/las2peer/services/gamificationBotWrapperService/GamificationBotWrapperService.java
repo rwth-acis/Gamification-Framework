@@ -198,7 +198,7 @@ public class GamificationBotWrapperService extends RESTService {
 			String streakReminder = "1";
 			String sbmURL = jsonBody.get("sbmURL").toString();
 			String gameURL = jsonBody.get("gameURL").toString();
-			if(jsonBody.containsKey("streakReminder")){
+			if (jsonBody.containsKey("streakReminder")) {
 				streakReminder = jsonBody.get("streakReminder").toString();
 			}
 			if (!botWorkers.containsKey(botName)) {
@@ -258,12 +258,13 @@ public class GamificationBotWrapperService extends RESTService {
 
 					}
 				} catch (Exception e) {
-					
+
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					System.out.println("e7");
 				}
-				LrsBotWorker random = new LrsBotWorker(game, botName, restarterBot, lrsToken, actionVerbs, streakReminder, sbmURL, gameURL);
+				LrsBotWorker random = new LrsBotWorker(game, botName, restarterBot, lrsToken, actionVerbs,
+						streakReminder, sbmURL, gameURL);
 				Thread t = new Thread(random);
 				botWorkers.put(botName, random);
 				t.start();
@@ -365,9 +366,9 @@ public class GamificationBotWrapperService extends RESTService {
 				BotAgent restarterBot = this.botWorkers.get(botName).getBotAgent();
 				MiniClient client = new MiniClient();
 
-				client.setConnectorEndpoint(this.botWorkers.get(botName).getGameURL()+
+				client.setConnectorEndpoint(this.botWorkers.get(botName).getGameURL() +
 						"/gamification/visualization/status/"
-								+ botWorkers.get(botName).getGame() + "/" + encryptThisString(user));
+						+ botWorkers.get(botName).getGame() + "/" + encryptThisString(user));
 
 				HashMap<String, String> headers = new HashMap<String, String>();
 				System.out.println("user");
@@ -462,9 +463,14 @@ public class GamificationBotWrapperService extends RESTService {
 
 						}
 					}
-					JSONObject response = new JSONObject();
+					JSONObject response = jsonBody;
+					try {
+						response.remove("closeContext");
+					} catch (Exception e) {
+					}
 					response.put("text", message);
-
+					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+							.type(MediaType.APPLICATION_JSON).build();
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -524,7 +530,8 @@ public class GamificationBotWrapperService extends RESTService {
 					for (JSONArray arr : values) {
 						for (Object o : arr) {
 							JSONObject jsonO = (JSONObject) o;
-							message += i + ". " + jsonO.get("id").toString() + " (" + jsonO.get("description").toString()
+							message += i + ". " + jsonO.get("id").toString() + " ("
+									+ jsonO.get("description").toString()
 									+ ") \n";
 							i++;
 						}
@@ -588,7 +595,7 @@ public class GamificationBotWrapperService extends RESTService {
 				Collection<JSONArray> values = botWorkers.get(botName).getActionVerbs().values();
 				JSONObject chosen = null;
 				String splitMessage = userMessage;
-				if(userMessage.contains("!")){
+				if (userMessage.contains("!")) {
 					splitMessage = userMessage.split("\\s")[1];
 					System.out.println(splitMessage);
 				}
@@ -596,8 +603,9 @@ public class GamificationBotWrapperService extends RESTService {
 					for (Object o : arr) {
 						System.out.println(o);
 						JSONObject jsonO = (JSONObject) o;
-						
-						if (userMessage.toLowerCase().contains(String.valueOf(i)) || jsonO.get("id").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
+
+						if (userMessage.toLowerCase().contains(String.valueOf(i))
+								|| jsonO.get("id").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
 							chosen = jsonO;
 							break;
 						}
@@ -605,14 +613,14 @@ public class GamificationBotWrapperService extends RESTService {
 
 					}
 				}
-				if(chosen == null){
+				if (chosen == null) {
 					String error = jsonBody.get("error").toString();
 					Response r = actions(body);
 					JSONObject response = (JSONObject) r.getEntity();
 
-					response.put("text",error +"\n"+response.get("text").toString());
+					response.put("text", error + "\n" + response.get("text").toString());
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
-						.type(MediaType.APPLICATION_JSON).build();
+							.type(MediaType.APPLICATION_JSON).build();
 
 				}
 				Serializable result = Context.get().invokeInternally(
@@ -654,7 +662,6 @@ public class GamificationBotWrapperService extends RESTService {
 		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
 				.type(MediaType.APPLICATION_JSON).build();
 	}
-
 
 	/**
 	 * Get a level data with specific ID from database
