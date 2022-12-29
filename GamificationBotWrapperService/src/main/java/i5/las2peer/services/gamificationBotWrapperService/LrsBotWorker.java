@@ -44,7 +44,7 @@ public class LrsBotWorker implements Runnable {
 	private String lrsToken = "";
 	private String botName = "";
 	private String game = "";
-	private int streakReminder;
+	private double streakReminder;
 	private HashMap<String, Boolean> users = new HashMap<String, Boolean>();
 	private HashMap<String, String> usersChannel = new HashMap<String, String>();
 
@@ -63,7 +63,7 @@ public class LrsBotWorker implements Runnable {
 		this.restarterBot = restarterBot;
 		this.lrsToken = lrsToken;
 		this.actionVerbs = actionVerbs;
-		this.streakReminder = Integer.valueOf(streakReminder);
+		this.streakReminder = Double.valueOf(streakReminder);
 		this.sbmURL = sbmURL;
 		this.gameURL = gameURL;
 	}
@@ -205,6 +205,7 @@ public class LrsBotWorker implements Runnable {
 						System.out.println("no statements");
 					}
 					if (userStreaks.containsKey(user)) {
+						System.out.print(userStreaks.get(user));
 						for (String streakId : userStreaks.get(user).keySet()) {
 						
 							JSONObject streak = (JSONObject) ((JSONObject) userStreaks.get(user)).get(streakId);
