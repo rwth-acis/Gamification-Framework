@@ -201,7 +201,7 @@ public class GamificationBotWrapperService extends RESTService {
 			if (jsonBody.containsKey("streakReminder")) {
 				streakReminder = jsonBody.get("streakReminder").toString();
 			}
-			if (!botWorkers.containsKey(botName)) {
+			if (true || !botWorkers.containsKey(botName)) {
 				BotAgent restarterBot = null;
 				try {
 					restarterBot = BotAgent.createBotAgent("actingAgent");
