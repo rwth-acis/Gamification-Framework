@@ -940,7 +940,12 @@ public class GamificationQuestService extends RESTService {
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
-				}		 
+				} catch (NullPointerException e){
+					e.printStackTrace();
+					objResponse.put("message", "Cannot get quests. JSON process error. " + e.getMessage());
+					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
+					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build();
+				}	 
 				// always close connections
 			    finally {
 			      try {
