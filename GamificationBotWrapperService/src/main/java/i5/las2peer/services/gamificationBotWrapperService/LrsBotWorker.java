@@ -55,9 +55,10 @@ public class LrsBotWorker implements Runnable {
 
 	private String sbmURL="";
 	private String gameURL="";
+	private String streakMessage="";
 
 	public LrsBotWorker(String game, String botName, BotAgent restarterBot, String lrsToken,
-			HashMap<String, JSONArray> actionVerbs, String streakReminder, String sbmURL, String gameURL) {
+			HashMap<String, JSONArray> actionVerbs, String streakReminder, String sbmURL, String gameURL, String streakMessage) {
 		this.game = game;
 		this.botName = botName;
 		this.restarterBot = restarterBot;
@@ -66,6 +67,7 @@ public class LrsBotWorker implements Runnable {
 		this.streakReminder = Double.valueOf(streakReminder);
 		this.sbmURL = sbmURL;
 		this.gameURL = gameURL;
+		this.streakMessage = streakMessage;
 	}
 
 	public String getGameURL()
@@ -204,7 +206,7 @@ public class LrsBotWorker implements Runnable {
 					} else {
 						System.out.println("no statements");
 					}
-					if (userStreaks.containsKey(user)) {
+					if (userStreaks.containsKey(user) && userStreaks.get(user) != null) {
 						System.out.print(userStreaks.get(user));
 						for (String streakId : userStreaks.get(user).keySet()) {
 						
@@ -215,7 +217,7 @@ public class LrsBotWorker implements Runnable {
 									now));
 							if(ChronoUnit.MINUTES.between(now,LocalDateTime.parse(streak.get("dueDate").toString()))<streakReminder*60){
 								String action = ((JSONObject)((JSONArray)streak.get("openActions")).get(0)).get("actionId").toString();
-								String message = "oh no, you are about to lose your " + streak.get("currentStreakLevel").toString()+ " streak for the activity " + action;
+								String message = streakMessage.replace("[streakAction]", action).replace("[streakCount]", streak.get("currentStreakLevel").toString());
 								JSONArray notification = new JSONArray();
 								JSONObject jsonObject  = new JSONObject();
 								jsonObject.put("message", message);
