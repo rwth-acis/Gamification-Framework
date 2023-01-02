@@ -40,6 +40,7 @@ import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.security.BotAgent;
+import i5.las2peer.services.gamificationBotWrapperService.database.ProfileDAO;
 import i5.las2peer.tools.CryptoException;
 import i5.las2peer.api.Context;
 import i5.las2peer.api.logging.MonitoringEvent;
@@ -75,6 +76,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
+import i5.las2peer.services.gamification.commons.database.DatabaseManager;
 
 /**
  * Member Service
@@ -107,7 +109,9 @@ public class GamificationBotWrapperService extends RESTService {
 	private String jdbcPass;
 	private String jdbcUrl;
 	private String jdbcSchema;
+	private DatabaseManager dbm;
 
+	private ProfileDAO profileAccess;
 	private static HashMap<String, Boolean> userContext = new HashMap<String, Boolean>();
 
 	private static HashMap<String, LrsBotWorker> botWorkers = new HashMap<String, LrsBotWorker>();
@@ -123,9 +127,8 @@ public class GamificationBotWrapperService extends RESTService {
 		System.out
 				.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema);
 
-		// dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass,
-		// jdbcUrl, jdbcSchema);
-
+		dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		this.profileAccess = new ProfileDAO();
 	}
 
 	/*
@@ -380,6 +383,14 @@ public class GamificationBotWrapperService extends RESTService {
 					System.out.println(result.getResponse());
 					JSONObject answer = (JSONObject) parser.parse(result.getResponse());
 					JSONObject response = new JSONObject();
+					Connection conn = null;
+					conn = dbm.getConnection();
+					String badgeId = this.profileAccess.getProfileBadge(conn, this.botWorkers.get(botName).getGame(),encryptThisString(user));
+					answer.put("badgeId", badgeId);
+					answer.put("game",this.botWorkers.get(botName).getGame());
+					if (conn != null) {
+						conn.close();
+					}
 					String base64 = pic(answer);
 					response.put("text", "User Profile:");
 					response.put("fileBody", base64);
@@ -410,13 +421,54 @@ public class GamificationBotWrapperService extends RESTService {
 	 * @param body body
 	 */
 	@POST
-	@Path("/player/achievementProgress")
+	@Path("/player/badge")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
 			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "setBadgeOfProfileCard", notes = "Get level details with specific level number")
+	public Response setBadge(String body) {
+		System.out.println(body);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
+			jsonBody = (JSONObject) parser.parse(body);
+			String game = jsonBody.get("game").toString();
+			String badgeId = jsonBody.get("badgeId").toString();
+			String member_id = jsonBody.get("member_id").toString();
+			Connection conn = null;
+
+			conn = dbm.getConnection();
+			boolean result = this.profileAccess.setProfileBadge(conn, game, member_id, badgeId);			
+			if (conn != null) {
+						conn.close();
+			}
+			if(result){
+				return Response.status(HttpURLConnection.HTTP_OK).entity("good")
+						.type(MediaType.APPLICATION_JSON).build();}
+				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity("bad")
+							.type(MediaType.APPLICATION_JSON).build();
+		} catch(Exception e){
+			e.printStackTrace();
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity("?")
+							.type(MediaType.APPLICATION_JSON).build();
+		}
+	}
+	/**
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	@POST
+	@Path("/player/achievementProgress")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error")})
 	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
 	public Response achievementProgress(String body) {
 		System.out.println(body);
@@ -745,34 +797,41 @@ public class GamificationBotWrapperService extends RESTService {
 	public String pic(JSONObject json) {
 		try {
 			System.out.println("pcitute");
+			System.out.println(json);
 			String filePath = new File("").getAbsolutePath();
-			System.out.println("pcitute" + filePath);
+			System.out.println(filePath);
 			BufferedImage image = null;
 			for (double i = 0; i <= 101.0; i += 2.5) {
 				if (Integer.valueOf(json.get("progress").toString()) <= i) {
-					System.out.println("/etc/mockupUserProfile" + ((int) (i * 10.0)) + ".drawio.png");
+					System.out.println("/etc/profileCard" + ((int) (i * 10.0)) + ".drawio.png");
 					image = ImageIO
-							.read(new File(filePath + "/etc/mockupUserProfile" + ((int) (i * 10.0)) + ".drawio.png"));
+							.read(new File(filePath + "/etc/profileCard" + ((int) (i * 10.0)) + ".drawio.png"));
 					break;
 				}
 			}
-			Font font = new Font("Arial", Font.BOLD, 10);
-			System.out.println("Working Directory = " + System.getProperty("user.dir"));
-			System.out.println("Working Directory = " + image.getWidth() + image.getHeight());
+			Font font = new Font("Comic Sans MS", Font.BOLD, 13);
 			Graphics g = image.getGraphics();
 			g.setFont(font);
 			g.setColor(Color.BLACK);
-			g.drawString("Player", 4, 20);
-			g.drawString(json.get("memberLevel").toString(), (int) (image.getWidth() * 0.9),
-					(int) (image.getHeight() * 0.1));
-			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.9),
-					(int) (image.getHeight() * 0.25));
-			g.drawString(json.get("progress").toString() + "%", (int) (image.getWidth() * 0.6),
-					(int) (image.getHeight() * 0.5));
-			g.drawString("NaN", (int) (image.getWidth() * 0.8), (int) (image.getHeight() * 0.7));
-			g.drawString("NaN", (int) (image.getWidth() * 0.8), (int) (image.getHeight() * 0.9));
+			// g.drawString("Player", 4, 20);
+			g.drawString(json.get("memberLevel").toString(), (int) (image.getWidth() * 0.52), 44);
+			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.18), 240);
+			g.drawString(json.get("progress").toString() + "%", (int) (image.getWidth() * 0.52), 90);
+			g.drawString(json.get("unlockedAchievements").toString() + "/" + json.get("totalAchievements").toString(),
+					(int) (image.getWidth() * 0.48), 240);
+			g.drawString(json.get("unlockedBadges").toString() + "/" + json.get("totalBadges").toString(),
+					(int) (image.getWidth() * 0.77), 240);
 			File outputfile = new File(filePath + "/etc/img.png");
 			ImageIO.write(image, "png", outputfile);
+			if(json.containsKey("badgeId") && json.get("badgeId").toString()!=""){
+				String filePathBadge = filePath.replace("GamificationGameService", "GamificationBadgeService/files/"+ json.get("game").toString()+"/"+json.get("badgeId").toString());
+		
+		 		BufferedImage img = ImageIO.read(new File(
+					filePathBadge));
+				// have to delete file afterwards
+				g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), 35, 26, null);
+				ImageIO.write(image, "png", outputfile);
+			}
 			// have to delete file afterwards
 			byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath + "/etc/img.png"));
 			String encodedString = Base64.getEncoder().encodeToString(fileContent);

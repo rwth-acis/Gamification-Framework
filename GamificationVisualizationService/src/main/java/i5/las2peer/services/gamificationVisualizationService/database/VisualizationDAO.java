@@ -195,6 +195,38 @@ public class VisualizationDAO {
 			else{
 				resObj.put("rank", "-");
 			}
+			stmt = conn.prepareStatement("Select count(*) FROM "+gameId+".member_achievement where member_id='"+memberId+"'");
+			ResultSet rs3 = stmt.executeQuery();
+			if (rs3.next()) {
+				resObj.put("unlockedAchievements", rs3.getInt("count"));
+			}
+			else{
+				resObj.put("unlockedAchievements", "0");
+			}
+			stmt = conn.prepareStatement("Select count(*) FROM "+gameId+".achievement");
+			ResultSet rs4 = stmt.executeQuery();
+			if (rs4.next()) {
+				resObj.put("totalAchievements", rs4.getInt("count"));
+			}
+			else{
+				resObj.put("totalAchievements", "0");
+			}
+			stmt = conn.prepareStatement("Select count(*) FROM "+gameId+".member_badge where member_id='"+memberId+"'");
+			ResultSet rs5 = stmt.executeQuery();
+			if (rs5.next()) {
+				resObj.put("unlockedBadges", rs5.getInt("count"));
+			}
+			else{
+				resObj.put("unlockedBadges", "0");
+			}
+			stmt = conn.prepareStatement("Select count(*) FROM "+gameId+".badge");
+			ResultSet rs6 = stmt.executeQuery();
+			if (rs6.next()) {
+				resObj.put("totalBadges", rs6.getInt("count"));
+			}
+			else{
+				resObj.put("totalBadges", "0");
+			}
 		}
 		else{
 			throw new SQLException("No level found");
