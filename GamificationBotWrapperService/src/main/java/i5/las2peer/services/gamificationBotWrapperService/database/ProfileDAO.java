@@ -25,9 +25,9 @@ public class ProfileDAO {
 	 */
 	public boolean setProfileBadge(Connection conn, String game_id, String member_id, String badge_id)
 			throws SQLException {
-		stmt = conn.prepareStatement("INSERT INTO  " + game_id + ".member_profile (member_id, badge_id) VALUES ('"
-				+ member_id + "','" + badge_id + "');");
-				System.out.println(stmt.toString());
+		stmt = conn.prepareStatement("UPDATE " + game_id + ".member_profile SET badge_id='" + badge_id
+				+ "' WHERE member_id='" + member_id + "';");
+		System.out.println(stmt.toString());
 		int success = stmt.executeUpdate();
 		if (success == 1) {
 			// if(rs.getString("game_id").equals(game_id)){
@@ -47,8 +47,7 @@ public class ProfileDAO {
 	 */
 	public String getProfileBadge(Connection conn, String gameId, String member_id) throws SQLException {
 
-
-		stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".member_profile WHERE member_id='"+member_id+"'");
+		stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".member_profile WHERE member_id='" + member_id + "'");
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
 			return rs.getString("badge_id");
