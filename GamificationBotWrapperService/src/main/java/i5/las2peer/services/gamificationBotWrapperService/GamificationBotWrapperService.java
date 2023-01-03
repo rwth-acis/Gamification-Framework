@@ -268,7 +268,7 @@ public class GamificationBotWrapperService extends RESTService {
 					System.out.println("e7");
 				}
 				LrsBotWorker random = new LrsBotWorker(game, botName, restarterBot, lrsToken, actionVerbs,
-						streakReminder, sbmURL, gameURL, streakMessage);
+						streakReminder, sbmURL, gameURL, streakMessage, this.dbm);
 				Thread t = new Thread(random);
 				botWorkers.put(botName, random);
 				t.start();
@@ -318,7 +318,7 @@ public class GamificationBotWrapperService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 			} else {
 				botWorkers.get(botName).addMember(encryptThisString(user));
-				botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
+				botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString(), dbm);
 			}
 
 		} catch (ParseException e) {
@@ -490,7 +490,7 @@ public class GamificationBotWrapperService extends RESTService {
 			} else {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
 					botWorkers.get(botName).addMember(encryptThisString(user));
-					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
+					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString(), dbm);
 				}
 				try {
 					Serializable result = Context.get().invokeInternally(
@@ -574,7 +574,7 @@ public class GamificationBotWrapperService extends RESTService {
 			} else {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
 					botWorkers.get(botName).addMember(encryptThisString(user));
-					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
+					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString(), dbm);
 				}
 				try {
 					String message = "";
@@ -876,7 +876,7 @@ public class GamificationBotWrapperService extends RESTService {
 			} else {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
 					botWorkers.get(botName).addMember(encryptThisString(user));
-					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString());
+					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString(), dbm);
 				}
 				try {
 					Serializable result = Context.get().invokeInternally(
