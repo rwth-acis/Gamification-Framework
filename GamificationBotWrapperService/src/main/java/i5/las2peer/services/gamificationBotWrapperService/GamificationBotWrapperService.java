@@ -385,9 +385,10 @@ public class GamificationBotWrapperService extends RESTService {
 					JSONObject response = new JSONObject();
 					Connection conn = null;
 					conn = dbm.getConnection();
-					String badgeId = this.profileAccess.getProfileBadge(conn, this.botWorkers.get(botName).getGame(),encryptThisString(user));
+					String badgeId = this.profileAccess.getProfileBadge(conn, this.botWorkers.get(botName).getGame(),
+							encryptThisString(user));
 					answer.put("badgeId", badgeId);
-					answer.put("game",this.botWorkers.get(botName).getGame());
+					answer.put("game", this.botWorkers.get(botName).getGame());
 					if (conn != null) {
 						conn.close();
 					}
@@ -441,21 +442,23 @@ public class GamificationBotWrapperService extends RESTService {
 			Connection conn = null;
 
 			conn = dbm.getConnection();
-			boolean result = this.profileAccess.setProfileBadge(conn, game, member_id, badgeId);			
+			boolean result = this.profileAccess.setProfileBadge(conn, game, member_id, badgeId);
 			if (conn != null) {
-						conn.close();
+				conn.close();
 			}
-			if(result){
+			if (result) {
 				return Response.status(HttpURLConnection.HTTP_OK).entity("good")
-						.type(MediaType.APPLICATION_JSON).build();}
-				return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity("bad")
-							.type(MediaType.APPLICATION_JSON).build();
-		} catch(Exception e){
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity("bad")
+					.type(MediaType.APPLICATION_JSON).build();
+		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity("?")
-							.type(MediaType.APPLICATION_JSON).build();
+					.type(MediaType.APPLICATION_JSON).build();
 		}
 	}
+
 	/**
 	 * Get a level data with specific ID from database
 	 * 
@@ -468,7 +471,7 @@ public class GamificationBotWrapperService extends RESTService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
-			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error")})
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error") })
 	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
 	public Response achievementProgress(String body) {
 		System.out.println(body);
@@ -649,7 +652,12 @@ public class GamificationBotWrapperService extends RESTService {
 				JSONObject chosen = null;
 				String splitMessage = userMessage;
 				if (userMessage.contains("!")) {
-					splitMessage = userMessage.split("\\s")[1];
+					if (userMessage.split("\\s").length > 1) {
+						splitMessage = userMessage.split("\\s")[1];
+					} else {
+						
+					}
+
 					System.out.println(splitMessage);
 				}
 				for (JSONArray arr : values) {
@@ -716,7 +724,7 @@ public class GamificationBotWrapperService extends RESTService {
 				.type(MediaType.APPLICATION_JSON).build();
 	}
 
-		/**
+	/**
 	 * Get a level data with specific ID from database
 	 * 
 	 * @return HTTP Response Returned as JSON object
@@ -748,14 +756,14 @@ public class GamificationBotWrapperService extends RESTService {
 				JSONArray multiFiles = (JSONArray) jsonR.get("multiFiles");
 				jsonR.remove("multiFiles");
 				String bulletBadges = "0. Default \n";
-				for(int i=0; i<multiFiles.size();i++){
-					bulletBadges += (i+1)+". " + ((JSONObject)multiFiles.get(i)).get("name").toString() + "\n";
+				for (int i = 0; i < multiFiles.size(); i++) {
+					bulletBadges += (i + 1) + ". " + ((JSONObject) multiFiles.get(i)).get("name").toString() + "\n";
 				}
-				if(multiFiles.size()>0){
+				if (multiFiles.size() > 0) {
 					jsonR.put("closeContext", false);
-				
+
 				}
-				jsonR.put("text",bulletBadges);
+				jsonR.put("text", bulletBadges);
 				userContext.put(user, true);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(jsonR)
 						.type(MediaType.APPLICATION_JSON).build();
@@ -774,17 +782,16 @@ public class GamificationBotWrapperService extends RESTService {
 					System.out.println(splitMessage);
 				}
 				for (Object o : multiFiles) {
-	
-						JSONObject jsonO = (JSONObject) o;
 
-						if (userMessage.toLowerCase().contains(String.valueOf(i))
-								|| jsonO.get("name").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
-							chosen = jsonO;
-							break;
-						}
-						i++;
+					JSONObject jsonO = (JSONObject) o;
 
-					
+					if (userMessage.toLowerCase().contains(String.valueOf(i))
+							|| jsonO.get("name").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
+						chosen = jsonO;
+						break;
+					}
+					i++;
+
 				}
 				if (chosen == null) {
 					String error = jsonBody.get("error").toString();
@@ -794,11 +801,12 @@ public class GamificationBotWrapperService extends RESTService {
 					response.put("text", error + "\n" + response.get("text").toString());
 					String badgeId = "";
 					Connection conn = null;
-	
+
 					conn = dbm.getConnection();
-					boolean result = this.profileAccess.setProfileBadge(conn, botWorkers.get(botName).getGame(), encryptThisString(user), badgeId);			
+					boolean result = this.profileAccess.setProfileBadge(conn, botWorkers.get(botName).getGame(),
+							encryptThisString(user), badgeId);
 					if (conn != null) {
-								conn.close();
+						conn.close();
 					}
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 							.type(MediaType.APPLICATION_JSON).build();
@@ -808,17 +816,18 @@ public class GamificationBotWrapperService extends RESTService {
 				Connection conn = null;
 
 				conn = dbm.getConnection();
-				boolean result = this.profileAccess.setProfileBadge(conn, botWorkers.get(botName).getGame(), encryptThisString(user), badgeId);			
+				boolean result = this.profileAccess.setProfileBadge(conn, botWorkers.get(botName).getGame(),
+						encryptThisString(user), badgeId);
 				if (conn != null) {
-							conn.close();
+					conn.close();
 				}
-			
-				if(!result){
+
+				if (!result) {
 					throw new Exception();
 				}
 				JSONObject response = jsonBody;
 				response.put("text", jsonBody.get("successMessage").toString());
-				response.put("closeContext",true);
+				response.put("closeContext", true);
 				userContext.remove(user);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 						.type(MediaType.APPLICATION_JSON).build();
@@ -828,7 +837,7 @@ public class GamificationBotWrapperService extends RESTService {
 				e1.printStackTrace();
 				JSONObject response = jsonBody;
 				response.put("text", jsonBody.get("errorMessage").toString());
-				response.put("closeContext",true);
+				response.put("closeContext", true);
 				userContext.remove(user);
 			}
 
@@ -890,7 +899,7 @@ public class GamificationBotWrapperService extends RESTService {
 					for (Object o : j) {
 						JSONObject jsonO = (JSONObject) o;
 						if (jsonO.containsKey("base64") && jsonO.get("base64") != null) {
-							jsonO.put("badgeId",jsonO.get("id").toString());
+							jsonO.put("badgeId", jsonO.get("id").toString());
 							jsonO.put("text", jsonO.get("name").toString() + "\n");
 							jsonO.put("fileBody", jsonO.get("base64").toString());
 							jsonO.put("fileName", "badge");
@@ -918,8 +927,6 @@ public class GamificationBotWrapperService extends RESTService {
 		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
 				.type(MediaType.APPLICATION_JSON).build();
 	}
-
-	
 
 	public String pic(JSONObject json) {
 		try {
@@ -950,11 +957,12 @@ public class GamificationBotWrapperService extends RESTService {
 					(int) (image.getWidth() * 0.79), 240);
 			File outputfile = new File(filePath + "/etc/img.png");
 			ImageIO.write(image, "png", outputfile);
-			if(json.containsKey("badgeId") && !json.get("badgeId").toString().equals("")){
-				String filePathBadge = filePath.replace("GamificationGameService", "GamificationBadgeService/files/"+ json.get("game").toString()+"/"+json.get("badgeId").toString());
-		
-		 		BufferedImage img = ImageIO.read(new File(
-					filePathBadge));
+			if (json.containsKey("badgeId") && !json.get("badgeId").toString().equals("")) {
+				String filePathBadge = filePath.replace("GamificationGameService", "GamificationBadgeService/files/"
+						+ json.get("game").toString() + "/" + json.get("badgeId").toString());
+
+				BufferedImage img = ImageIO.read(new File(
+						filePathBadge));
 				// have to delete file afterwards
 				g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), 35, 26, null);
 				ImageIO.write(image, "png", outputfile);
