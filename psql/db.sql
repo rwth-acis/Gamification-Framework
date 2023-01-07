@@ -417,7 +417,7 @@ BEGIN
 		CONSTRAINT devops_model_member_id FOREIGN KEY (game_id,member_id) REFERENCES manager.member_game (game_id,member_id) ON UPDATE CASCADE ON DELETE CASCADE,
 		CONSTRAINT devops_model_action_id FOREIGN KEY (action_id) REFERENCES ' || new_schema || '.action (action_id) ON UPDATE CASCADE ON DELETE CASCADE,
 		CONSTRAINT ck_devops_model_rating CHECK(rating >= 0 AND rating <= 5),
-		CONSTRAINT ck_devops_model_scope CHECK(scope=''code'' OR scope=''build'' OR scope=''test'' OR scope=''release'' OR scope=''deploy'' OR scope=''operate'' OR scope=''monitor'')
+		CONSTRAINT ck_devops_model_scope CHECK(scope=''code'' OR scope=''build'' OR scope=''test'' OR scope=''feedback'' OR scope=''deploy'' OR scope=''operate'' OR scope=''monitor'')
 	);';
 	-----------------------------DEVOPS MODEL MODEL TABLES END------------------------------------------------------------------------------------------------------------
 
