@@ -791,6 +791,67 @@ public class VisualizationDAO {
 		obj.put("lockedAchievements", lockedAchievements);
 		return obj;
 	}
+
+	/**
+	 * 
+	 * @param conn dbConnection
+	 * @param gameId gameId
+	 * @param memberId memberId
+	 * @return streak progress details of member in JSON
+	 * @throws SQLException SQLException
+	 * @throws IOException  IOException
+	 */
+	public JSONObject getMemberStreakProgressDetailed(Connection conn, String gameId, String memberId) throws SQLException, IOException{
+		stmt =conn.prepareStatement("Select * from "+ gameId + ".member_streak JOIN "+ gameId + ".streak_achievement ON (member_streak.streak_id = streak_achievement.streak_id) JOIN "+ gameId + ".streak_action ON (streak_achievement.streak_id = streak_action.streak_id) WHERE member_id='"+memberId+"';");
+		ResultSet rs = stmt.executeQuery();
+		JSONArray arr = new JSONArray();
+		JSONObject resp = new JSONObject();
+
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+		//	obj.put("streakId", rs.getString("streak_id"));
+			//obj.put("name", rs.getString("name"));
+			//obj.put("description", rs.getString("description"));
+			obj.put("status", i5.las2peer.services.gamificationVisualizationService.database.StreakModel.StreakSatstus.valueOf(rs.getString("status")));
+		//	obj.put("pointTreshold", rs.getInt("point_th"));
+		//	obj.put("period", parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)).toString());
+			obj.put("lockedDate", rs.getObject("locked_date", LocalDateTime.class));
+			obj.put("dueDate", rs.getObject("due_date", LocalDateTime.class));
+		//	obj.put("notificationCheck", rs.getBoolean("use_notification"));
+	//		obj.put("notificationMessage", rs.getString("notif_message"));
+			obj.put("currentStreakLevel", rs.getInt("current_streak_level"));
+			obj.put("highestStreakLevel", rs.getInt("highest_streak_level"));
+			obj.put("achievement_id", rs.getString("achievement_id"));
+			// this will cause rror
+			obj.put("action_id", rs.getString("action_id"));
+			stmt = conn.prepareStatement("Select * from "+gameId+".action WHERE action_id='"+rs.getString("action_id")+"'");
+			ResultSet rs1 = stmt.executeQuery();
+			JSONObject action = new JSONObject();
+			if(rs1.next()){
+				action.put("id",rs1.getString("action_id"));
+				action.put("name",rs1.getString("name"));
+				action.put("description",rs1.getString("description"));
+				
+			}
+			obj.put("action", action);
+			stmt = conn.prepareStatement("Select * from "+gameId+".achievement WHERE achievement_id='"+rs.getString("achievement_id")+"'");
+			ResultSet rs2 = stmt.executeQuery();
+			JSONObject achievement = new JSONObject();
+			if(rs2.next()){
+				achievement.put("id",rs2.getString("achievement_id"));
+				achievement.put("name",rs2.getString("name"));
+				achievement.put("description",rs2.getString("description"));
+				achievement.put("badge_id",rs2.getString("badge_id"));
+				achievement.put("point_value",rs2.getString("point_value"));
+				
+			}
+			obj.put("achievement",achievement);
+			arr.put(obj);
+		}
+		
+		resp.put("streaks", arr);
+		return resp;
+	}
 	
 	
 	

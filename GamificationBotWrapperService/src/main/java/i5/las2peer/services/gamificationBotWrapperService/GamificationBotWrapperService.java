@@ -507,7 +507,6 @@ public class GamificationBotWrapperService extends RESTService {
 						String desc = ((JSONObject) ((JSONArray) quest.get("actionArray")).get(0)).get("description")
 								.toString();
 						message += "*Achievement " + key + " (" + desc + ")" + " progress:* \n";
-						System.out.println(message);
 						for (Object o : (JSONArray) ((JSONObject) j.get(key)).get("actionArray")) {
 							JSONObject jsonO = (JSONObject) o;
 							message += "- Action " + jsonO.get("action").toString() + ":"
@@ -518,6 +517,33 @@ public class GamificationBotWrapperService extends RESTService {
 							}
 
 						}
+					}
+					// now also fetch the achievements from streaks
+					result = Context.get().invokeInternally(
+							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
+							"getStreakDetailAllRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
+					j = (JSONObject) parser.parse(result.toString());
+					JSONArray streaks = (JSONArray) j.get("streaks");
+					if(streaks.size()>0){
+						message += "STREAK ACHIEVEMENTS: \n";
+					}
+					for (int i = 0; i < streaks.size(); i++) {
+						
+						JSONObject streak = (JSONObject) streaks.get(i);System.out.println(streak);
+						String currLevel = streak.get("currentStreakLevel").toString();
+						String maxLevel = streak.get("highestStreakLevel").toString();
+						JSONObject action = (JSONObject) streak.get("action");
+						JSONObject achievement = (JSONObject) streak.get("achievement");
+						String desc = achievement.get("description").toString();
+						message += "*Achievement " + achievement.get("id").toString() + " (" + desc + ")" + " progress:* \n";
+							message += "- Action " + action.get("id").toString() + ":"
+									+ currLevel + "/" + maxLevel + "\n";
+							message += "Rewards: \n" + "- " + achievement.get("point_value").toString() + " points \n";
+							if (achievement.get("badge_id") != null) {
+								message += "- Badge: " + achievement.get("badge_id").toString() + " \n";
+							}
+
+						
 					}
 					JSONObject response = jsonBody;
 					try {
@@ -655,7 +681,7 @@ public class GamificationBotWrapperService extends RESTService {
 					if (userMessage.split("\\s").length > 1) {
 						splitMessage = userMessage.split("\\s")[1];
 					} else {
-						
+
 					}
 
 					System.out.println(splitMessage);
@@ -667,8 +693,8 @@ public class GamificationBotWrapperService extends RESTService {
 
 						if (userMessage.toLowerCase().contains(String.valueOf(i))
 								|| jsonO.get("id").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
-									System.out.println("found chosen action");
-									chosen = jsonO;
+							System.out.println("found chosen action");
+							chosen = jsonO;
 							break;
 						}
 						i++;
@@ -690,7 +716,7 @@ public class GamificationBotWrapperService extends RESTService {
 						"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 						"getLocalLeaderboardOverActionRMI", botWorkers.get(botName).getGame(), encryptThisString(user),
 						chosen.get("id").toString());
-						System.out.println("fetching leaderboard success");
+				System.out.println("fetching leaderboard success");
 				JSONObject j = (JSONObject) parser.parse(result.toString());
 				JSONArray ranks = (JSONArray) j.get("rows");
 				String message = "";
