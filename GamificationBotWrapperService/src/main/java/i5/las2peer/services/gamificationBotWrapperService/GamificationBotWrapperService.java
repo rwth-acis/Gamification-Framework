@@ -667,7 +667,8 @@ public class GamificationBotWrapperService extends RESTService {
 
 						if (userMessage.toLowerCase().contains(String.valueOf(i))
 								|| jsonO.get("id").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
-							chosen = jsonO;
+									System.out.println("found chosen action");
+									chosen = jsonO;
 							break;
 						}
 						i++;
@@ -684,10 +685,12 @@ public class GamificationBotWrapperService extends RESTService {
 							.type(MediaType.APPLICATION_JSON).build();
 
 				}
+				System.out.println("fetching leaderboard");
 				Serializable result = Context.get().invokeInternally(
 						"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 						"getLocalLeaderboardOverActionRMI", botWorkers.get(botName).getGame(), encryptThisString(user),
 						chosen.get("id").toString());
+						System.out.println("fetching leaderboard success");
 				JSONObject j = (JSONObject) parser.parse(result.toString());
 				JSONArray ranks = (JSONArray) j.get("rows");
 				String message = "";
