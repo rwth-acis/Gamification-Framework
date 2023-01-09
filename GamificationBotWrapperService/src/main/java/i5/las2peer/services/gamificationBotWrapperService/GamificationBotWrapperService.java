@@ -713,6 +713,8 @@ public class GamificationBotWrapperService extends RESTService {
 
 				}
 				System.out.println("fetching leaderboard");
+				System.out.println(chosen);
+				
 				Serializable result = Context.get().invokeInternally(
 						"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 						"getLocalLeaderboardOverActionRMI", botWorkers.get(botName).getGame(), encryptThisString(user),
