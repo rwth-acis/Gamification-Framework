@@ -700,6 +700,9 @@ public class GamificationBotWrapperService extends RESTService {
 						i++;
 
 					}
+					if(chosen != null){
+						break;
+					}
 				}
 				if (chosen == null) {
 					String error = jsonBody.get("error").toString();
