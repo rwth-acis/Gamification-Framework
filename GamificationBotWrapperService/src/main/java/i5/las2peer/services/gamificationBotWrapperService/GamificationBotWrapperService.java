@@ -706,6 +706,7 @@ public class GamificationBotWrapperService extends RESTService {
 					Response r = actions(body);
 					JSONObject response = (JSONObject) r.getEntity();
 					response.put("closeContext", false);
+					userContext.put(user, true);
 					response.put("text", error + "\n" + response.get("text").toString());
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 							.type(MediaType.APPLICATION_JSON).build();
