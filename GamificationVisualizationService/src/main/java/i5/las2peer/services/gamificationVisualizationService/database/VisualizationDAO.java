@@ -8,6 +8,8 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.postgresql.util.PGInterval;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel.QuestStatus;
 import i5.las2peer.services.gamificationVisualizationService.database.StreakModel.StreakSatstus;
 
@@ -564,7 +566,7 @@ public class VisualizationDAO {
 			arr.put(obj);
 			users.add(rs.getString("member_id"));
 		}
-		stmt = conn.prepareStatement("SELECT * from "+gameId+";");
+		stmt = conn.prepareStatement("SELECT * from "+gameId+".member;");
 		ResultSet rs2 = stmt.executeQuery();
 		int lastPlace = arr.length()+1;
 		while(rs2.next()){
@@ -578,7 +580,6 @@ public class VisualizationDAO {
 				arr.put(obj);
 			}
 		}
-		
 		return arr;
 	}
 	
