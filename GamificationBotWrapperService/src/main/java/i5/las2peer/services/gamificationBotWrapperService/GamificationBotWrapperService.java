@@ -688,7 +688,6 @@ public class GamificationBotWrapperService extends RESTService {
 				}
 				for (JSONArray arr : values) {
 					for (Object o : arr) {
-						System.out.println(o);
 						JSONObject jsonO = (JSONObject) o;
 
 						if (userMessage.toLowerCase().contains(String.valueOf(i))
@@ -715,8 +714,7 @@ public class GamificationBotWrapperService extends RESTService {
 							.type(MediaType.APPLICATION_JSON).build();
 
 				}
-				System.out.println("fetching leaderboard");
-				System.out.println(chosen);
+
 				
 				Serializable result = Context.get().invokeInternally(
 						"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
