@@ -967,6 +967,8 @@ public class GamificationBotWrapperService extends RESTService {
 		try {
 			System.out.println("pcitute");
 			System.out.println(json);
+			String user = String.format("%."+ 6 +"s", encryptThisString(json.get("email").toString()));
+			
 			String filePath = new File("").getAbsolutePath();
 			System.out.println(filePath);
 			BufferedImage image = null;
@@ -978,18 +980,19 @@ public class GamificationBotWrapperService extends RESTService {
 					break;
 				}
 			}
-			Font font = new Font("Comic Sans MS", Font.BOLD, 13);
+			Font font = new Font("Comic Sans MS", Font.BOLD, 14);
 			Graphics g = image.getGraphics();
 			g.setFont(font);
 			g.setColor(Color.BLACK);
 			// g.drawString("Player", 4, 20);
-			g.drawString(json.get("memberLevel").toString(), (int) (image.getWidth() * 0.52), 44);
-			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.18), 240);
-			g.drawString(json.get("progress").toString() + "%", (int) (image.getWidth() * 0.55), 90);
+			g.drawString(user, (int) (image.getWidth() * 0.44), 44);
+			g.drawString(json.get("memberLevel").toString(), (int) (image.getWidth() * 0.44), 63);
+			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.14), 240);
+			g.drawString(json.get("progress").toString() + "%", (int) (image.getWidth() * 0.47), 90);
 			g.drawString(json.get("unlockedAchievements").toString() + "/" + json.get("totalAchievements").toString(),
-					(int) (image.getWidth() * 0.49), 240);
+					(int) (image.getWidth() * 0.47), 240);
 			g.drawString(json.get("unlockedBadges").toString() + "/" + json.get("totalBadges").toString(),
-					(int) (image.getWidth() * 0.79), 240);
+					(int) (image.getWidth() * 0.82), 240);
 			File outputfile = new File(filePath + "/etc/img.png");
 			ImageIO.write(image, "png", outputfile);
 			if (json.containsKey("badgeId") && !json.get("badgeId").toString().equals("")) {
@@ -999,7 +1002,8 @@ public class GamificationBotWrapperService extends RESTService {
 				BufferedImage img = ImageIO.read(new File(
 						filePathBadge));
 				// have to delete file afterwards
-				g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), 35, 26, null);
+				g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), image.getWidth()-96-35, 26, null);
+				//g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), 35, 26, null);
 				ImageIO.write(image, "png", outputfile);
 			}
 			// have to delete file afterwards
