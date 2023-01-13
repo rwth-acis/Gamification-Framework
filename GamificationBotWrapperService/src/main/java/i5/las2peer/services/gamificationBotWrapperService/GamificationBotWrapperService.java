@@ -973,7 +973,7 @@ public class GamificationBotWrapperService extends RESTService {
 			String filePath = new File("").getAbsolutePath();
 			System.out.println(filePath);
 			BufferedImage image = null;
-			for (double i = 0; i <= 101.0; i += 2.5) {
+			for (double i = 0; i <= 101.0; i += 5.0) {
 				if (Integer.valueOf(json.get("progress").toString()) <= i) {
 					System.out.println("/etc/profileCard" + ((int) (i * 10.0)) + ".drawio.png");
 					image = ImageIO
