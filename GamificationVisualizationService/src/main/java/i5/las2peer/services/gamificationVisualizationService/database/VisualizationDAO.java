@@ -156,7 +156,7 @@ public class VisualizationDAO {
 			throw new SQLException("Member ID not found");
 		}
 		//Get current and next level
-		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+gameId+".level WHERE level_num >= ? LIMIT 2");
+		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+gameId+".level WHERE level_num >= ? order by level_num LIMIT 2");
 		stmt.setInt(1, currentLevel);
 		rs = stmt.executeQuery();
 		if (rs.next()) {
