@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,6 +40,27 @@ public class ProfileDAO {
 		return false;
 	}
 
+		/**
+	 * Check whether the game id is already exist
+	 * 
+	 * @param conn    database connection
+	 * @param game_id game id
+	 * @return true game_id is already exist
+	 * @throws SQLException SQL Exception
+	 */
+	public boolean setNickname(Connection conn, String game_id, String member_id, String nickname)
+			throws SQLException {
+		stmt = conn.prepareStatement("UPDATE " + game_id + ".member_profile SET nickname='" + nickname
+				+ "' WHERE member_id='" + member_id + "';");
+		int success = stmt.executeUpdate();
+		if (success == 1) {
+			// if(rs.getString("game_id").equals(game_id)){
+			return true;
+			// }
+		}
+		return false;
+	}
+
 	/**
 	 * Get all badges in the database
 	 * 
@@ -47,15 +69,17 @@ public class ProfileDAO {
 	 * @return list of badges
 	 * @throws SQLException sql exception
 	 */
-	public String getProfileBadge(Connection conn, String gameId, String member_id) throws SQLException {
+	public JSONObject getProfileInfo(Connection conn, String gameId, String member_id) throws SQLException {
 
 		stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".member_profile WHERE member_id='" + member_id + "'");
 		ResultSet rs = stmt.executeQuery();
+		JSONObject result = new JSONObject();
 		while (rs.next()) {
-			return rs.getString("badge_id");
+			result.put("badge_id",rs.getString("badge_id"));
+			result.put("nickname",rs.getString("nickname"));
 		}
 
-		return "";
+		return result;
 	}
 
 	/**
@@ -93,6 +117,8 @@ public class ProfileDAO {
 		ResultSet rs = stmt.executeQuery();
 		JSONArray arr = new JSONArray(); 
 		while (rs.next()) {
+			System.out.println("found old id");
+			System.out.println(rs.getFetchSize());
 			arr.add(rs.getString("statement_id"));
 			// if(rs.getString("game_id").equals(game_id)){
 			

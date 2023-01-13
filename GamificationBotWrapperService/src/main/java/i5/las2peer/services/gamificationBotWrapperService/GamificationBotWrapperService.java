@@ -385,11 +385,13 @@ public class GamificationBotWrapperService extends RESTService {
 					JSONObject response = new JSONObject();
 					Connection conn = null;
 					conn = dbm.getConnection();
-					String badgeId = this.profileAccess.getProfileBadge(conn, this.botWorkers.get(botName).getGame(),
+					JSONObject profileInfo = this.profileAccess.getProfileInfo(conn,
+							this.botWorkers.get(botName).getGame(),
 							encryptThisString(user));
-					answer.put("badgeId", badgeId);
+					answer.put("nickname", profileInfo.get("badge_id").toString());
+					answer.put("badgeId", profileInfo.get("badge_id").toString());
 					answer.put("game", this.botWorkers.get(botName).getGame());
-					answer.put("user",user);
+					answer.put("user", user);
 					if (conn != null) {
 						conn.close();
 					}
@@ -525,26 +527,27 @@ public class GamificationBotWrapperService extends RESTService {
 							"getStreakDetailAllRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
 					j = (JSONObject) parser.parse(result.toString());
 					JSONArray streaks = (JSONArray) j.get("streaks");
-					if(streaks.size()>0){
+					if (streaks.size() > 0) {
 						message += "STREAK ACHIEVEMENTS: \n";
 					}
 					for (int i = 0; i < streaks.size(); i++) {
-						
-						JSONObject streak = (JSONObject) streaks.get(i);System.out.println(streak);
+
+						JSONObject streak = (JSONObject) streaks.get(i);
+						System.out.println(streak);
 						String currLevel = streak.get("currentStreakLevel").toString();
 						String maxLevel = streak.get("highestStreakLevel").toString();
 						JSONObject action = (JSONObject) streak.get("action");
 						JSONObject achievement = (JSONObject) streak.get("achievement");
 						String desc = achievement.get("description").toString();
-						message += "*Achievement " + achievement.get("id").toString() + " (" + desc + ")" + " progress:* \n";
-							message += "- Action " + action.get("id").toString() + ":"
-									+ currLevel + "/" + maxLevel + "\n";
-							message += "Rewards: \n" + "- " + achievement.get("point_value").toString() + " points \n";
-							if (achievement.get("badge_id") != null) {
-								message += "- Badge: " + achievement.get("badge_id").toString() + " \n";
-							}
+						message += "*Achievement " + achievement.get("id").toString() + " (" + desc + ")"
+								+ " progress:* \n";
+						message += "- Action " + action.get("id").toString() + ":"
+								+ currLevel + "/" + maxLevel + "\n";
+						message += "Rewards: \n" + "- " + achievement.get("point_value").toString() + " points \n";
+						if (achievement.get("badge_id") != null) {
+							message += "- Badge: " + achievement.get("badge_id").toString() + " \n";
+						}
 
-						
 					}
 					JSONObject response = jsonBody;
 					try {
@@ -700,7 +703,7 @@ public class GamificationBotWrapperService extends RESTService {
 						i++;
 
 					}
-					if(chosen != null){
+					if (chosen != null) {
 						break;
 					}
 				}
@@ -716,7 +719,6 @@ public class GamificationBotWrapperService extends RESTService {
 
 				}
 
-				
 				Serializable result = Context.get().invokeInternally(
 						"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 						"getLocalLeaderboardOverActionRMI", botWorkers.get(botName).getGame(), encryptThisString(user),
@@ -875,6 +877,73 @@ public class GamificationBotWrapperService extends RESTService {
 				response.put("text", jsonBody.get("errorMessage").toString());
 				response.put("closeContext", true);
 				userContext.remove(user);
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Request log
+		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
+				.type(MediaType.APPLICATION_JSON).build();
+	}
+
+/**
+	 * Get a level data with specific ID from database
+	 * 
+	 * @return HTTP Response Returned as JSON object
+	 * @param body body
+	 */
+	@POST
+	@Path("/player/setNickname")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiResponses(value = {
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Found a level"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Error"),
+			@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+	@ApiOperation(value = "getlevelWithNum", notes = "Get level details with specific level number")
+	public Response setNickname(String body) {
+		System.out.println(body);
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject jsonBody = new JSONObject();
+		try {
+
+			jsonBody = (JSONObject) parser.parse(body);
+			String user = jsonBody.get("email").toString();
+			String botName = jsonBody.get("botName").toString();
+			String userMessage = jsonBody.get("msg").toString();
+		
+
+			try {
+				if(userMessage.length() > 11){
+					JSONObject response = jsonBody;
+					response.put("text", jsonBody.get("errorMessage").toString());
+					response.put("closeContext", false);
+					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+				}	
+				Connection conn = null;
+
+				conn = dbm.getConnection();
+				this.profileAccess.setNickname(conn, botWorkers.get(botName).getGame(),
+				encryptThisString(user), userMessage);
+				if (conn != null) {
+					conn.close();
+				}
+				JSONObject response = jsonBody;
+				response.put("text", jsonBody.get("successMessage").toString());
+				response.put("closeContext", true);
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				JSONObject response = jsonBody;
+				response.put("text", jsonBody.get("errorMessage").toString());
+				response.put("closeContext", true);
 			}
 
 		} catch (ParseException e) {
@@ -968,8 +1037,11 @@ public class GamificationBotWrapperService extends RESTService {
 		try {
 			System.out.println("pcitute");
 			System.out.println(json);
-			String user = String.format("%."+ 6 +"s", encryptThisString(json.get("user").toString()));
-			
+			String user = String.format("%." + 10 + "s", encryptThisString(json.get("user").toString()));
+			String nickname = json.get("nickname").toString();
+			if (!nickname.equals("")) {
+				user = nickname;
+			}
 			String filePath = new File("").getAbsolutePath();
 			System.out.println(filePath);
 			BufferedImage image = null;
@@ -1003,8 +1075,9 @@ public class GamificationBotWrapperService extends RESTService {
 				BufferedImage img = ImageIO.read(new File(
 						filePathBadge));
 				// have to delete file afterwards
-				g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), image.getWidth()-96-35, 26, null);
-				//g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), 35, 26, null);
+				g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), image.getWidth() - 96 - 35, 26, null);
+				// g.drawImage(img.getScaledInstance(96, 96, Image.SCALE_DEFAULT), 35, 26,
+				// null);
 				ImageIO.write(image, "png", outputfile);
 			}
 			// have to delete file afterwards
