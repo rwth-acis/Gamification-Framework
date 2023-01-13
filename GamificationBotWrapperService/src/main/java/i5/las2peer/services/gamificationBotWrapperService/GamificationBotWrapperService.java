@@ -389,6 +389,7 @@ public class GamificationBotWrapperService extends RESTService {
 							encryptThisString(user));
 					answer.put("badgeId", badgeId);
 					answer.put("game", this.botWorkers.get(botName).getGame());
+					answer.put("user",user);
 					if (conn != null) {
 						conn.close();
 					}
@@ -967,7 +968,7 @@ public class GamificationBotWrapperService extends RESTService {
 		try {
 			System.out.println("pcitute");
 			System.out.println(json);
-			String user = String.format("%."+ 6 +"s", encryptThisString(json.get("email").toString()));
+			String user = String.format("%."+ 6 +"s", encryptThisString(json.get("user").toString()));
 			
 			String filePath = new File("").getAbsolutePath();
 			System.out.println(filePath);
