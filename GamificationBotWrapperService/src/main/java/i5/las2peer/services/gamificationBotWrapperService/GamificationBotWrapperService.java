@@ -386,9 +386,9 @@ public class GamificationBotWrapperService extends RESTService {
 					Connection conn = null;
 					conn = dbm.getConnection();
 					JSONObject profileInfo = this.profileAccess.getProfileInfo(conn,
-							this.botWorkers.get(botName).getGame(),
+							botWorkers.get(botName).getGame(),
 							encryptThisString(user));
-					answer.put("nickname", profileInfo.get("badge_id").toString());
+					answer.put("nickname", profileInfo.get("nickname").toString());
 					answer.put("badgeId", profileInfo.get("badge_id").toString());
 					answer.put("game", this.botWorkers.get(botName).getGame());
 					answer.put("user", user);
