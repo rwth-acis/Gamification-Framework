@@ -390,7 +390,7 @@ public class GamificationBotWrapperService extends RESTService {
 							encryptThisString(user));
 					answer.put("nickname", profileInfo.get("nickname").toString());
 					answer.put("badgeId", profileInfo.get("badge_id").toString());
-					answer.put("game", this.botWorkers.get(botName).getGame());
+					answer.put("game", botWorkers.get(botName).getGame());
 					answer.put("user", user);
 					if (conn != null) {
 						conn.close();
@@ -442,6 +442,7 @@ public class GamificationBotWrapperService extends RESTService {
 			String game = jsonBody.get("game").toString();
 			String badgeId = jsonBody.get("badgeId").toString();
 			String member_id = jsonBody.get("member_id").toString();
+
 			Connection conn = null;
 
 			conn = dbm.getConnection();
@@ -495,8 +496,7 @@ public class GamificationBotWrapperService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 			} else {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
-					botWorkers.get(botName).addMember(encryptThisString(user));
-					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString(), dbm);
+					addPlayer(body);
 				}
 				try {
 					Serializable result = Context.get().invokeInternally(
@@ -606,8 +606,7 @@ public class GamificationBotWrapperService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 			} else {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
-					botWorkers.get(botName).addMember(encryptThisString(user));
-					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString(), dbm);
+					addPlayer(body);
 				}
 				try {
 					String message = "";
@@ -666,6 +665,15 @@ public class GamificationBotWrapperService extends RESTService {
 			String user = jsonBody.get("email").toString();
 			String botName = jsonBody.get("botName").toString();
 			String userMessage = jsonBody.get("msg").toString();
+			if (!botWorkers.containsKey(botName)) {
+				JSONObject response = new JSONObject();
+				response.put("text", "Bot Not Initialised correctly, please contact support!!!");
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
+				addPlayer(body);
+			}
 			if (!userContext.containsKey(user) && !userMessage.contains("!")) {
 				Response r = actions(body);
 				JSONObject response = (JSONObject) r.getEntity();
@@ -787,6 +795,17 @@ public class GamificationBotWrapperService extends RESTService {
 			String user = jsonBody.get("email").toString();
 			String botName = jsonBody.get("botName").toString();
 			String userMessage = jsonBody.get("msg").toString();
+			if (!botWorkers.containsKey(botName)) {
+				JSONObject response = new JSONObject();
+				response.put("text", "Bot Not Initialised correctly, please contact support!!!");
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
+				addPlayer(body);
+			}
+
+
 			if (!userContext.containsKey(user) && !userMessage.contains("!")) {
 				Response r = getBadges(body);
 				JSONObject jsonR = (JSONObject) r.getEntity();
@@ -890,7 +909,7 @@ public class GamificationBotWrapperService extends RESTService {
 				.type(MediaType.APPLICATION_JSON).build();
 	}
 
-/**
+	/**
 	 * Get a level data with specific ID from database
 	 * 
 	 * @return HTTP Response Returned as JSON object
@@ -915,21 +934,29 @@ public class GamificationBotWrapperService extends RESTService {
 			String user = jsonBody.get("email").toString();
 			String botName = jsonBody.get("botName").toString();
 			String userMessage = jsonBody.get("msg").toString();
-		
 
+			if (!botWorkers.containsKey(botName)) {
+				JSONObject response = new JSONObject();
+				response.put("text", "Bot Not Initialised correctly, please contact support!!!");
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
+			}
+			if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
+				addPlayer(body);
+			}
 			try {
-				if(userMessage.length() > 11){
+				if (userMessage.length() > 11) {
 					JSONObject response = jsonBody;
 					response.put("text", jsonBody.get("errorMessage").toString());
 					response.put("closeContext", false);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
-						.type(MediaType.APPLICATION_JSON).build();
-				}	
+							.type(MediaType.APPLICATION_JSON).build();
+				}
 				Connection conn = null;
 
 				conn = dbm.getConnection();
 				this.profileAccess.setNickname(conn, botWorkers.get(botName).getGame(),
-				encryptThisString(user), userMessage);
+						encryptThisString(user), userMessage);
 				if (conn != null) {
 					conn.close();
 				}
@@ -989,9 +1016,7 @@ public class GamificationBotWrapperService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 			} else {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
-					botWorkers.get(botName).addMember(encryptThisString(user));
-					botWorkers.get(botName).addUsers(encryptThisString(user), jsonBody.get("channel").toString(), dbm);
-				}
+					addPlayer(body);				}
 				try {
 					Serializable result = Context.get().invokeInternally(
 							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
