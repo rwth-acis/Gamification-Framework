@@ -554,19 +554,19 @@ public class VisualizationDAO {
 	public JSONArray getMemberLocalLeaderboardOverAction(Connection conn,String gameId, String action_id) throws SQLException{
 
 		JSONArray arr = new JSONArray();
-		
-		stmt = conn.prepareStatement("WITH sorted AS (SELECT * from "+gameId+".member_action where action_id='"+action_id+"') SELECT member_id,count(action_id), row_number() OVER (ORDER BY COUNT(action_id) DESC) from sorted GROUP BY member_id;");
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT member_action.member_id,member_action.action_id,member_action.object_id,member_profile.nickname from "+gameId+".member_action JOIN "+gameId+".member_profile ON (member_action.member_id= member_profile.member_id) where action_id='"+action_id+"') SELECT member_id,nickname,count(action_id), row_number() OVER (ORDER BY COUNT(action_id) DESC) from sorted GROUP BY member_id,nickname;");
 		ResultSet rs = stmt.executeQuery();
 		List<String> users = new ArrayList<String>();
 		while (rs.next()) {
 			JSONObject obj = new JSONObject();
 			obj.put("rank", rs.getInt("row_number"));
 			obj.put("memberId", rs.getString("member_id"));
+			obj.put("nickname", rs.getString("nickname"));
 			obj.put("actioncount", rs.getInt("count"));
 			arr.put(obj);
 			users.add(rs.getString("member_id"));
 		}
-		stmt = conn.prepareStatement("SELECT * from "+gameId+".member;");
+		stmt = conn.prepareStatement("SELECT * from "+gameId+".member Natural join "+gameId+".member_profile;");
 		ResultSet rs2 = stmt.executeQuery();
 		int lastPlace = arr.length()+1;
 		while(rs2.next()){
@@ -575,6 +575,7 @@ public class VisualizationDAO {
 				JSONObject obj = new JSONObject();
 				obj.put("memberId",user);
 				obj.put("rank",lastPlace);
+				obj.put("nickname", rs2.getString("nickname"));
 				lastPlace++;
 				obj.put("actioncount",0);
 				arr.put(obj);

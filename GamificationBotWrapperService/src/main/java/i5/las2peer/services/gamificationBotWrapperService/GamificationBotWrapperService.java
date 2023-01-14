@@ -739,14 +739,21 @@ public class GamificationBotWrapperService extends RESTService {
 				for (Object o : ranks) {
 					JSONObject jsonO = (JSONObject) o;
 					System.out.println(jsonO);
+					String name = "";
+					if(!jsonO.get("nickname").toString().equals("")){
+						name = jsonO.get("nickname").toString();
+					} else {
+						name = jsonO.get("memberId").toString();
+						name = String.format("%." + 10 + "s", name);
+					}
 					if (encryptThisString(user).equals(jsonO.get("memberId").toString())) {
 						message += "*Rank: " + jsonO.get("rank").toString() + " | Count: "
-								+ jsonO.get("actioncount").toString() + " | Player: YOU!* \n";
+								+ jsonO.get("actioncount").toString() + " | Player: "+name+"* \n";
 
 					} else {
 						message += "Rank: " + jsonO.get("rank").toString() + " | Count: "
 								+ jsonO.get("actioncount").toString() + " | Player: "
-								+ jsonO.get("memberId").toString() + " \n";
+								+name+ " \n";
 
 					}
 				}
