@@ -2,3 +2,15 @@ agent-user-alice.xml;pwalice
 agent-user-bobby.xml;pwbobby
 agent-user-joey.xml;pwjoey
         
+i5.las2peer.services.gamificationGameService.GamificationGameService@0.1.xml;gamificationgamepass
+i5.las2peer.services.gamificationSuccessAwarenessModelService.GamificationSuccessAwarenessModelService@0.1.xml;gamificationsuccessmodelpass
+i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1.xml;gamificationquestpass
+i5.las2peer.services.gamificationBadgeService.GamificationBadgeService@0.1.xml;gamificationbadgepass
+i5.las2peer.services.gamificationPointService.GamificationPointService@0.1.xml;gamificationpointpass
+i5.las2peer.services.gamificationAchievementService.GamificationAchievementService@0.1.xml;gamificationachievementpass
+i5.las2peer.services.gamificationLevelService.GamificationLevelService@0.1.xml;gamificationlevelpass
+i5.las2peer.services.gamificationActionService.GamificationActionService@0.1.xml;gamificationactionpass
+i5.las2peer.services.gamificationStreakService.GamificationStreakService@0.1.xml;gamificationstreakpass
+i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService@0.1.xml;gamificationvisualizationpass
+i5.las2peer.services.gamificationGamifierService.GamificationGamifierService@0.1.xml;gamificationgamifierpass
+i5.las2peer.services.gamificationDevopsService.GamificationDevopsService@0.1.xml;gamificationdevopspass
