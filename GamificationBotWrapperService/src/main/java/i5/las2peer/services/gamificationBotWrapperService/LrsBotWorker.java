@@ -207,7 +207,7 @@ public class LrsBotWorker implements Runnable {
 
 										client.setConnectorEndpoint(this.gameURL +
 												"/gamification/visualization/actions/"
-												+ this.game + "/" + actionId + ":" + objectId + "/"
+												+ this.game + "/" + actionId + ":" + objectId.replaceAll("\\s","") + "/"
 												+ user);
 
 										HashMap<String, String> headers = new HashMap<String, String>();
