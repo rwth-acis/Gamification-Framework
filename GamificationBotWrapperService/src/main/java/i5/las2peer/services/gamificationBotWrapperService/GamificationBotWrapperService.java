@@ -1046,8 +1046,11 @@ public class GamificationBotWrapperService extends RESTService {
 
 					}
 					JSONObject response = new JSONObject();
-					response.put("multiFiles", multiFiles);
-					response.put("channel", jsonBody.get("channel").toString());
+					if(multiFiles.size() > 0){
+						response.put("multiFiles", multiFiles);
+					} else {
+						response.put("message",jsonBody.get("errorMessage").toString());
+					}response.put("channel", jsonBody.get("channel").toString());
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 							.type(MediaType.APPLICATION_JSON).build();
 				} catch (Exception e1) {
