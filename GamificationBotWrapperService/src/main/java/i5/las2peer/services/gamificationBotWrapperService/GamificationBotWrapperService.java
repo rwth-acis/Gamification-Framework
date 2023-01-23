@@ -826,13 +826,13 @@ public class GamificationBotWrapperService extends RESTService {
 				addPlayer(body);
 			}
 
-			if (!userContext.containsKey(user) && !userMessage.contains("!")) {
+			if (!userContext.containsKey(user) && (!userMessage.contains("!") || userMessage.split("\\s").length <2)) {
 				Response r = getBadges(body);
 				JSONObject jsonR = (JSONObject) r.getEntity();
 				System.out.println(jsonR);
 				JSONArray multiFiles = (JSONArray) jsonR.get("multiFiles");
 				jsonR.remove("multiFiles");
-				String bulletBadges = "0. Default \n";
+				String bulletBadges = "0 Default \n";
 				for (int i = 0; i < multiFiles.size(); i++) {
 					bulletBadges += (i + 1) + ". " + ((JSONObject) multiFiles.get(i)).get("name").toString() + "\n";
 				}
@@ -871,12 +871,15 @@ public class GamificationBotWrapperService extends RESTService {
 
 				}
 				if (chosen == null) {
-					String error = jsonBody.get("error").toString();
+					String error = jsonBody.get("errorMessage").toString();
 					Response r2 = actions(body);
 					JSONObject response = (JSONObject) r2.getEntity();
 
 					response.put("text", error + "\n" + response.get("text").toString());
-					String badgeId = "";
+					userContext.remove(user);
+					jsonBody.put("msg","");
+					return setBadge(jsonBody.toJSONString());
+			/* 		String badgeId = "";
 					Connection conn = null;
 
 					conn = dbm.getConnection();
@@ -884,9 +887,9 @@ public class GamificationBotWrapperService extends RESTService {
 							encryptThisString(user), badgeId);
 					if (conn != null) {
 						conn.close();
-					}
-					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
-							.type(MediaType.APPLICATION_JSON).build();
+					}*/
+			//		return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+			//				.type(MediaType.APPLICATION_JSON).build();
 
 				}
 				String badgeId = chosen.get("id").toString();
