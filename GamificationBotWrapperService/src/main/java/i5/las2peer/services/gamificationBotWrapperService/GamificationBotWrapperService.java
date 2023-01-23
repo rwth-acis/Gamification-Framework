@@ -833,13 +833,14 @@ public class GamificationBotWrapperService extends RESTService {
 				JSONArray multiFiles = (JSONArray) jsonR.get("multiFiles");
 				jsonR.remove("multiFiles");
 				String bulletBadges = "0 Default \n";
-				for (int i = 0; i < multiFiles.size(); i++) {
-					bulletBadges += (i + 1) + ". " + ((JSONObject) multiFiles.get(i)).get("name").toString() + "\n";
+				if(multiFiles != null){
+					for (int i = 0; i < multiFiles.size(); i++) {
+						bulletBadges += (i + 1) + ". " + ((JSONObject) multiFiles.get(i)).get("name").toString() + "\n";
+					}
 				}
-				if (multiFiles.size() > 0) {
-					jsonR.put("closeContext", false);
+				jsonR.put("closeContext", false);
+				
 
-				}
 				jsonR.put("text", bulletBadges);
 				userContext.put(user, true);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(jsonR)
@@ -858,18 +859,27 @@ public class GamificationBotWrapperService extends RESTService {
 					splitMessage = userMessage.split("\\s")[1];
 					System.out.println(splitMessage);
 				}
-				for (Object o : multiFiles) {
+				if(multiFiles != null){
+					for (Object o : multiFiles) {
 
-					JSONObject jsonO = (JSONObject) o;
-
-					if (userMessage.toLowerCase().contains(String.valueOf(i))
-							|| jsonO.get("name").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
-						chosen = jsonO;
-						break;
+						JSONObject jsonO = (JSONObject) o;
+	
+						if (userMessage.toLowerCase().contains(String.valueOf(i))
+								|| jsonO.get("name").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
+							chosen = jsonO;
+							break;
+						}
+						i++;
+	
 					}
-					i++;
-
 				}
+				
+				if (userMessage.contains("0")
+								|| "default".contains(splitMessage.toLowerCase())) {
+									chosen = (JSONObject) new JSONObject();
+									chosen.put("id", "");
+									System.out.println("default val chosen");
+								}
 				if (chosen == null) {
 					String error = jsonBody.get("errorMessage").toString();
 					Response r2 = actions(body);
