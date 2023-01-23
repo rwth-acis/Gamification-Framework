@@ -60,6 +60,7 @@ public class LrsBotWorker implements Runnable {
 	private HashMap<String, JSONArray> actionVerbs = new HashMap<String, JSONArray>();
 
 	private HashMap<String, JSONObject> userStreaks = new HashMap<String, JSONObject>();
+	private HashMap<String, JSONObject> achievementsMap = new HashMap<String, JSONObject>();
 
 	private HashMap<String, JSONArray> userLRS = new HashMap<String, JSONArray>();
 
@@ -70,7 +71,8 @@ public class LrsBotWorker implements Runnable {
 	private ProfileDAO profileAcess;
 
 	public LrsBotWorker(String game, String botName, BotAgent restarterBot, String lrsToken,
-			HashMap<String, JSONArray> actionVerbs, String streakReminder, String sbmURL, String gameURL,
+			HashMap<String, JSONArray> actionVerbs, HashMap<String, JSONObject> achievementsMap, String streakReminder,
+			String sbmURL, String gameURL,
 			String streakMessage, DatabaseManager dbm) {
 
 		this.game = game;
@@ -78,6 +80,7 @@ public class LrsBotWorker implements Runnable {
 		this.restarterBot = restarterBot;
 		this.lrsToken = lrsToken;
 		this.actionVerbs = actionVerbs;
+		this.achievementsMap = achievementsMap;
 		this.streakReminder = Double.valueOf(streakReminder);
 		this.sbmURL = sbmURL;
 		this.gameURL = gameURL;
@@ -162,9 +165,9 @@ public class LrsBotWorker implements Runnable {
 							String statementId = s.get("id").toString();
 							// check whether statement has already been processed
 							boolean contains = false;
-							for(Object id : storedStatements){
+							for (Object id : storedStatements) {
 								String sId = id.toString();
-								if(sId.equals(statementId)){
+								if (sId.equals(statementId)) {
 									contains = true;
 									break;
 								}
@@ -207,7 +210,8 @@ public class LrsBotWorker implements Runnable {
 
 										client.setConnectorEndpoint(this.gameURL +
 												"/gamification/visualization/actions/"
-												+ this.game + "/" + actionId + ":" + objectId.replaceAll("\\s","") + "/"
+												+ this.game + "/" + actionId + ":" + objectId.replaceAll("\\s", "")
+												+ "/"
 												+ user);
 
 										HashMap<String, String> headers = new HashMap<String, String>();
@@ -340,8 +344,22 @@ public class LrsBotWorker implements Runnable {
 
 				continue;
 			}
+
 			if (!json.get("message").toString().equals("")) {
 				message += "*" + json.get("message").toString() + "* \n";
+			}
+			if (json.containsKey("type") && json.get("type").toString().equals("ACHIEVEMENT")) {
+				String id = json.get("typeId").toString();
+				JSONObject ach = this.achievementsMap.get(id);
+				String pointReward = ach.get("pointValue").toString();
+				message += "*REWARDS:* \n";
+				message += "*- "+pointReward +" Points* \n";
+				
+				if(ach.get("badgeId") != null){
+					String	badge = ach.get("badgeId").toString();
+					message += "*- "+badge +" BADGE* \n";
+				}
+				
 			}
 		}
 		information.put("message", message);

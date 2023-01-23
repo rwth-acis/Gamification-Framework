@@ -228,6 +228,7 @@ public class GamificationBotWrapperService extends RESTService {
 				}
 				// HashSet<String> actionVerbs = new HashSet<>();
 				HashMap<String, JSONArray> actionVerbs = new HashMap<String, JSONArray>();
+				HashMap<String, JSONObject> achievements = new HashMap<String, JSONObject>();
 				try {
 					System.out.println("e6");
 					MiniClient client = new MiniClient();
@@ -261,13 +262,26 @@ public class GamificationBotWrapperService extends RESTService {
 						}
 
 					}
+					client.setConnectorEndpoint(gameURL +
+							"/gamification/achievements/" + game);
+					headers = new HashMap<String, String>();
+					result = client.sendRequest("GET", "",
+							"", MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON, headers);
+					System.out.println(result.getResponse());
+					answer = (JSONObject) parser.parse(result.getResponse());
+					// https://tech4comp.de/xapi/verb/compared_words
+
+					for (Object o : (JSONArray) answer.get("rows")) {
+						JSONObject jsonO = (JSONObject) o;
+						achievements.put(jsonO.get("id").toString(), jsonO);
+					}
 				} catch (Exception e) {
 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					System.out.println("e7");
 				}
-				LrsBotWorker random = new LrsBotWorker(game, botName, restarterBot, lrsToken, actionVerbs,
+				LrsBotWorker random = new LrsBotWorker(game, botName, restarterBot, lrsToken, actionVerbs, achievements,
 						streakReminder, sbmURL, gameURL, streakMessage, this.dbm);
 				Thread t = new Thread(random);
 				botWorkers.put(botName, random);
@@ -740,7 +754,7 @@ public class GamificationBotWrapperService extends RESTService {
 					JSONObject jsonO = (JSONObject) o;
 					System.out.println(jsonO);
 					String name = "";
-					if(!jsonO.get("nickname").toString().equals("")){
+					if (!jsonO.get("nickname").toString().equals("")) {
 						name = jsonO.get("nickname").toString();
 					} else {
 						name = jsonO.get("memberId").toString();
@@ -748,12 +762,12 @@ public class GamificationBotWrapperService extends RESTService {
 					}
 					if (encryptThisString(user).equals(jsonO.get("memberId").toString())) {
 						message += "*Rank: " + jsonO.get("rank").toString() + " | Count: "
-								+ jsonO.get("actioncount").toString() + " | Player: "+name+"* \n";
+								+ jsonO.get("actioncount").toString() + " | Player: " + name + "* \n";
 
 					} else {
 						message += "Rank: " + jsonO.get("rank").toString() + " | Count: "
 								+ jsonO.get("actioncount").toString() + " | Player: "
-								+name+ " \n";
+								+ name + " \n";
 
 					}
 				}
@@ -811,7 +825,6 @@ public class GamificationBotWrapperService extends RESTService {
 			if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
 				addPlayer(body);
 			}
-
 
 			if (!userContext.containsKey(user) && !userMessage.contains("!")) {
 				Response r = getBadges(body);
@@ -1023,7 +1036,8 @@ public class GamificationBotWrapperService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 			} else {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
-					addPlayer(body);				}
+					addPlayer(body);
+				}
 				try {
 					Serializable result = Context.get().invokeInternally(
 							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
@@ -1046,11 +1060,12 @@ public class GamificationBotWrapperService extends RESTService {
 
 					}
 					JSONObject response = new JSONObject();
-					if(multiFiles.size() > 0){
+					if (multiFiles.size() > 0) {
 						response.put("multiFiles", multiFiles);
 					} else {
-						response.put("text",jsonBody.get("errorMessage").toString());
-					}response.put("channel", jsonBody.get("channel").toString());
+						response.put("text", jsonBody.get("errorMessage").toString());
+					}
+					response.put("channel", jsonBody.get("channel").toString());
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 							.type(MediaType.APPLICATION_JSON).build();
 				} catch (Exception e1) {
