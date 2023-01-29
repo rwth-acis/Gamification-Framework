@@ -182,9 +182,11 @@ public class LrsBotWorker implements Runnable {
 								}
 							}
 							String verbId = ((JSONObject) s.get("verb")).get("id").toString();
+							System.out.println("checked verb is " + verbId);
 							String objectId = ((JSONObject) ((JSONObject) ((JSONObject) s.get("object"))
 									.get("definition")).get("name")).get("en-US").toString();
 							if (this.actionVerbs.keySet().contains(verbId.split("verb/")[1])) {
+								System.out.println("verb found in list");
 								for (Object o : this.actionVerbs.get(verbId.split("verb/")[1])) {
 
 									JSONObject jsonO = (JSONObject) o;

@@ -526,8 +526,8 @@ public class GamificationBotWrapperService extends RESTService {
 						message += "*Achievement " + key + " (" + desc + ")" + " progress:* \n";
 						for (Object o : (JSONArray) ((JSONObject) j.get(key)).get("actionArray")) {
 							JSONObject jsonO = (JSONObject) o;
-							message += "- Action " + jsonO.get("action").toString() + ":"
-									+ jsonO.get("times").toString() + "/" + jsonO.get("maxTimes").toString() + "\n";
+							message += "- Action " + jsonO.get("action").toString() + ": *"
+									+ jsonO.get("times").toString() + "/" + jsonO.get("maxTimes").toString() + "*\n";
 							message += "Rewards: \n" + "- " + jsonO.get("points").toString() + " points \n";
 							if (jsonO.get("badge") != null) {
 								message += "- Badge: " + jsonO.get("badge").toString() + " \n";
