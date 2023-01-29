@@ -542,7 +542,7 @@ public class GamificationBotWrapperService extends RESTService {
 					j = (JSONObject) parser.parse(result.toString());
 					JSONArray streaks = (JSONArray) j.get("streaks");
 					if (streaks.size() > 0) {
-						message += "STREAK ACHIEVEMENTS: \n";
+						message += "*STREAK ACHIEVEMENTS:* \n";
 					}
 					for (int i = 0; i < streaks.size(); i++) {
 

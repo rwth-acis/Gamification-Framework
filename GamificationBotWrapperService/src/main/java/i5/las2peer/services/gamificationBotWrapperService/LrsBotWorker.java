@@ -344,7 +344,9 @@ public class LrsBotWorker implements Runnable {
 
 				continue;
 			}
-
+			if (json.containsKey("type") && json.get("type").toString().equals("ACHIEVEMENT")) {
+				message += "*ACHIEVEMENT UNLOCKED:* \n";	
+			}
 			if (!json.get("message").toString().equals("")) {
 				message += "*" + json.get("message").toString() + "* \n";
 			}
