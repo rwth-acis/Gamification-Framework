@@ -185,6 +185,7 @@ public class LrsBotWorker implements Runnable {
 							System.out.println("checked verb is " + verbId);
 							String objectId = ((JSONObject) ((JSONObject) ((JSONObject) s.get("object"))
 									.get("definition")).get("name")).get("en-US").toString();
+									// change this to split based on / 
 							if (this.actionVerbs.keySet().contains(verbId.split("verb/")[1])) {
 								System.out.println("verb found in list");
 								for (Object o : this.actionVerbs.get(verbId.split("verb/")[1])) {
@@ -373,7 +374,7 @@ public class LrsBotWorker implements Runnable {
 		information.put("event", "chat_message");
 		try {
 			ClientResponse result = client.sendRequest("POST", "",
-					information.toJSONString(), MediaType.TEXT_PLAIN, "", headers);
+					information.toJSONString());
 			System.out.println(result.toString());
 			System.out.println(result.getHttpCode());
 			System.out.println(result.getRawResponse());
