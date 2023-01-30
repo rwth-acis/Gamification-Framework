@@ -978,6 +978,13 @@ public class GamificationBotWrapperService extends RESTService {
 				addPlayer(body);
 			}
 			try {
+				String ignoreMessage = jsonBody.get("ignoreMessage").toString();
+				if(ignoreMessage.equals(userMessage) || ignoreMessage.equals(userMessage +".")){
+					JSONObject response = jsonBody;
+					response.put("closeContext", false);
+					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+							.type(MediaType.APPLICATION_JSON).build();
+				}
 				if (userMessage.length() > 11) {
 					JSONObject response = jsonBody;
 					response.put("text", jsonBody.get("errorMessage").toString());
