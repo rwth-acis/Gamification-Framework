@@ -2,6 +2,7 @@ package i5.las2peer.services.gamificationBotWrapperService;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.color.ColorSpace;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -24,6 +25,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.imageio.ImageIO;
+import javax.swing.plaf.ColorUIResource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
@@ -512,63 +514,31 @@ public class GamificationBotWrapperService extends RESTService {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
 					addPlayer(body);
 				}
+				JSONObject achievements = new JSONObject();
 				try {
 					Serializable result = Context.get().invokeInternally(
 							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 							"getQuestDetailAllRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
 					System.out.println(result.toString());
-					JSONObject j = (JSONObject) parser.parse(result.toString());
+					achievements = (JSONObject) parser.parse(result.toString());
 					String message = "";
-					for (String key : j.keySet()) {
-						JSONObject quest = (JSONObject) j.get(key);
-						String desc = ((JSONObject) ((JSONArray) quest.get("actionArray")).get(0)).get("description")
-								.toString();
-						message += "*Achievement " + key + " (" + desc + ")" + " progress:* \n";
-						for (Object o : (JSONArray) ((JSONObject) j.get(key)).get("actionArray")) {
-							JSONObject jsonO = (JSONObject) o;
-							message += "- Action " + jsonO.get("action").toString() + ": *"
-									+ jsonO.get("times").toString() + "/" + jsonO.get("maxTimes").toString() + "*\n";
-							message += "Rewards: \n" + "- " + jsonO.get("points").toString() + " points \n";
-							if (jsonO.get("badge") != null) {
-								message += "- Badge: " + jsonO.get("badge").toString() + " \n";
-							}
 
-						}
-					}
 					// now also fetch the achievements from streaks
 					result = Context.get().invokeInternally(
 							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 							"getStreakDetailAllRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
-					j = (JSONObject) parser.parse(result.toString());
-					JSONArray streaks = (JSONArray) j.get("streaks");
-					if (streaks.size() > 0) {
-						message += "*STREAK ACHIEVEMENTS:* \n";
-					}
-					for (int i = 0; i < streaks.size(); i++) {
-
-						JSONObject streak = (JSONObject) streaks.get(i);
-						System.out.println(streak);
-						String currLevel = streak.get("currentStreakLevel").toString();
-						String maxLevel = streak.get("highestStreakLevel").toString();
-						JSONObject action = (JSONObject) streak.get("action");
-						JSONObject achievement = (JSONObject) streak.get("achievement");
-						String desc = achievement.get("description").toString();
-						message += "*Achievement " + achievement.get("id").toString() + " (" + desc + ")"
-								+ " progress:* \n";
-						message += "- Action " + action.get("id").toString() + ":"
-								+ currLevel + "/" + maxLevel + "\n";
-						message += "Rewards: \n" + "- " + achievement.get("point_value").toString() + " points \n";
-						if (achievement.get("badge_id") != null) {
-							message += "- Badge: " + achievement.get("badge_id").toString() + " \n";
-						}
-
-					}
+					achievements.put("streaks", parser.parse(result.toString()));
+					String base64 = achievementsPng(achievements);
 					JSONObject response = jsonBody;
 					try {
 						response.remove("closeContext");
 					} catch (Exception e) {
 					}
 					response.put("text", message);
+
+					response.put("fileBody", base64);
+					response.put("fileName", "Achievements");
+					response.put("fileType", "png");
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 							.type(MediaType.APPLICATION_JSON).build();
 				} catch (Exception e1) {
@@ -584,6 +554,189 @@ public class GamificationBotWrapperService extends RESTService {
 		// Request log
 		return Response.status(HttpURLConnection.HTTP_OK).entity("Bot wrapper is online")
 				.type(MediaType.APPLICATION_JSON).build();
+	}
+
+	// pls dont judge dont code here, its disgusting but works :,(
+	public String achievementsPng(JSONObject achievements) {
+		// test if streaks always present or not
+		System.out.println(achievements);
+		JSONObject streaks =(JSONObject) achievements.get("streaks");
+		for (int i = 0; i < ((JSONArray) streaks.get("streaks")).size(); i++) {
+			JSONObject streak = (JSONObject) ((JSONArray) streaks.get("streaks")).get(i);
+			String times = streak.get("currentStreakLevel").toString();
+			String maxTimes = streak.get("highestStreakLevel").toString();
+			JSONObject action = (JSONObject) streak.get("action");
+			JSONObject achievement = (JSONObject) streak.get("achievement");
+			String desc = achievement.get("description").toString();
+			String key = achievement.get("id").toString();
+			String points = achievement.get("point_value").toString();
+			String badge = "";
+			if (achievement.get("badge_id") != null) {
+				badge = achievement.get("badge_id").toString();
+			}
+			streak.put("times",times);
+			streak.put("maxTimes",maxTimes);
+			JSONArray actionArray = new JSONArray();
+			action.put("description",desc);
+			action.put("times",times);
+			action.put("maxTimes",maxTimes);
+			action.put("points",points);
+			action.put("name","streak");
+			action.put("badge",badge);
+			action.put("name",achievement.get("name").toString());
+			actionArray.add(action);
+			streak.put("actionArray", actionArray);
+			achievements.put(key,streak);
+		}
+		try {
+			String filePath = new File("").getAbsolutePath();
+			int i = 1;
+			for (String key : achievements.keySet()) {
+				if (key.equals("streaks")) {
+					continue;
+				}
+				JSONObject quest = (JSONObject) achievements.get(key);
+				System.out.println(quest);
+				String description = ((JSONObject) ((JSONArray) quest.get("actionArray")).get(0)).get("description")
+						.toString();
+				String name = key;// jsonO.get("name").toString();
+
+				String number = "";// jsonO.get("number").toString();
+				String maxNumber = "";// jsonO.get("maxNum").toString();
+				String points = "";// jsonO.get("points").toString();
+				String badge = "";// jsonO.get("badge").toString();
+				for (Object o : (JSONArray) (quest.get("actionArray"))) {
+					JSONObject jsonO = (JSONObject) o;
+					name = jsonO.get("name").toString();
+					number = jsonO.get("times").toString();
+					maxNumber = jsonO.get("maxTimes").toString();
+					points = jsonO.get("points").toString();
+					if (jsonO.get("badge") != null) {
+						badge = jsonO.get("badge").toString();
+					}
+				}
+				System.out.println((name + description).length());
+				int badgeOffset = 0;
+				if (!badge.equals("")) {
+					badgeOffset = 30;
+				}
+				// 60 text limit
+				int descOffset = 0;
+				ArrayList<String> descArr = new ArrayList<String>();
+				if ((name + description).length() > 60) {
+					String[] split = description.split("\\s+");
+					String n = name;
+					String pre = "";
+					int sSize = 1;
+					for (String s : split) {
+						if ((n + pre + s).length() < 60) {
+							if (sSize == split.length) {
+								pre += s;
+							} else {
+								pre += s + " ";
+							}
+
+						} else {
+							n = "";
+							descOffset += 30;
+							descArr.add(pre);
+							pre = s;
+						}
+						sSize++;
+					}
+					descArr.add(pre);
+				}
+				BufferedImage image = new BufferedImage(820, 190 + badgeOffset + descOffset, ColorSpace.TYPE_RGB);
+				Font font = new Font("Comic Sans MS", Font.BOLD, 20);
+				System.out.println("Working Directory = " + image.getWidth() + image.getHeight());
+				// Graphics g = image.getGraphics();
+				Graphics2D g = (Graphics2D) image.getGraphics();
+				g.setFont(font);
+				g.setColor(Color.WHITE);
+				g.fillRect(0, 0, image.getWidth(), image.getHeight());
+				int x = 10;
+				int y = 60;
+				int w = 700;
+				int wOld = w;
+				int h = 55;
+				double progress = Double.parseDouble(number) / Double.parseDouble(maxNumber);
+				double thickness = 3;
+				Stroke oldStroke = g.getStroke();
+				g.setStroke(new BasicStroke((float) thickness));
+				g.setColor(new ColorUIResource(127, 189, 255));
+				w *= progress;
+				g.fillRoundRect(image.getWidth() / 2 - wOld / 2 + 1, y + descOffset, x + w - 1, h, 50, 50);
+				g.setColor(Color.BLACK);
+				g.drawRect(0, 0, image.getWidth(), image.getHeight());
+				g.drawRoundRect(image.getWidth() / 2 - wOld / 2, y - 1 + descOffset, x + wOld + 1, h + 1, 50, 50);
+				g.setColor(Color.BLACK);
+				if (descArr.size() <= 1) {
+					g.drawString("Achievement " + name + " (" + description + "):", 10, 25);
+				} else {
+					g.drawString("Achievement " + name + " (" + descArr.get(0) + "", 10, 25);
+					for (int j = 1; j < descArr.size(); j++) {
+						if (j + 1 == descArr.size()) {
+							g.drawString(descArr.get(j) + "):", 10, 25 + j * 30);
+						} else {
+							g.drawString(descArr.get(j), 10, 25 + j * 30);
+						}
+
+					}
+				}
+				g.drawString(number + "/" + maxNumber, image.getWidth() / 2, y + h / 2 + 5 + descOffset);
+				g.drawString("REWARDS:", 10, h + y + 30 + descOffset);
+				g.drawString("- " + points + " Points", 10, h + y + 60 + descOffset);
+				if (badgeOffset != 0) {
+					g.drawString("- BADGE: " + badge, 10, h + y + 90 + descOffset);
+				}
+				BufferedImage img = ImageIO.read(new File(
+						filePath + "/etc/treasureChest.png"));
+				g.drawImage(img.getScaledInstance(h, h, Image.SCALE_DEFAULT), image.getWidth() / 2 + wOld / 2,
+						y - 10 + descOffset,
+						null);
+				File outputfile = new File(filePath + "/etc/img" + i + ".png");
+				ImageIO.write(image, "png", outputfile);
+				i++;
+			}
+
+			if (i == 1) {
+				return "";
+			}
+			BufferedImage output = ImageIO.read(new File(
+					filePath + "/etc/img1.png"));
+			for (int j = 2; j < i; j++) {
+				BufferedImage i2 = ImageIO.read(new File(
+						filePath + "/etc/img" + j + ".png"));
+				output = joinBufferedImage(output, i2);
+			}
+			File outputfile = new File(filePath + "/etc/img" + i + ".png");
+			ImageIO.write(output, "png", outputfile);
+			System.out.println("pcitute" + filePath);
+			byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath + "/etc/img" + i + ".png"));
+			String encodedString = Base64.getEncoder().encodeToString(fileContent);
+			return encodedString;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public static BufferedImage joinBufferedImage(BufferedImage img1,
+			BufferedImage img2) {
+		int offset = 1;
+		int height = img1.getHeight() + img2.getHeight() + offset;
+		int width = Math.max(img1.getWidth(), img2.getWidth()) + offset;
+		BufferedImage newImage = new BufferedImage(width, height,
+				BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2 = newImage.createGraphics();
+		Color oldColor = g2.getColor();
+		g2.setPaint(Color.BLACK);
+		g2.fillRect(0, 0, width, height);
+		g2.setColor(oldColor);
+		g2.drawImage(img1, null, 0, 0);
+		g2.drawImage(img2, null, 0, img1.getHeight());
+		g2.dispose();
+		return newImage;
 	}
 
 	/**
@@ -826,20 +979,19 @@ public class GamificationBotWrapperService extends RESTService {
 				addPlayer(body);
 			}
 
-			if (!userContext.containsKey(user) && (!userMessage.contains("!") || userMessage.split("\\s").length <2)) {
+			if (!userContext.containsKey(user) && (!userMessage.contains("!") || userMessage.split("\\s").length < 2)) {
 				Response r = getBadges(body);
 				JSONObject jsonR = (JSONObject) r.getEntity();
 				System.out.println(jsonR);
 				JSONArray multiFiles = (JSONArray) jsonR.get("multiFiles");
 				jsonR.remove("multiFiles");
 				String bulletBadges = "0 Default \n";
-				if(multiFiles != null){
+				if (multiFiles != null) {
 					for (int i = 0; i < multiFiles.size(); i++) {
 						bulletBadges += (i + 1) + ". " + ((JSONObject) multiFiles.get(i)).get("name").toString() + "\n";
 					}
 				}
 				jsonR.put("closeContext", false);
-				
 
 				jsonR.put("text", bulletBadges);
 				userContext.put(user, true);
@@ -859,27 +1011,27 @@ public class GamificationBotWrapperService extends RESTService {
 					splitMessage = userMessage.split("\\s")[1];
 					System.out.println(splitMessage);
 				}
-				if(multiFiles != null){
+				if (multiFiles != null) {
 					for (Object o : multiFiles) {
 
 						JSONObject jsonO = (JSONObject) o;
-	
+
 						if (userMessage.toLowerCase().contains(String.valueOf(i))
 								|| jsonO.get("name").toString().toLowerCase().contains(splitMessage.toLowerCase())) {
 							chosen = jsonO;
 							break;
 						}
 						i++;
-	
+
 					}
 				}
-				
+
 				if (userMessage.contains("0")
-								|| "default".contains(splitMessage.toLowerCase())) {
-									chosen = (JSONObject) new JSONObject();
-									chosen.put("id", "");
-									System.out.println("default val chosen");
-								}
+						|| "default".contains(splitMessage.toLowerCase())) {
+					chosen = (JSONObject) new JSONObject();
+					chosen.put("id", "");
+					System.out.println("default val chosen");
+				}
 				if (chosen == null) {
 					String error = jsonBody.get("errorMessage").toString();
 					Response r2 = actions(body);
@@ -887,19 +1039,22 @@ public class GamificationBotWrapperService extends RESTService {
 
 					response.put("text", error + "\n" + response.get("text").toString());
 					userContext.remove(user);
-					jsonBody.put("msg","");
+					jsonBody.put("msg", "");
 					return setBadge(jsonBody.toJSONString());
-			/* 		String badgeId = "";
-					Connection conn = null;
-
-					conn = dbm.getConnection();
-					boolean result = this.profileAccess.setProfileBadge(conn, botWorkers.get(botName).getGame(),
-							encryptThisString(user), badgeId);
-					if (conn != null) {
-						conn.close();
-					}*/
-			//		return Response.status(HttpURLConnection.HTTP_OK).entity(response)
-			//				.type(MediaType.APPLICATION_JSON).build();
+					/*
+					 * String badgeId = "";
+					 * Connection conn = null;
+					 * 
+					 * conn = dbm.getConnection();
+					 * boolean result = this.profileAccess.setProfileBadge(conn,
+					 * botWorkers.get(botName).getGame(),
+					 * encryptThisString(user), badgeId);
+					 * if (conn != null) {
+					 * conn.close();
+					 * }
+					 */
+					// return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+					// .type(MediaType.APPLICATION_JSON).build();
 
 				}
 				String badgeId = chosen.get("id").toString();
@@ -979,7 +1134,7 @@ public class GamificationBotWrapperService extends RESTService {
 			}
 			try {
 				String ignoreMessage = jsonBody.get("ignoreMessage").toString();
-				if(ignoreMessage.equals(userMessage) || ignoreMessage.equals(userMessage +".")){
+				if (ignoreMessage.equals(userMessage) || ignoreMessage.equals(userMessage + ".")) {
 					JSONObject response = jsonBody;
 					response.put("closeContext", false);
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
@@ -1131,13 +1286,15 @@ public class GamificationBotWrapperService extends RESTService {
 			g.drawString(user, (int) (image.getWidth() * 0.44), 44);
 			g.drawString(json.get("memberLevel").toString(), (int) (image.getWidth() * 0.44), 63);
 			g.drawString(json.get("memberPoint").toString(), (int) (image.getWidth() * 0.14), 240);
-			if(json.get("progress").toString().equals("100")){
+			if (json.get("progress").toString().equals("100")) {
 				g.drawString(json.get("progress").toString() + "%", (int) (image.getWidth() * 0.47), 90);
 			} else {
-				int diff = Integer.valueOf(json.get("nextLevelPoint").toString()) - Integer.valueOf(json.get("memberPoint").toString())
-				g.drawString(json.get("progress").toString() + "% (" +diff+" points needed)" , (int) (image.getWidth() * 0.47), 90);
+				int diff = Integer.valueOf(json.get("nextLevelPoint").toString())
+						- Integer.valueOf(json.get("memberPoint").toString());
+				g.drawString(json.get("progress").toString() + "% (" + diff + " points needed)",
+						(int) (image.getWidth() * 0.47), 90);
 			}
-			
+
 			g.drawString(json.get("unlockedAchievements").toString() + "/" + json.get("totalAchievements").toString(),
 					(int) (image.getWidth() * 0.47), 240);
 			g.drawString(json.get("unlockedBadges").toString() + "/" + json.get("totalBadges").toString(),

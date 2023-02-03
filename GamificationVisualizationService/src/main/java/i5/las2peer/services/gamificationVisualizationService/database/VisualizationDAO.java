@@ -176,7 +176,6 @@ public class VisualizationDAO {
 				resObj.put("nextLevelName", nextLevelName);
 				resObj.put("progress", Math.round(progress));
 				
-				
 			}
 			else{
 				//throw new SQLException("No next level found, you may be on the highest level");
@@ -349,7 +348,7 @@ public class VisualizationDAO {
 
 		JSONArray resArr = new JSONArray();
 		JSONObject outObj = new JSONObject();
-		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,completed,times,"+gameId+".achievement.description,"+gameId+".achievement.point_value,"+gameId+".achievement.badge_id FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) JOIN "+gameId+".quest ON ("+gameId+".member_quest_action.quest_id="+gameId+".quest.quest_id) JOIN "+gameId+".achievement ON ("+gameId+".quest.achievement_id="+gameId+".achievement.achievement_id) WHERE "+gameId+".member_quest_action.quest_id=? AND member_id=?");
+		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,completed,times,"+gameId+".achievement.name,"+gameId+".achievement.description,"+gameId+".achievement.point_value,"+gameId+".achievement.badge_id FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) JOIN "+gameId+".quest ON ("+gameId+".member_quest_action.quest_id="+gameId+".quest.quest_id) JOIN "+gameId+".achievement ON ("+gameId+".quest.achievement_id="+gameId+".achievement.achievement_id) WHERE "+gameId+".member_quest_action.quest_id=? AND member_id=?");
 		stmt.setString(1, questId);
 		stmt.setString(2, memberId);
 		ResultSet rs = stmt.executeQuery();
@@ -364,6 +363,7 @@ public class VisualizationDAO {
 			resObj.put("description", rs.getString("description"));
 			resObj.put("points", rs.getString("point_value"));
 			resObj.put("badge", rs.getString("badge_id"));
+			resObj.put("name",rs.getString("name"));
 			//check if action is completed
 			if(rs.getBoolean("completed")){
 				
