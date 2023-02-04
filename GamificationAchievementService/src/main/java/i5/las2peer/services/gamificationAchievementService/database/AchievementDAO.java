@@ -169,6 +169,25 @@ public class AchievementDAO {
 		stmt.executeUpdate();
 	}
 
+
+		/**
+	 * Update an achievement information
+	 * 
+	 * @param gameId game id
+	 * @param conn database connection
+	 * @param achievements model to be updated
+	 * @throws SQLException SQL exception
+	 */
+	public void moveUp(Connection conn,String gameId, ArrayList<AchievementModel> achievements) throws SQLException {
+		// check whether the badgeid exist or not
+		for(AchievementModel ach : achievements){
+			stmt = conn.prepareStatement("UPDATE "+gameId+".achievement SET name = ? WHERE achievement_id = ?");
+			stmt.setString(1, ach.getName());
+			stmt.setString(2, ach.getId());
+			stmt.executeUpdate();
+		}
+	}
+
 	/**
 	 * Delete a specific achievement
 	 * 
