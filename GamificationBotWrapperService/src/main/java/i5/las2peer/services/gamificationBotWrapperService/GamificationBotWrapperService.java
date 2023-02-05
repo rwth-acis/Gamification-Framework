@@ -514,20 +514,20 @@ public class GamificationBotWrapperService extends RESTService {
 				if (!botWorkers.get(botName).getUsers().keySet().contains(encryptThisString(user))) {
 					addPlayer(body);
 				}
-				JSONObject achievements = new JSONObject();
+				JSONArray achievements = new JSONArray();
 				try {
 					Serializable result = Context.get().invokeInternally(
 							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 							"getQuestDetailAllRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
 					System.out.println(result.toString());
-					achievements = (JSONObject) parser.parse(result.toString());
+					achievements = (JSONArray) parser.parse(result.toString());
 					String message = "";
 
 					// now also fetch the achievements from streaks
 					result = Context.get().invokeInternally(
 							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 							"getStreakDetailAllRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
-					achievements.put("streaks", parser.parse(result.toString()));
+					achievements.add(parser.parse(result.toString()));
 					String base64 = achievementsPng(achievements);
 					JSONObject response = jsonBody;
 					try {
@@ -557,10 +557,10 @@ public class GamificationBotWrapperService extends RESTService {
 	}
 
 	// pls dont judge dont code here, its disgusting but works :,(
-	public String achievementsPng(JSONObject achievements) {
+	public String achievementsPng(JSONArray achievements) {
 		// test if streaks always present or not
 		System.out.println(achievements);
-		JSONObject streaks =(JSONObject) achievements.get("streaks");
+		JSONObject streaks =(JSONObject) achievements.get(achievements.size()-1);
 		for (int i = 0; i < ((JSONArray) streaks.get("streaks")).size(); i++) {
 			JSONObject streak = (JSONObject) ((JSONArray) streaks.get("streaks")).get(i);
 			String times = streak.get("currentStreakLevel").toString();
@@ -586,20 +586,20 @@ public class GamificationBotWrapperService extends RESTService {
 			action.put("name",achievement.get("name").toString());
 			actionArray.add(action);
 			streak.put("actionArray", actionArray);
-			achievements.put(key,streak);
+			achievements.add(streak);
 		}
 		try {
 			String filePath = new File("").getAbsolutePath();
 			int i = 1;
-			for (String key : achievements.keySet()) {
-				if (key.equals("streaks")) {
+			for (int k = 0; k<achievements.size();k++) {
+				System.out.println(achievements.get(k));
+				if (((JSONObject)achievements.get(k)).containsKey("streaks")) {
 					continue;
 				}
-				JSONObject quest = (JSONObject) achievements.get(key);
-				System.out.println(quest);
+				JSONObject quest = (JSONObject) achievements.get(k);
 				String description = ((JSONObject) ((JSONArray) quest.get("actionArray")).get(0)).get("description")
 						.toString();
-				String name = key;// jsonO.get("name").toString();
+				String name = "NO NAME";// jsonO.get("name").toString();
 
 				String number = "";// jsonO.get("number").toString();
 				String maxNumber = "";// jsonO.get("maxNum").toString();
@@ -665,7 +665,9 @@ public class GamificationBotWrapperService extends RESTService {
 				g.setStroke(new BasicStroke((float) thickness));
 				g.setColor(new ColorUIResource(127, 189, 255));
 				w *= progress;
-				g.fillRoundRect(image.getWidth() / 2 - wOld / 2 + 1, y + descOffset, x + w - 1, h, 50, 50);
+				if(w!=0){
+					g.fillRoundRect(image.getWidth() / 2 - wOld / 2 + 1, y + descOffset, x + w - 1, h, 50, 50);
+				}
 				g.setColor(Color.BLACK);
 				g.drawRect(0, 0, image.getWidth(), image.getHeight());
 				g.drawRoundRect(image.getWidth() / 2 - wOld / 2, y - 1 + descOffset, x + wOld + 1, h + 1, 50, 50);

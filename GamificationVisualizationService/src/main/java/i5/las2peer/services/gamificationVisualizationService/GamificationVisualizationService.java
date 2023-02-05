@@ -1252,7 +1252,7 @@ public class GamificationVisualizationService extends RESTService {
 			// RMI call with parameters
 			String result;
 			JSONObject result2;
-			JSONObject finalResp = new JSONObject();
+			JSONArray finalResp = new JSONArray();
 			try {
 				result = (String) Context.getCurrent().invoke(
 						"i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1",
@@ -1265,8 +1265,7 @@ public class GamificationVisualizationService extends RESTService {
 						result2 = visualizationAccess.getMemberQuestProgress(conn, gameId, memberId,
 								jsonQuest.getString("id"));
 						System.out.println(result2);
-						finalResp.put(jsonQuest.getString("id"), result2);
-
+						finalResp.put(result2);
 					}
 					return finalResp.toString();
 				}
