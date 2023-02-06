@@ -701,6 +701,11 @@ public class GamificationQuestService extends RESTService {
 			if (questdescription != null) {
 				quest.setDescription(questdescription);
 			}
+			try{
+				questquestflag = boolfromJSON(obj, "questquestflag");
+				quest.setQuestFlag(questquestflag);
+			} catch(Exception e){
+			}
 			questquestidcompleted = (String) obj.get("questidcompleted");
 			if (questquestflag) {
 				if (questquestidcompleted.equals(null) || questquestidcompleted.equals("")) {
@@ -712,18 +717,32 @@ public class GamificationQuestService extends RESTService {
 							.type(MediaType.APPLICATION_JSON).build();
 				}
 			}
-			questquestflag = boolfromJSON(obj, "questquestflag");
-			questpointflag = boolfromJSON(obj, "questpointflag");
-			questpointvalue = intfromJSON(obj, "questpointvalue");
-			questnotifcheck = boolfromJSON(obj, "questnotificationcheck");
-			questnotifmessage = stringfromJSON(obj, "questnotificationmessage");
 
-			quest.setQuestFlag(questquestflag);
-			quest.setPointFlag(questpointflag);
-			quest.setQuestIdCompleted(questquestidcompleted);
-			quest.setPointValue(questpointvalue);
-			quest.useNotification(questnotifcheck);
-			quest.setNotificationMessage(questnotifmessage);
+			try{
+				questpointflag = boolfromJSON(obj, "questpointflag");
+				quest.setPointFlag(questpointflag);
+			} catch(Exception e){
+
+			}
+			try{
+				questpointvalue = intfromJSON(obj, "questpointvalue");
+				quest.setPointValue(questpointvalue);
+			} catch(Exception e){
+
+			}
+			try{
+				quest.setQuestIdCompleted(questquestidcompleted);
+			} catch(Exception e){
+
+			}
+			try{
+				questnotifmessage = stringfromJSON(obj, "questnotificationmessage");
+				quest.setNotificationMessage(questnotifmessage);
+				quest.useNotification(questnotifcheck);
+			} catch(Exception e){
+
+			}
+			
 			try {
 				questactionids = listPairfromJSON(obj, "questactionids", "action", "times");
 				quest.setActionIds(questactionids);
