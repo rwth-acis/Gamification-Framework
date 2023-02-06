@@ -698,7 +698,7 @@ public class GamificationQuestService extends RESTService {
 				e.printStackTrace();
 			}
 			questdescription = (String) obj.get("questdescription");
-			if (!questdescription.equals(null)) {
+			if (questdescription != null) {
 				quest.setDescription(questdescription);
 			}
 			questquestidcompleted = (String) obj.get("questidcompleted");
