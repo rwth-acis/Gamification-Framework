@@ -601,6 +601,8 @@ public class GamificationBotWrapperService extends RESTService {
 			streak.put("actionArray", actionArray);
 			achievements.add(streak);
 		}
+		ArrayList<Integer> completed = new ArrayList<Integer>();
+		ArrayList<Integer> revealed = new ArrayList<Integer>();
 		try {
 			String filePath = new File("").getAbsolutePath();
 			int i = 1;
@@ -632,6 +634,10 @@ public class GamificationBotWrapperService extends RESTService {
 				}
 				if(status.equals("HIDDEN")){
 					continue;
+				} else if(status.equals("REVEALED")){
+					revealed.add(i);
+				} else{
+					completed.add(i);
 				}
 				System.out.println((name + description).length());
 				int badgeOffset = 0;
@@ -724,7 +730,26 @@ public class GamificationBotWrapperService extends RESTService {
 			}
 			BufferedImage output = ImageIO.read(new File(
 					filePath + "/etc/img1.png"));
-			int countImgs = 1;
+			int countImgs = 0;
+			revealed.addAll(completed);
+			for(int index : revealed){
+				BufferedImage i2 = ImageIO.read(new File(
+					filePath + "/etc/img" + index + ".png"));
+					if(countImgs == 0){
+						output = i2;
+					} else {
+						output = joinBufferedImage(output, i2);
+					}
+			countImgs++;
+			if(countImgs == 4 || revealed.indexOf(index)+1==revealed.size()){
+				countImgs = 0;
+				File outputfile = new File(filePath + "/etc/imgAchs.png");
+				ImageIO.write(output, "png", outputfile);
+				byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath + "/etc/imgAchs.png"));
+				String encodedString = Base64.getEncoder().encodeToString(fileContent);
+				res.add(encodedString);
+			}
+			}
 			for (int j = 2; j < i; j++) {
 				BufferedImage i2 = ImageIO.read(new File(
 						filePath + "/etc/img" + j + ".png"));
