@@ -348,9 +348,10 @@ public class VisualizationDAO {
 
 		JSONArray resArr = new JSONArray();
 		JSONObject outObj = new JSONObject();
-		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,status,completed,times,"+gameId+".achievement.name,"+gameId+".achievement.description,"+gameId+".achievement.point_value,"+gameId+".achievement.badge_id FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) JOIN "+gameId+".quest ON ("+gameId+".member_quest_action.quest_id="+gameId+".quest.quest_id) JOIN "+gameId+".achievement ON ("+gameId+".quest.achievement_id="+gameId+".achievement.achievement_id) WHERE "+gameId+".member_quest_action.quest_id=? AND member_id=?");
+		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,"+gameId+".member_quest.status,completed,times,"+gameId+".achievement.name,"+gameId+".achievement.description,"+gameId+".achievement.point_value,"+gameId+".achievement.badge_id FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) JOIN "+gameId+".quest ON ("+gameId+".member_quest_action.quest_id="+gameId+".quest.quest_id) JOIN "+gameId+".achievement ON ("+gameId+".quest.achievement_id="+gameId+".achievement.achievement_id) JOIN "+gameId+".member_quest ON ("+gameId+".member_quest.quest_id="+gameId+".quest.quest_id) WHERE "+gameId+".member_quest_action.quest_id=? AND "+gameId+".member_quest_action.member_id=? AND "+gameId+".member_quest.member_id=?");
 		stmt.setString(1, questId);
 		stmt.setString(2, memberId);
+		stmt.setString(3, memberId);
 		ResultSet rs = stmt.executeQuery();
 
 		Integer truecount = 0;
