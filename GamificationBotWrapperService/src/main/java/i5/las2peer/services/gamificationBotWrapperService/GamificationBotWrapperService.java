@@ -528,17 +528,29 @@ public class GamificationBotWrapperService extends RESTService {
 							"i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 							"getStreakDetailAllRMI", botWorkers.get(botName).getGame(), encryptThisString(user));
 					achievements.add(parser.parse(result.toString()));
-					String base64 = achievementsPng(achievements);
+					ArrayList<String> base64 = achievementsPng(achievements);
 					JSONObject response = jsonBody;
 					try {
 						response.remove("closeContext");
 					} catch (Exception e) {
 					}
-					response.put("text", message);
 
-					response.put("fileBody", base64);
-					response.put("fileName", "Achievements");
-					response.put("fileType", "png");
+					JSONArray multiFiles = new JSONArray();
+					int index = 1;
+					for (String b64 : base64) {
+						JSONObject jsonO = new JSONObject();
+							jsonO.put("text", "");
+							jsonO.put("fileBody", b64);
+							jsonO.put("fileName", "Achievements "+index);
+							index++;
+							jsonO.put("fileType", "png");
+							multiFiles.add(jsonO);
+					}
+					if (multiFiles.size() > 0) {
+						response.put("multiFiles", multiFiles);
+					} else {
+						response.put("text", jsonBody.get("errorMessage").toString());
+					}
 					return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 							.type(MediaType.APPLICATION_JSON).build();
 				} catch (Exception e1) {
@@ -557,7 +569,7 @@ public class GamificationBotWrapperService extends RESTService {
 	}
 
 	// pls dont judge dont code here, its disgusting but works :,(
-	public String achievementsPng(JSONArray achievements) {
+	public ArrayList<String> achievementsPng(JSONArray achievements) {
 		// test if streaks always present or not
 		System.out.println(achievements);
 		JSONObject streaks =(JSONObject) achievements.get(achievements.size()-1);
@@ -706,26 +718,36 @@ public class GamificationBotWrapperService extends RESTService {
 				ImageIO.write(image, "png", outputfile);
 				i++;
 			}
-
+			ArrayList<String> res = new ArrayList<String>();
 			if (i == 1) {
-				return "";
+				return res;
 			}
 			BufferedImage output = ImageIO.read(new File(
 					filePath + "/etc/img1.png"));
+			int countImgs = 1;
 			for (int j = 2; j < i; j++) {
 				BufferedImage i2 = ImageIO.read(new File(
 						filePath + "/etc/img" + j + ".png"));
-				output = joinBufferedImage(output, i2);
+						if(countImgs == 0){
+							output = i2;
+						} else {
+							output = joinBufferedImage(output, i2);
+						}
+				countImgs++;
+				if(countImgs == 4 || j+1==i){
+					countImgs = 0;
+					File outputfile = new File(filePath + "/etc/imgAchs.png");
+					ImageIO.write(output, "png", outputfile);
+					byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath + "/etc/imgAchs.png"));
+					String encodedString = Base64.getEncoder().encodeToString(fileContent);
+					res.add(encodedString);
+				}
+
 			}
-			File outputfile = new File(filePath + "/etc/img" + i + ".png");
-			ImageIO.write(output, "png", outputfile);
-			System.out.println("pcitute" + filePath);
-			byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath + "/etc/img" + i + ".png"));
-			String encodedString = Base64.getEncoder().encodeToString(fileContent);
-			return encodedString;
+			return res;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "";
+			return new ArrayList<String>();
 		}
 	}
 
