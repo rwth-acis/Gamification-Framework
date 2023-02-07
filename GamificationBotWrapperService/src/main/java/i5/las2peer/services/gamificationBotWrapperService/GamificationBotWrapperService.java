@@ -750,25 +750,6 @@ public class GamificationBotWrapperService extends RESTService {
 				res.add(encodedString);
 			}
 			}
-			for (int j = 2; j < i; j++) {
-				BufferedImage i2 = ImageIO.read(new File(
-						filePath + "/etc/img" + j + ".png"));
-						if(countImgs == 0){
-							output = i2;
-						} else {
-							output = joinBufferedImage(output, i2);
-						}
-				countImgs++;
-				if(countImgs == 4 || j+1==i){
-					countImgs = 0;
-					File outputfile = new File(filePath + "/etc/imgAchs.png");
-					ImageIO.write(output, "png", outputfile);
-					byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath + "/etc/imgAchs.png"));
-					String encodedString = Base64.getEncoder().encodeToString(fileContent);
-					res.add(encodedString);
-				}
-
-			}
 			return res;
 		} catch (Exception e) {
 			e.printStackTrace();
