@@ -583,6 +583,7 @@ public class GamificationBotWrapperService extends RESTService {
 			action.put("points",points);
 			action.put("name","streak");
 			action.put("badge",badge);
+			action.put("status","REVEALED");
 			action.put("name",achievement.get("name").toString());
 			actionArray.add(action);
 			streak.put("actionArray", actionArray);
@@ -605,15 +606,20 @@ public class GamificationBotWrapperService extends RESTService {
 				String maxNumber = "";// jsonO.get("maxNum").toString();
 				String points = "";// jsonO.get("points").toString();
 				String badge = "";// jsonO.get("badge").toString();
+				String status = "";
 				for (Object o : (JSONArray) (quest.get("actionArray"))) {
 					JSONObject jsonO = (JSONObject) o;
 					name = jsonO.get("name").toString();
 					number = jsonO.get("times").toString();
 					maxNumber = jsonO.get("maxTimes").toString();
 					points = jsonO.get("points").toString();
+					status = jsonO.get("status").toString();
 					if (jsonO.get("badge") != null) {
 						badge = jsonO.get("badge").toString();
 					}
+				}
+				if(status.equals("HIDDEN")){
+					continue;
 				}
 				System.out.println((name + description).length());
 				int badgeOffset = 0;
