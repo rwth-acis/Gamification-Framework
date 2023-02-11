@@ -259,7 +259,7 @@ public class LrsBotWorker implements Runnable {
 						System.out.println("no statements");
 					}
 					if (userStreaks.containsKey(user) && userStreaks.get(user) != null) {
-						System.out.print(userStreaks.get(user));
+						System.out.println(userStreaks.get(user));
 						for (String streakId : userStreaks.get(user).keySet()) {
 
 							JSONObject streak = (JSONObject) ((JSONObject) userStreaks.get(user)).get(streakId);
@@ -272,8 +272,23 @@ public class LrsBotWorker implements Runnable {
 									LocalDateTime.parse(streak.get("dueDate").toString())) < streakReminder * 60) {
 								String action = ((JSONObject) ((JSONArray) streak.get("openActions")).get(0))
 										.get("actionId").toString();
+								String desc = "";
+								for(String verb : this.getActionVerbs().keySet()){
+									for(Object o : this.getActionVerbs().get(verb)){
+										JSONObject jsonO = (JSONObject) o;
+										if(jsonO.get("id").equals(action)){
+											desc = jsonO.get("description").toString();
+											break;
+										}
+									}
+									if(!desc.equals("")){
+										break;
+									}
+								}
+						//		String actionDesc = this.getActionVerbs().get(action);
 								String message = streakMessage.replace("[streakAction]", action)
 										.replace("[streakCount]", streak.get("currentStreakLevel").toString());
+
 								JSONArray notification = new JSONArray();
 								JSONObject jsonObject = new JSONObject();
 								jsonObject.put("message", message);
