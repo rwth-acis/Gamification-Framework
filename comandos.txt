@@ -1,0 +1,22 @@
+docker build -t gamificationframeworkimage:0.0.1 ./Gamification-Framework
+docker exec -u 0 -it 1e102d7332bce1f23113f58e91dff8d413f271d73adfe8864202385aaf2f3f52 bash
+
+
+apt-get update
+apt-get -y install postgresql
+service postgresql start
+vim ~/../etc/postgresql/12/main/pg_hba.conf (peer para trust)
+service postgresql restart
+
+psql -U postgres
+ALTER USER postgres with password 'postgres';
+vim ~/../etc/postgresql/12/main/pg_hba.conf (trust para md5)
+service postgresql restart
+
+
+docker run --user=las2peer --env=PATH=/opt/openjdk-17/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env=JAVA_HOME=/opt/openjdk-17 --env=JAVA_VERSION=17-ea+14 --env=HTTP_PORT=8080 --env=HTTPS_PORT=8443 --env=LAS2PEER_PORT=9011 --workdir=/src --runtime=runc -dp 8080:8080 gamificationframeworkimage:0.0.1
+
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' container_name_or_id
+
+
+sudo docker exec -u 0 -it 0bafd10fbb5e159e2b3db44d11defe537d3e8a7834715959c0737128e398f32e bash

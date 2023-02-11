@@ -1,6 +1,9 @@
 package i5.las2peer.services.gamificationSuccessAwarenessModelService;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
@@ -321,26 +324,39 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 	 * @return 200 ok if the setup was done successfully
 	 */
 	public Response setup(){
-		if(!GamificationSuccessAwarenessModelServiceState.getInstance().isObsever()) {
-			((ExecutionContext)Context.getCurrent()).getCallerContext().getLocalNode().addObserver(this);
-			GamificationSuccessAwarenessModelServiceState.getInstance().setIsObserver(true);
-			
-			try(Statement stmn = gamificationDb.getConnection().createStatement()) {
-				int res = stmn.executeUpdate("INSERT INTO manager.member_info (member_id,first_name,last_name,email) "
-						+ "VALUES (\'" + GAMIFICATION_MEMBER_ID + "\',\'" + gamificationMemberFirstName + "\',\'" + gamificationMemberLastName + "\',\'" + gamificationMemberEmail + "\')"
-						+ "ON CONFLICT DO NOTHING");
-				if(res != 1) {
-					return Response.serverError().entity("success awareness member already existed").build();
+		try(FileWriter writer = new FileWriter(new File("outputtest.txt"))) {
+			if(!GamificationSuccessAwarenessModelServiceState.getInstance().isObsever()) {
+				writer.append("1");
+				((ExecutionContext)Context.getCurrent()).getCallerContext().getLocalNode().addObserver(this);
+				GamificationSuccessAwarenessModelServiceState.getInstance().setIsObserver(true);
+				writer.append("2");
+				try(Statement stmn = gamificationDb.getConnection().createStatement()) {
+					writer.append("3");
+					int res = stmn.executeUpdate("INSERT INTO manager.member_info (member_id,first_name,last_name,email) "
+							+ "VALUES (\'" + GAMIFICATION_MEMBER_ID + "\',\'" + gamificationMemberFirstName + "\',\'" + gamificationMemberLastName + "\',\'" + gamificationMemberEmail + "\')"
+							+ "ON CONFLICT DO NOTHING");
+					writer.append("4");
+					if(res != 1) {
+						writer.append("5 a");
+						return Response.serverError().entity("success awareness member already existed").build();
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+					writer.append("5 b");
+					return Response.serverError().entity(e.getMessage()).build();
 				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-				return Response.serverError().entity(e.getMessage()).build();
+				writer.append("5 c");
+				return Response.ok().entity("Setup completed successfully").build();
 			}
-			
-			
-			return Response.ok().entity("Setup completed successfully").build();
+			writer.append("5 d");
+			return Response.serverError().entity("Already is an observer").build();
+
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
-		return Response.serverError().entity("Already is an observer").build();
+		
+		return Response.serverError().entity("Ok").build();
 	}
 
 	/**

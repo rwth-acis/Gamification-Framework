@@ -88,3 +88,17 @@ spec:
                 name: gamification-service
                 port:
                   number: 80
+          - path: /gamification/devops(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
+          - path: /gamification/successawarenessmodel(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gamification-service
+                port:
+                  number: 80
