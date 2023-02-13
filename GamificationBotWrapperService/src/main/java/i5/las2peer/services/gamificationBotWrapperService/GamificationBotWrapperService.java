@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -573,7 +574,7 @@ public class GamificationBotWrapperService extends RESTService {
 	public ArrayList<String> achievementsPng(JSONArray achievements) {
 		// test if streaks always present or not
 		System.out.println(achievements);
-		String now = LocalDateTime.now().toString();
+		LocalDateTime now = LocalDateTime.now();
 		JSONObject streaks =(JSONObject) achievements.get(achievements.size()-1);
 		for (int i = 0; i < ((JSONArray) streaks.get("streaks")).size(); i++) {
 			JSONObject streak = (JSONObject) ((JSONArray) streaks.get("streaks")).get(i);
@@ -590,9 +591,15 @@ public class GamificationBotWrapperService extends RESTService {
 			if (achievement.get("badge_id") != null) {
 				badge = achievement.get("badge_id").toString();
 			}
+			if(ChronoUnit.MINUTES.between(now,
+			LocalDateTime.parse(streak.get("dueDate").toString())) <= 0){
+				times="0";
+			}
 			if(Integer.valueOf(highestStreakLevel)>=Integer.valueOf(maxTimes)){
 				status = "COMPLETED";
+				times = maxTimes;
 			}
+			
 			streak.put("times",times);
 			streak.put("maxTimes",maxTimes);
 			JSONArray actionArray = new JSONArray();
