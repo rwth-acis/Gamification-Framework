@@ -11,6 +11,7 @@ import java.net.HttpURLConnection;
 import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -572,6 +573,7 @@ public class GamificationBotWrapperService extends RESTService {
 	public ArrayList<String> achievementsPng(JSONArray achievements) {
 		// test if streaks always present or not
 		System.out.println(achievements);
+		String now = LocalDateTime.now().toString();
 		JSONObject streaks =(JSONObject) achievements.get(achievements.size()-1);
 		for (int i = 0; i < ((JSONArray) streaks.get("streaks")).size(); i++) {
 			JSONObject streak = (JSONObject) ((JSONArray) streaks.get("streaks")).get(i);
