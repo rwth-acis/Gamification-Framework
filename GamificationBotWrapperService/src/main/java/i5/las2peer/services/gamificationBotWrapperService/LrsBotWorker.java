@@ -300,6 +300,9 @@ public class LrsBotWorker implements Runnable {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
+					if(e.toString().contains("org.postgresql.util.PSQLException")){
+						this.users.remove(user);
+					}
 				}
 
 				try {
