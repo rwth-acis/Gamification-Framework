@@ -576,15 +576,20 @@ public class GamificationBotWrapperService extends RESTService {
 		for (int i = 0; i < ((JSONArray) streaks.get("streaks")).size(); i++) {
 			JSONObject streak = (JSONObject) ((JSONArray) streaks.get("streaks")).get(i);
 			String times = streak.get("currentStreakLevel").toString();
-			String maxTimes = streak.get("highestStreakLevel").toString();
+			String highestStreakLevel = streak.get("highestStreakLevel").toString();
+			String maxTimes = streak.get("streakLevel").toString();
 			JSONObject action = (JSONObject) streak.get("action");
 			JSONObject achievement = (JSONObject) streak.get("achievement");
 			String desc = achievement.get("description").toString();
 			String key = achievement.get("id").toString();
 			String points = achievement.get("point_value").toString();
+			String status = "REVEALED";
 			String badge = "";
 			if (achievement.get("badge_id") != null) {
 				badge = achievement.get("badge_id").toString();
+			}
+			if(Integer.valueOf(highestStreakLevel)>=Integer.valueOf(maxTimes)){
+				status = "COMPLETED";
 			}
 			streak.put("times",times);
 			streak.put("maxTimes",maxTimes);
@@ -595,7 +600,7 @@ public class GamificationBotWrapperService extends RESTService {
 			action.put("points",points);
 			action.put("name","streak");
 			action.put("badge",badge);
-			action.put("status","REVEALED");
+			action.put("status",status);
 			action.put("name",achievement.get("name").toString());
 			actionArray.add(action);
 			streak.put("actionArray", actionArray);
@@ -647,7 +652,7 @@ public class GamificationBotWrapperService extends RESTService {
 				// 60 text limit
 				int descOffset = 0;
 				ArrayList<String> descArr = new ArrayList<String>();
-				if ((name + description).length() > 60) {
+				if ((name + description).length() > 53) {
 					String[] split = description.split("\\s+");
 					String n = name;
 					String pre = "";
@@ -684,6 +689,9 @@ public class GamificationBotWrapperService extends RESTService {
 				int wOld = w;
 				int h = 55;
 				double progress = Double.parseDouble(number) / Double.parseDouble(maxNumber);
+				if(progress >1){
+					progress = 1.0;
+				}
 				double thickness = 3;
 				Stroke oldStroke = g.getStroke();
 				g.setStroke(new BasicStroke((float) thickness));

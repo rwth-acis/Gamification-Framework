@@ -321,8 +321,6 @@ public class LrsBotWorker implements Runnable {
 		client.setConnectorEndpoint(this.sbmURL +
 				"/SBFManager/bots/"
 				+ this.botName + "/webhook");
-		System.out.println("http://host.docker.internal:8090/SBFManager/bots/"
-				+ this.botName + "/webhook");
 		HashMap<String, String> headers = new HashMap<String, String>();
 		System.out.println("user");
 		String message = "";
@@ -349,7 +347,7 @@ public class LrsBotWorker implements Runnable {
 					jsonResult = (JSONObject) parser.parse(result1.getResponse());
 					System.out.println("parsing worked");
 					System.out.println(jsonResult);
-					if (userStreaks.containsKey(user)) {
+					if (userStreaks.containsKey(user) && userStreaks.get(user) != null && !userStreaks.get(user).isEmpty()) {
 						userStreaks.put(user,
 								(JSONObject) userStreaks.get(user).put(json.get("typeId").toString(), jsonResult));
 					} else {

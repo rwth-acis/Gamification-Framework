@@ -840,6 +840,7 @@ public class VisualizationDAO {
 		//	obj.put("notificationCheck", rs.getBoolean("use_notification"));
 	//		obj.put("notificationMessage", rs.getString("notif_message"));
 			obj.put("currentStreakLevel", rs.getInt("current_streak_level"));
+			obj.put("streakLevel", rs.getInt("streak_level"));
 			obj.put("highestStreakLevel", rs.getInt("highest_streak_level"));
 			obj.put("achievement_id", rs.getString("achievement_id"));
 			// this will cause rror
