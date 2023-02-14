@@ -822,7 +822,7 @@ public class VisualizationDAO {
 	 * @throws IOException  IOException
 	 */
 	public JSONObject getMemberStreakProgressDetailed(Connection conn, String gameId, String memberId) throws SQLException, IOException{
-		stmt =conn.prepareStatement("Select * from "+ gameId + ".member_streak JOIN "+ gameId + ".streak_achievement ON (member_streak.streak_id = streak_achievement.streak_id) JOIN "+ gameId + ".streak_action ON (streak_achievement.streak_id = streak_action.streak_id) WHERE member_id='"+memberId+"';");
+		stmt =conn.prepareStatement("WITH achs AS (Select achievement_id,unlocked from "+gameId+".member_streak_achievement WHERE MEMBER_ID = '"+memberId+"') Select * from "+ gameId + ".member_streak JOIN "+ gameId + ".streak_achievement ON (member_streak.streak_id = streak_achievement.streak_id) JOIN "+ gameId + ".streak_action ON (streak_achievement.streak_id = streak_action.streak_id) JOIN achs ON (streak_achievement.achievement_id=achs.achievement_id) WHERE member_id='"+memberId+"';");
 		ResultSet rs = stmt.executeQuery();
 		JSONArray arr = new JSONArray();
 		JSONObject resp = new JSONObject();
@@ -843,6 +843,7 @@ public class VisualizationDAO {
 			obj.put("streakLevel", rs.getInt("streak_level"));
 			obj.put("highestStreakLevel", rs.getInt("highest_streak_level"));
 			obj.put("achievement_id", rs.getString("achievement_id"));
+			obj.put("unlocked", rs.getString("unlocked"));
 			// this will cause rror
 			obj.put("action_id", rs.getString("action_id"));
 			stmt = conn.prepareStatement("Select * from "+gameId+".action WHERE action_id='"+rs.getString("action_id")+"'");

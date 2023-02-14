@@ -595,7 +595,8 @@ public class GamificationBotWrapperService extends RESTService {
 			LocalDateTime.parse(streak.get("dueDate").toString())) <= 0){
 				times="0";
 			}
-			if(Integer.valueOf(highestStreakLevel)>=Integer.valueOf(maxTimes)){
+
+			if(streak.get("unlocked").toString().equals("t")){
 				status = "COMPLETED";
 				times = maxTimes;
 			}
