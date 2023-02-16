@@ -99,36 +99,21 @@ public class GamificationDevopsService extends RESTService{
 
 	public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
 
-	private String gamificationJdbcDriverClassName;
-	private String gamificationJdbcLogin;
-	private String gamificationJdbcPass;	
-	private String gamificationJdbcUrl;
-	private String gamificationJdbcSchema;
-
-	private String modelPersistanceJdbcDriverClassName;
-	private String modelPersistanceJdbcLogin;
-	private String modelPersistanceJdbcPass;
-	private String modelPersistanceJdbcUrl;
-	private String modelPersistanceJdbcSchema;
-
+	private String jdbcDriverClassName;
+	private String jdbcLogin;
+	private String jdbcPass;	
+	private String jdbcUrl;
+	private String jdbcSchema;
 	private DatabaseManager gamificationDb;
-	private DatabaseManager modelPersistanceDb;
 
 	private String devopsServices;
-	
-	public static final String GAMIFICATION_MEMBER_ID = "devops";
-	private static String gamificationMemberFirstName;
-	private static String gamificationMemberLastName;
-	private static String gamificationMemberEmail;
 
 
 	public GamificationDevopsService(){
 		setFieldValues(); // This sets the values of the configuration file
 
-		gamificationDb = new DatabaseManager(gamificationJdbcDriverClassName, gamificationJdbcLogin
-				, gamificationJdbcPass, gamificationJdbcUrl, gamificationJdbcSchema);
-		modelPersistanceDb = new DatabaseManager(modelPersistanceJdbcDriverClassName, modelPersistanceJdbcLogin,
-				modelPersistanceJdbcPass, modelPersistanceJdbcUrl, modelPersistanceJdbcSchema);
+		gamificationDb = new DatabaseManager(jdbcDriverClassName, jdbcLogin
+				, jdbcPass, jdbcUrl, jdbcSchema);
 	}
 
 	
@@ -467,10 +452,6 @@ public class GamificationDevopsService extends RESTService{
 
 	public DatabaseManager getGamificationDatabase() {
 		return gamificationDb;
-	}
-
-	public DatabaseManager getModelPersistenceDatabase() {
-		return modelPersistanceDb;
 	}
 
 }

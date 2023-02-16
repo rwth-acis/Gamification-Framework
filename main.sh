@@ -4,8 +4,8 @@ function configure_function {
 	echo "[Configure]"
    	echo "Reading config"
 	source config/gamification.config
-
-	CONF_PROPERTIES="jdbcDriverClassName=$jdbcDriverClassName\njdbcUrl=$jdbcUrl\njdbcSchema=$jdbcSchema\njdbcLogin=$jdbcLogin\njdbcPass=$jdbcPass\nmonitor=TRUE"
+	CONF_PROPERTIES="jdbcDriverClassName=$jdbcDriverClassName\njdbcUrl=$jdbcUrl\njdbcSchema=$jdbcSchema\njdbcLogin=$jdbcLogin\njdbcPass=$jdbcPass\nmonitor=TRUE\nsuccessAwarenessModelJdbcDriverClassName=$successAwarenessModelJdbcDriverClassName\nsuccessAwarenessModelJdbcLogin=$successAwarenessModelJdbcLogin\nsuccessAwarenessModelJdbcPass=$successAwarenessModelJdbcPass\nsuccessAwarenessModelJdbcUrl=$successAwarenessModelJdbcUrl\nsuccessAwarenessModelJdbcSchema=$successAwarenessModelJdbcSchema\ndevopsServices=$devopsServices"
+CONF_PROPERTIES_DATA_PROCESSING="databaseUser=$databaseUser\ndatabasePassword=$databasePassword\ndatabaseName=$databaseName\ndatabaseHost=$databaseHost\ndatabasePort=$databasePort"
 
 	CONF_APP_PROPERTIES="gitHubUser=$gitHubCAEUser\ngitHubUserMail=$gitHubCAEUserMail\ngitHubOrganizationOrigin=$gitHubCAEOrganizationOrigin\ngitHubUserNewRepo=$gitHubUserNewRepo\ngitHubUserMailNewRepo=$gitHubUserMailNewRepo\ngitHubOrganizationNewRepo=$gitHubOrganizationNewRepo\ngitHubPasswordNewRepo=$gitHubPasswordNewRepo\nmonitor=TRUE"
 
@@ -19,8 +19,9 @@ function configure_function {
 	printf $CONF_PROPERTIES > GamificationStreakService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties
 	printf $CONF_PROPERTIES > GamificationQuestService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties
 	printf $CONF_PROPERTIES > GamificationSuccessAwarenessModelService/etc/i5.las2peer.services.gamificationSuccessAwarenessModelService.GamificationSuccessAwarenessModelService.properties
+	printf $CONF_PROPERTIES > GamificationDevopsService/etc/i5.las2peer.services.gamificationDevopsService.GamificationDevopsService.properties
 	printf $CONF_PROPERTIES > GamificationVisualizationService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties
-	printf $CONF_APP_PROPERTIES > GamificationGamifierService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties
+	printf $CONF_PROPERTIES_DATA_PROCESSING > GamificationSuccessAwarenessModelService/etc/i5.las2peer.services.mobsos.dataProcessing.MobSOSDataProcessingService.properties
 
 	echo "Copying executable shell"
 	cp -f GamificationAchievementService/etc/bin/join_network.sh GamificationAchievementService/join_network.sh
@@ -31,6 +32,7 @@ function configure_function {
 	cp -f GamificationQuestService/etc/bin/join_network.sh GamificationQuestService/join_network.sh
 	cp -f GamificationStreakService/etc/bin/join_network.sh GamificationStreakService/join_network.sh
 	cp -f GamificationSuccessAwarenessModelService/etc/bin/join_network.sh GamificationSuccessAwarenessModelService/join_network.sh
+	cp -f GamificationSuccessAwarenessModelService/etc/bin/join_network.sh GamificationDevopsService/join_network.sh
 	cp -f GamificationVisualizationService/etc/bin/join_network.sh GamificationVisualizationService/join_network.sh
 	cp -f GamificationGamifierService/etc/bin/join_network.sh GamificationGamifierService/join_network.sh
 	cp -f GamificationGameService/etc/bin/join_network.sh GamificationGameService/join_network.sh
@@ -49,6 +51,7 @@ function configure_function {
 	sed -i 's/\-p \([0-9]*\) /-p '$QUEST_PORT' /' GamificationQuestService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$STREAK_PORT' /' GamificationStreakService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$STREAK_PORT' /' GamificationSuccessAwarenessModelService/join_network.sh
+	sed -i 's/\-p \([0-9]*\) /-p '$STREAK_PORT' /' GamificationDevopsService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$VISUALIZATION_PORT' /' GamificationVisualizationService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$GAME_PORT' /' GamificationGameService/join_network_in_a_node.sh
 	
@@ -65,6 +68,7 @@ function configure_function {
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationGameService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationStreakService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationSuccessAwarenessModelService/join_network.sh
+	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationDevopsService/join_network.sh
 
 	echo "Make it executable"
 	chmod +x GamificationAchievementService/join_network.sh
@@ -77,6 +81,7 @@ function configure_function {
 	chmod +x GamificationGamifierService/join_network.sh
 	chmod +x GamificationGameService/join_network.sh
 	chmod +x GamificationSuccessAwarenessModelService/join_network.sh
+	chmod +x GamificationDevopsService/join_network.sh
 	chmod +x GamificationStreakService/join_network.sh
 	chmod +x GamificationGameService/join_network_in_a_node.sh
 

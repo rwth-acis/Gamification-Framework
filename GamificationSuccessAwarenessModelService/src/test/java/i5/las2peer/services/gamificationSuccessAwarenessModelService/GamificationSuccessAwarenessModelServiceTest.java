@@ -23,8 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 
 import i5.las2peer.api.p2p.ServiceNameVersion;
@@ -43,10 +41,9 @@ import i5.las2peer.testing.TestSuite;
 
 /**
  *
- * Tests for the Monitoring Data Provision Service. Mostly just prints out results of method invocations, since it is
- * not predictable which data is stored at the time these tests are run.
+ * Tests for the Success Awareness Model Service
  *
- * @author Peter de Lange
+ * @author David Almeida
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -74,6 +71,14 @@ public class GamificationSuccessAwarenessModelServiceTest {
 
 	private ServiceAgentImpl dataProcessingService;
 
+//	
+//	public static void main(String[] args) throws Exception{
+//		GamificationSuccessAwarenessModelServiceTest t = new GamificationSuccessAwarenessModelServiceTest();
+//		t.startServer();
+//		t.test1AddSuccessAwareness();
+//		t.shutDownServer();
+//	}
+	
 	@Before
 	public void startServer() throws Exception {
 		// start Node
@@ -101,7 +106,7 @@ public class GamificationSuccessAwarenessModelServiceTest {
 		node.startService(new ServiceNameVersion(GamificationGameService.class.getName(), "0.1"), "a pass");
 
 		//add to the service when built - add to read.me
-//		node.addObserver((GamificationSuccessAwarenessModelService)service);
+		node.addObserver((GamificationSuccessAwarenessModelService)service);
 
 		// start connector
 		logStream = new ByteArrayOutputStream();

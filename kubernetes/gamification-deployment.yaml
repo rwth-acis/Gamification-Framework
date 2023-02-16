@@ -16,8 +16,17 @@ spec:
     spec: 
       containers: 
         - 
-          image: registry.tech4comp.dbis.rwth-aachen.de/rwthacis/gamification
+          image: david3941/gamificationframeworkimage:0.0.1
           name: gamification
           ports: 
             - 
               containerPort: 8080
+          env:
+            - name: jdbcUrl
+              value: "jdbc:postgresql://gamification-db-service:5432/"
+            - name: successAwarenessModelJdbcUrl
+              value: "jdbc:mysql://gamification-data-processing-db-service:3306/"
+            - name: successAwarenessHost
+              value: "gamification-data-processing-db-service"
+            - name: successAwarenessPort
+              value: 3306

@@ -112,11 +112,11 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 
 	public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
 
-	private String gamificationJdbcDriverClassName;
-	private String gamificationJdbcLogin;
-	private String gamificationJdbcPass;	
-	private String gamificationJdbcUrl;
-	private String gamificationJdbcSchema;
+	private String jdbcDriverClassName;
+	private String jdbcUrl;
+	private String jdbcLogin;	
+	private String jdbcPass;
+	private String jdbcSchema;
 
 	private String successAwarenessModelJdbcDriverClassName;
 	private String successAwarenessModelJdbcLogin;
@@ -143,13 +143,17 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 				successAwarenessModelJdbcUrl,
 				successAwarenessModelJdbcSchema
 				);
-
+		try {
+			successAwarenessModelDb.getConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		gamificationDb = new DatabaseManager(
-				gamificationJdbcDriverClassName,
-				gamificationJdbcLogin,
-				gamificationJdbcPass,
-				gamificationJdbcUrl,
-				gamificationJdbcSchema);
+				jdbcDriverClassName,
+				jdbcLogin,
+				jdbcPass,
+				jdbcUrl,
+				jdbcSchema);
 	}
 
 	private Response handleGamifiySuccessModel(String gameId,

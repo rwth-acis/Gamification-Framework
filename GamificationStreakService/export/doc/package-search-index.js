@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"i5.las2peer.services.gamificationStreakService"},{"l":"i5.las2peer.services.gamificationStreakService.database"}];updateSearchResults();

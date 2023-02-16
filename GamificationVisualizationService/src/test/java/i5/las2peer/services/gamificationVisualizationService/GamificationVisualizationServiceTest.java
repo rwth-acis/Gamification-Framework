@@ -428,11 +428,11 @@ public class GamificationVisualizationServiceTest {
 			final String GAME_ID = "test";
 			final String MEMBER_NAME = "MemberSuccessTest";
 			ClientResponse result = c1.sendRequest("GET", mainPath + "successawarenessmodel/" + GAME_ID + "/" + MEMBER_NAME,"");
-			Assert.assertEquals(200, result.getHttpCode());
+			assertEquals(200, result.getHttpCode());
 			System.out.println(result.getResponse());
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.fail(e.toString());
+			fail(e.toString());
 		}
 	}
 }

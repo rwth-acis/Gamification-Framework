@@ -137,6 +137,9 @@ task importProperties(type: Copy){
 	from "$rootDir/GamificationVisualizationService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties"
 	from "$rootDir/GamificationGamifierService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties"
 	from "$rootDir/GamificationStreakService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties"
+	from "$rootDir/GamificationSuccessAwarenessModelService/etc/i5.las2peer.services.gamificationSuccessAwarenessModelService.GamificationSuccessAwarenessModelService.properties"
+	from "$rootDir/GamificationDevopsService/etc/i5.las2peer.services.gamificationDevopsService.GamificationDevopsService.properties"
+	from "$rootDir/GamificationSuccessAwarenessModelService/etc/i5.las2peer.services.mobsos.dataProcessing.MobSOSDataProcessingService.properties"
 	into "$projectDir/etc"
 }
 
