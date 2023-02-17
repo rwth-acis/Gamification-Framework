@@ -747,7 +747,7 @@ public class GamificationBotWrapperService extends RESTService {
 				}
 				if(dateOffset > 0 ){
 					g.drawString("ADDITIONAL INFORMATION:", 10, h + y + 60 + descOffset + badgeOffset + 30);
-				g.drawString("- Complete between" + lockedDate + " and " + dueDate, 10, h + y + 90 + descOffset+ badgeOffset + 30);
+				g.drawString("- Complete between " + lockedDate.replace("T", " ") + " and " + dueDate.replace("T", " "), 10, h + y + 90 + descOffset+ badgeOffset + 30);
 					
 				}
 				BufferedImage img = ImageIO.read(new File(
