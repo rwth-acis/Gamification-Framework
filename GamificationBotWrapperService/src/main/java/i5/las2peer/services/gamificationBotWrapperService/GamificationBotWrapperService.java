@@ -1056,10 +1056,10 @@ public class GamificationBotWrapperService extends RESTService {
 				System.out.println(jsonR);
 				JSONArray multiFiles = (JSONArray) jsonR.get("multiFiles");
 				jsonR.remove("multiFiles");
-				String bulletBadges = "0 Default \n";
+				String bulletBadges = "1. Default \n";
 				if (multiFiles != null) {
 					for (int i = 0; i < multiFiles.size(); i++) {
-						bulletBadges += (i + 1) + ". " + ((JSONObject) multiFiles.get(i)).get("name").toString() + "\n";
+						bulletBadges += (i + 2) + ". " + ((JSONObject) multiFiles.get(i)).get("name").toString() + "\n";
 					}
 				}
 				jsonR.put("closeContext", false);
@@ -1071,7 +1071,7 @@ public class GamificationBotWrapperService extends RESTService {
 			}
 
 			try {
-				int i = 1;
+				int i = 2;
 				System.out.println("monkey");
 				Response r = getBadges(body);
 				JSONObject jsonR = (JSONObject) r.getEntity();
@@ -1097,7 +1097,7 @@ public class GamificationBotWrapperService extends RESTService {
 					}
 				}
 
-				if (userMessage.contains("0")
+				if (userMessage.contains("1") || userMessage.contains("1.")
 						|| "default".contains(splitMessage.toLowerCase())) {
 					chosen = (JSONObject) new JSONObject();
 					chosen.put("id", "");
