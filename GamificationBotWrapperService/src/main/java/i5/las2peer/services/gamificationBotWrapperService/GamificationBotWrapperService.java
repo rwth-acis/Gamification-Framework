@@ -586,6 +586,8 @@ public class GamificationBotWrapperService extends RESTService {
 			String desc = achievement.get("description").toString();
 			String key = achievement.get("id").toString();
 			String points = achievement.get("point_value").toString();
+			String lockedDate = streak.get("lockedDate").toString();
+			String dueDate = streak.get("dueDate").toString();
 			String status = "REVEALED";
 			String badge = "";
 			if (achievement.get("badge_id") != null) {
@@ -611,6 +613,8 @@ public class GamificationBotWrapperService extends RESTService {
 			action.put("name","streak");
 			action.put("badge",badge);
 			action.put("status",status);
+			action.put("lockedDate",lockedDate);
+			action.put("dueDate",dueDate);
 			action.put("name",achievement.get("name").toString());
 			actionArray.add(action);
 			streak.put("actionArray", actionArray);
@@ -661,6 +665,14 @@ public class GamificationBotWrapperService extends RESTService {
 				}
 				// 60 text limit
 				int descOffset = 0;
+				String lockedDate = "";
+				String dueDate = "";
+				int dateOffset = 0;
+				if(quest.containsKey("lockedDate")){
+					lockedDate = quest.get("lockedDate").toString();
+				    dueDate = quest.get("dueDate").toString();
+					dateOffset = 60; 
+				}
 				ArrayList<String> descArr = new ArrayList<String>();
 				if ((name + description).length() > 53) {
 					String[] split = description.split("\\s+");
@@ -685,7 +697,7 @@ public class GamificationBotWrapperService extends RESTService {
 					}
 					descArr.add(pre);
 				}
-				BufferedImage image = new BufferedImage(820, 190 + badgeOffset + descOffset, ColorSpace.TYPE_RGB);
+				BufferedImage image = new BufferedImage(820, 190 + badgeOffset + descOffset + dateOffset, ColorSpace.TYPE_RGB);
 				Font font = new Font("Comic Sans MS", Font.BOLD, 20);
 				System.out.println("Working Directory = " + image.getWidth() + image.getHeight());
 				// Graphics g = image.getGraphics();
@@ -732,6 +744,11 @@ public class GamificationBotWrapperService extends RESTService {
 				g.drawString("- " + points + " Points", 10, h + y + 60 + descOffset);
 				if (badgeOffset != 0) {
 					g.drawString("- BADGE: " + badge, 10, h + y + 90 + descOffset);
+				}
+				if(dateOffset > 0 ){
+					g.drawString("ADDITIONAL INFORMATION:", 10, h + y + 60 + descOffset + badgeOffset + 30);
+				g.drawString("- Complete between" + lockedDate + " and " + dueDate, 10, h + y + 90 + descOffset+ badgeOffset + 30);
+					
 				}
 				BufferedImage img = ImageIO.read(new File(
 						filePath + "/etc/treasureChest.png"));
