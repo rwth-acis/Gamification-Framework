@@ -923,9 +923,9 @@ public class GamificationBotWrapperService extends RESTService {
 				response.put("closeContext", false);
 				String text = response.get("text").toString();
 				int actionCount = Integer.valueOf(response.get("actionCount").toString());
-				text += String.valueOf(actionCount + 1) + ". " + pointText;
-				text += String.valueOf(actionCount + 2) + ". " + "Achievements";
-				text += String.valueOf(actionCount + 3) + ". " + "Badges";
+				text += String.valueOf(actionCount + 1) + ". " + pointText +" \n";
+				text += String.valueOf(actionCount + 2) + ". " + "Achievements \n";
+				text += String.valueOf(actionCount + 3) + ". " + "Badges \n";
 				response.put("text",text);
 				userContext.put(user, true);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
