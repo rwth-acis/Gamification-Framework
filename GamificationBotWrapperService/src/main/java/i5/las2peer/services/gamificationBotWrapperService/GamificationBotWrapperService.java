@@ -1119,7 +1119,7 @@ public class GamificationBotWrapperService extends RESTService {
 				System.out.println(jsonR);
 				JSONArray multiFiles = (JSONArray) jsonR.get("multiFiles");
 				jsonR.remove("multiFiles");
-				String bulletBadges = "1. Default \n";
+				String bulletBadges = "1. Default (No Badge)\n";
 				if (multiFiles != null) {
 					for (int i = 0; i < multiFiles.size(); i++) {
 						bulletBadges += (i + 2) + ". " + ((JSONObject) multiFiles.get(i)).get("name").toString() + "\n";
