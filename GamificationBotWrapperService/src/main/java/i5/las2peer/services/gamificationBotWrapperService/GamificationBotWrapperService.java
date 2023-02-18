@@ -926,7 +926,7 @@ public class GamificationBotWrapperService extends RESTService {
 				text += String.valueOf(actionCount + 1) + ". " + pointText;
 				text += String.valueOf(actionCount + 2) + ". " + "Achievements";
 				text += String.valueOf(actionCount + 3) + ". " + "Badges";
-
+				response.put("text",text);
 				userContext.put(user, true);
 				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
 						.type(MediaType.APPLICATION_JSON).build();
@@ -967,6 +967,7 @@ public class GamificationBotWrapperService extends RESTService {
 
 				if (chosen == null) {
 					String other = "";
+					
 					if (userMessage.toLowerCase().contains(String.valueOf(i + 1))) {
 						other = "point";
 					} else if (userMessage.toLowerCase().contains(String.valueOf(i + 2))) {
@@ -974,6 +975,7 @@ public class GamificationBotWrapperService extends RESTService {
 					} else if (userMessage.toLowerCase().contains(String.valueOf(i + 3))) {
 						other = "badge";
 					}
+					System.out.println(other + i);
 					if (!other.equals("")) {
 
 						Serializable result = Context.get().invokeInternally(
