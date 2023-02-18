@@ -585,6 +585,51 @@ public class VisualizationDAO {
 		}
 		return arr;
 	}
+
+	/**
+	 * Get local leaderboard of a member over actions done
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberLocalLeaderboardOverCollectable(Connection conn,String gameId, String collectable) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		if(collectable.equals("point")){
+			stmt = conn.prepareStatement("Select member_point.member_id,nickname,point_value as count, row_number() over (order by point_value desc) from "+gameId+".member_point Join "+gameId+".member_profile on (member_point.member_id=member_profile.member_id) order by point_value desc;");
+		} else {
+			stmt = conn.prepareStatement("With res as (Select count(*),member_"+collectable+".member_id,member_profile.nickname from "+gameId+".member_"+collectable+" JOIN "+gameId+".member_profile ON (member_"+collectable+".member_id=member_profile.member_id) group by member_"+collectable+".member_id,nickname order by (count(*)) DESC) Select *,row_number() OVER (ORDER BY count DESC) from res;");
+		}
+		ResultSet rs = stmt.executeQuery();
+		List<String> users = new ArrayList<String>();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("nickname", rs.getString("nickname"));
+			obj.put("actioncount", rs.getInt("count"));
+			arr.put(obj);
+			users.add(rs.getString("member_id"));
+		}
+		stmt = conn.prepareStatement("SELECT * from "+gameId+".member Natural join "+gameId+".member_profile;");
+		ResultSet rs2 = stmt.executeQuery();
+		int lastPlace = arr.length()+1;
+		while(rs2.next()){
+			String user = rs2.getString("member_id");
+			if(!users.contains(user)){
+				JSONObject obj = new JSONObject();
+				obj.put("memberId",user);
+				obj.put("rank",lastPlace);
+				obj.put("nickname", rs2.getString("nickname"));
+				lastPlace++;
+				obj.put("actioncount",0);
+				arr.put(obj);
+			}
+		}
+		return arr;
+	}
 	
 	/**
 	 * Get global leaderboard of a member
