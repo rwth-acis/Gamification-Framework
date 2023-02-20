@@ -120,7 +120,7 @@ public class GamificationDevopsService extends RESTService{
 	public Response handleGamifyTestsRequest(String gameId,
 			String member,
 			String contentType,byte[] formData){
-		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/successawareness/"+gameId, true);
+		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "POST " + "gamification/devops/"+gameId, true);
 
 		GamificationDevopsServiceState.create(devopsServices);
 		

@@ -99,6 +99,12 @@ public class GamificationVisualizationService extends RESTService {
 		setFieldValues();
 		System.out.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema);
 		dbm = new DatabaseManager(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
+		try {
+			dbm.getConnection();
+			System.out.println("Connection to gamificaiton db is working!");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		this.visualizationAccess = new VisualizationDAO();
 	}
 
@@ -142,11 +148,13 @@ public class GamificationVisualizationService extends RESTService {
 			@ApiParam(value = "Member ID", required = true) @PathParam("memberId") String memberId) {
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
-
+		System.out.println("here1!");
 		Agent agent = Context.getCurrent().getMainAgent();
 		if (agent instanceof AnonymousAgent) {
+			System.out.println("will be unauthorized");
 			return unauthorizedMessage();
 		}
+		System.out.println("here2");
 
 		try {
 			conn = dbm.getConnection();
@@ -2056,19 +2064,23 @@ public class GamificationVisualizationService extends RESTService {
 			notes = "This returns the gamified devops actions done by a member in a game")
 	public Response getMemberGamifieDevopsActions(@PathParam("gameId") String gameId
 			,@PathParam("memberId") String memberId) {
+		System.out.println("here1!");
 		Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_99, "GET" + "gamification/devops/" + gameId + "/" + memberId, true);
-
+		System.out.println("here2!");
 		JSONObject objResponse = new JSONObject();
-
+		System.out.println("here3!");
 		JSONArray jsons = new JSONArray();
 		try(PreparedStatement stmn = dbm.getConnection().prepareStatement(
 				"SELECT * FROM " + gameId + ".devops_model WHERE member_id = ?")) {
+			System.out.println("here4!");
 			stmn.setString(1, memberId);
 
 			stmn.execute();	
-
+			System.out.println("here5!");
 			ResultSet set = stmn.getResultSet();
+			System.out.println("here7!");
 			ResultSetMetaData metaData = set.getMetaData();
+			System.out.println("here8!");
 			while(set.next()) {
 				JSONObject json = new JSONObject();
 				for(int i = 1; i <= metaData.getColumnCount(); i++) {
@@ -2076,12 +2088,16 @@ public class GamificationVisualizationService extends RESTService {
 				}
 				jsons.put(json);
 			}
+			System.out.println("here9!");
 		}catch(SQLException e) {
+			System.out.println("error!: " + e.getMessage());
 			objResponse.put("message", e.getMessage());
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 			return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse).build();	
 		}
+		System.out.println("here10!");
 		objResponse.put("response", jsons.toString());
+		System.out.println("here11!");
 		return Response.ok().entity(objResponse.toString()).build();
 	}
 }

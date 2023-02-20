@@ -23,9 +23,11 @@ RUN dos2unix /src/main.sh
 
 RUN chmod +x ./gradlew
 RUN chmod +x /src/main.sh
-RUN ./main.sh -m build
+#RUN ./main.sh -m clean
+#RUN ./main.sh -m build
 
 EXPOSE $HTTP_PORT
 EXPOSE $HTTPS_PORT
 EXPOSE $LAS2PEER_PORT
-CMD ["/src/main.sh", "-r", "start_one_node"]
+#CMD ["/src/main.sh", "-r", "start_one_node"]
+CMD sleep infinity

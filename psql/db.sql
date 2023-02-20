@@ -1,4 +1,4 @@
-﻿-- user : gameadmin
+-- user : gameadmin
 -- usergroup : gameuser
 
 CREATE SCHEMA manager AUTHORIZATION gamification;

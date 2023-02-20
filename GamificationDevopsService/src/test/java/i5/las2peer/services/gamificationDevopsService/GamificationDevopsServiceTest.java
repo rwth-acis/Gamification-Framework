@@ -76,65 +76,6 @@ public class GamificationDevopsServiceTest {
 
 	private static final String TESTING_URL = "gamification/devopstest/test";
 	
-	public static void main(String[] args) throws Exception{
-		Map<String, String> headers = new HashMap<>();
-
-		headers.put("Accept-Encoding","gzip, deflate");
-		headers.put("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
-		String boundary =  "--32532twtfaweafwsgfaegfawegf4"; 
-
-		JSONArray allTests = new JSONArray();
-		
-		JSONObject testingObj = new JSONObject();
-		StatusCodeAssertion ass = new StatusCodeAssertion(StatusCodeAssertion.COMPARISON_OPERATOR_EQUALS, 200);
-//		BodyAssertion ass2 = new BodyAssertion(-1,-1,-1
-//				,new BodyAssertionOperator(-1, ResponseBodyOperator.HAS_TYPE.getId(), -1,4 , null, null));
-//		BodyAssertion ass3 = new BodyAssertion(-1,-1,-1
-//				,new BodyAssertionOperator(-1, ResponseBodyOperator.HAS_FIELD.getId(), -1,4,"test", null));
-		BodyAssertionOperator followingOperator = new BodyAssertionOperator(-1, ResponseBodyOperator.ALL_LIST_ENTRIES.getId(), -1,2,"test", null);
-		BodyAssertion ass4 = new BodyAssertion(-1,-1,-1
-				,new BodyAssertionOperator(-1, ResponseBodyOperator.HAS_LIST_ENTRY_THAT.getId(), -1,4,"test", followingOperator));
-		
-		//			TestRequest request = new TestRequest("GET", "http://kubernetes.docker.internal:8080/gamification/devops/test?member=MemberSuccessTest",
-//				Arrays.asList(ass));
-		
-		
-		JSONObject pathParams = new JSONObject();
-		pathParams.put("boundary", boundary);
-		pathParams.put("contentType", "multipart/form-data");
-		pathParams.put("headers", headers);
-		
-		TestRequest request = new TestRequest("GET", "gamification/devopstest/test",
-				pathParams,-1,null,Arrays.asList(ass,ass4));
-		TestCase test = new TestCase("test", Arrays.asList(request));
-		
-		ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
-	    ObjectOutputStream os = new ObjectOutputStream(byteArrayOut);
-	    os.writeObject(test);
-					
-		testingObj.put("test",Base64.toBase64String(byteArrayOut.toByteArray()));
-
-		//	0-5 star rating
-		Map<String,String> action = new HashMap<>();
-		action.put("actionid", ACTION_ID);
-		action.put("actionname", "action name");
-		action.put("actiondesc", "action description");
-		action.put("actionpointvalue", "50");
-		action.put("actionnotificationcheck", "true");
-		action.put("actionnotificationmessage", "This is notification message");
-		testingObj.put("gamificationObject", action);
-		testingObj.put("starRating", 1.5);
-		testingObj.put("scope", "test");
-		
-		allTests.add(testingObj);
-		
-		JSONObject toSend = new JSONObject();
-//		user1 = MockAgentFactory.getAdam();
-//		toSend.put("agentId", user1.getIdentifier());
-		toSend.put("allTests", allTests.toJSONString());
-		
-		System.out.println(toSend.toJSONString());
-	}
 	
 	@Before
 	public void startServer() throws Exception {

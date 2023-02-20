@@ -21,8 +21,9 @@ public class DatabaseManager {
 		dataSource.setDriverClassName(jdbcDriverClassName);
 		dataSource.setUsername(jdbcLogin);
 		dataSource.setPassword(jdbcPass);
+		System.out.println("jdbcDriverClassName: " + jdbcDriverClassName + "\tjdbcLogin: " + jdbcLogin + "\tjdbcPass: " + jdbcPass + "\tjdbcUrl: " + jdbcUrl + "\tjdbcSchema: " + jdbcSchema);
 		if(jdbcDriverClassName.contains("mysql"))
-			dataSource.setUrl(jdbcUrl + jdbcSchema + "?autoReconnect=true&useSSL=false&serverTimezone=UTC");
+			dataSource.setUrl(jdbcUrl + jdbcSchema + "?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false&serverTimezone=UTC");
 		else 
 			dataSource.setUrl(jdbcUrl + jdbcSchema);
 			

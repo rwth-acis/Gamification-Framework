@@ -16,17 +16,19 @@ spec:
     spec: 
       containers: 
         - 
-          image: david3941/gamificationframeworkimage:0.0.1
+          image: david3941/gamificationframeworkimage:0.0.6
           name: gamification
           ports: 
             - 
               containerPort: 8080
           env:
             - name: jdbcUrl
-              value: "jdbc:postgresql://gamification-db-service:5432/"
+              value: "jdbc:postgresql://gamification-db-service.ma-almeida:5432/"
             - name: successAwarenessModelJdbcUrl
-              value: "jdbc:mysql://gamification-data-processing-db-service:3306/"
+              value: "jdbc:mysql://gamification-data-processing-db-service.ma-almeida:3306/"
             - name: successAwarenessHost
-              value: "gamification-data-processing-db-service"
+              value: "gamification-data-processing-db-service.ma-almeida"
             - name: successAwarenessPort
-              value: 3306
+              value: "3306"
+          command: ["/bin/sh","-c"]
+          args: ["./main.sh -s; ./main.sh -m build && ./main.sh -r start_one_node"]

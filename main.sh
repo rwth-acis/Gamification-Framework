@@ -5,7 +5,7 @@ function configure_function {
    	echo "Reading config"
 	source config/gamification.config
 	CONF_PROPERTIES="jdbcDriverClassName=$jdbcDriverClassName\njdbcUrl=$jdbcUrl\njdbcSchema=$jdbcSchema\njdbcLogin=$jdbcLogin\njdbcPass=$jdbcPass\nmonitor=TRUE\nsuccessAwarenessModelJdbcDriverClassName=$successAwarenessModelJdbcDriverClassName\nsuccessAwarenessModelJdbcLogin=$successAwarenessModelJdbcLogin\nsuccessAwarenessModelJdbcPass=$successAwarenessModelJdbcPass\nsuccessAwarenessModelJdbcUrl=$successAwarenessModelJdbcUrl\nsuccessAwarenessModelJdbcSchema=$successAwarenessModelJdbcSchema\ndevopsServices=$devopsServices"
-CONF_PROPERTIES_DATA_PROCESSING="databaseUser=$databaseUser\ndatabasePassword=$databasePassword\ndatabaseName=$databaseName\ndatabaseHost=$databaseHost\ndatabasePort=$databasePort"
+	CONF_PROPERTIES_DATA_PROCESSING="databaseUser=$databaseUser\ndatabasePassword=$databasePassword\ndatabaseName=$databaseName\ndatabaseHost=$databaseHost\ndatabasePort=$databasePort\ndatabaseTypeInt=$databaseTypeInt"
 
 	CONF_APP_PROPERTIES="gitHubUser=$gitHubCAEUser\ngitHubUserMail=$gitHubCAEUserMail\ngitHubOrganizationOrigin=$gitHubCAEOrganizationOrigin\ngitHubUserNewRepo=$gitHubUserNewRepo\ngitHubUserMailNewRepo=$gitHubUserMailNewRepo\ngitHubOrganizationNewRepo=$gitHubOrganizationNewRepo\ngitHubPasswordNewRepo=$gitHubPasswordNewRepo\nmonitor=TRUE"
 

@@ -101,5 +101,17 @@
         <parameter annotation="path" index="2" name="memberId" type="java.lang.String"/>
       </parameters>
     </method>
+    <method httpMethod="get" name="getMemberGamifiedMeasures" path="/successawareness/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
+    <method httpMethod="get" name="getMemberGamifiedDevopsActions" path="/devops/{gameId}/{memberId}" produces="application/json" type="i5.las2peer.restMapper.HttpResponse">
+      <parameters>
+        <parameter annotation="path" index="0" name="gameId" type="java.lang.String"/>
+        <parameter annotation="path" index="1" name="memberId" type="java.lang.String"/>
+      </parameters>
+    </method>
   </methods>
 </service>

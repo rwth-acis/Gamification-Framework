@@ -2,17 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata: 
   labels: 
-    app: gamification
+    app: gamification-db
   name: gamification-db
 spec: 
   replicas: 1
   selector: 
     matchLabels: 
-      app: gamification
+      app: gamification-db
   template: 
     metadata: 
       labels: 
-        app: gamification
+        app: gamification-db
     spec: 
       containers: 
         - 

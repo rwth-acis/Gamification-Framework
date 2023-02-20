@@ -1,4 +1,4 @@
-﻿DROP DATABASE IF EXISTS gamification;
+DROP DATABASE IF EXISTS gamification;
 
 CREATE DATABASE gamification;
 

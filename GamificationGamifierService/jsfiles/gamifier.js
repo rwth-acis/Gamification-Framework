@@ -1,4 +1,4 @@
-﻿  var memberId,
+  var memberId,
   gameId = '$Game_Id$',
   epURL = '$Endpoint_URL$',
   iwcGamification;

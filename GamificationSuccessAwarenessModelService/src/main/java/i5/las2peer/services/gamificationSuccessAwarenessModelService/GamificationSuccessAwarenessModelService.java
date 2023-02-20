@@ -143,17 +143,21 @@ public class GamificationSuccessAwarenessModelService extends RESTService implem
 				successAwarenessModelJdbcUrl,
 				successAwarenessModelJdbcSchema
 				);
-		try {
-			successAwarenessModelDb.getConnection();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 		gamificationDb = new DatabaseManager(
 				jdbcDriverClassName,
 				jdbcLogin,
 				jdbcPass,
 				jdbcUrl,
 				jdbcSchema);
+		try {
+			successAwarenessModelDb.getConnection();
+			System.out.println("Connection to data processing db is working!");
+
+			gamificationDb.getConnection();
+			System.out.println("Connection to gamificaiton db is working!");			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private Response handleGamifiySuccessModel(String gameId,

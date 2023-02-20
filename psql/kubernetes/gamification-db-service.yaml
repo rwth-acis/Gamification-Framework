@@ -4,7 +4,7 @@ metadata:
   name: gamification-db-service
 spec:
   selector:
-    app: gamification
+    app: gamification-db
   ports:
     - protocol: TCP
       port: 5432

@@ -1,0 +1,15 @@
+<Catalog>
+
+<measure name="Gamified Messages">
+
+<query name="All Messages">
+
+SELECT COUNT(*) FROM MESSAGE;
+
+</query>
+
+<visualization type="Value"/>
+
+</measure>
+
+</Catalog>
