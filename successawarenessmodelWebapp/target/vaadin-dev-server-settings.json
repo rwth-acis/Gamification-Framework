@@ -1,0 +1,16 @@
+{
+  "frontendFolder": "/home/david/Desktop/master/successawarenessmodelWebapp/frontend",
+  "themeFolder": "themes",
+  "themeResourceFolder": "/home/david/Desktop/master/successawarenessmodelWebapp/frontend/generated/jar-resources",
+  "staticOutput": "/home/david/Desktop/master/successawarenessmodelWebapp/target/classes/META-INF/VAADIN/webapp/VAADIN/static",
+  "generatedFolder": "generated",
+  "statsOutput": "/home/david/Desktop/master/successawarenessmodelWebapp/target/classes/META-INF/VAADIN/config",
+  "frontendBundleOutput": "/home/david/Desktop/master/successawarenessmodelWebapp/target/classes/META-INF/VAADIN/webapp",
+  "jarResourcesFolder": "/home/david/Desktop/master/successawarenessmodelWebapp/frontend/generated/jar-resources",
+  "generatedFlowImportsFolder": "target/frontend",
+  "themeName": "mytodo",
+  "clientServiceWorkerSource": "/home/david/Desktop/master/successawarenessmodelWebapp/target/sw.ts",
+  "pwaEnabled": false,
+  "offlineEnabled": false,
+  "offlinePath": "'offline.html'"
+}

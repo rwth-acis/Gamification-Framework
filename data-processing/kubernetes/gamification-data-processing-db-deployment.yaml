@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  labels: 
+    app: gamification-data-processing-db
+  name: gamification-data-processing-db
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: gamification-data-processing-db
+  template: 
+    metadata: 
+      labels: 
+        app: gamification-data-processing-db
+    spec: 
+      containers: 
+        - 
+          image: david3941/madavid-almeida-mobsos-data-processing-database:0.0.1
+          name: gamification-data-processing-db
+          ports: 
+            - 
+              containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "root"

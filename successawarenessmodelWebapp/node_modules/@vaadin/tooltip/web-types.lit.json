@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json.schemastore.org/web-types",
+  "name": "@vaadin/tooltip",
+  "version": "23.3.7",
+  "description-markup": "markdown",
+  "framework": "lit",
+  "framework-config": {
+    "enable-when": {
+      "node-packages": [
+        "lit"
+      ]
+    }
+  },
+  "contributions": {
+    "html": {
+      "elements": [
+        {
+          "name": "vaadin-tooltip",
+          "description": "`<vaadin-tooltip>` is a Web Component for creating tooltips.\n\n```html\n<button id=\"confirm\">Confirm</button>\n<vaadin-tooltip text=\"Click to save changes\" for=\"confirm\"></vaadin-tooltip>\n```\n\n### Styling\n\n`<vaadin-tooltip>` uses `<vaadin-tooltip-overlay>` internal\nthemable component as the actual visible overlay.\n\nSee [`<vaadin-overlay>`](https://cdn.vaadin.com/vaadin-web-components/23.3.7/#/elements/vaadin-overlay) documentation\nfor `<vaadin-tooltip-overlay>` parts.\n\nThe following state attributes are available for styling:\n\nAttribute        | Description\n-----------------|----------------------------------------\n`position`       | Reflects the `position` property value.\n\nNote: the `theme` attribute value set on `<vaadin-tooltip>` is\npropagated to the internal `<vaadin-tooltip-overlay>` component.\n\n### Custom CSS Properties\n\nThe following custom CSS properties are available on the `<vaadin-tooltip>` element:\n\nCustom CSS property              | Description\n---------------------------------|-------------\n`--vaadin-tooltip-offset-top`    | Used as an offset when the tooltip is aligned vertically below the target\n`--vaadin-tooltip-offset-bottom` | Used as an offset when the tooltip is aligned vertically above the target\n`--vaadin-tooltip-offset-start`  | Used as an offset when the tooltip is aligned horizontally after the target\n`--vaadin-tooltip-offset-end`    | Used as an offset when the tooltip is aligned horizontally before the target\n\nSee [Styling Components](https://vaadin.com/docs/latest/styling/custom-theme/styling-components) documentation.",
+          "extension": true,
+          "attributes": [
+            {
+              "name": "?manual",
+              "description": "When true, the tooltip is controlled programmatically\ninstead of reacting to focus and mouse events.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": "?opened",
+              "description": "When true, the tooltip is opened programmatically.\nOnly works if `manual` is set to `true`.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".context",
+              "description": "Object with properties passed to `generator` and\n`shouldShow` functions for generating tooltip text\nor detecting whether to show the tooltip or not.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".focusDelay",
+              "description": "The delay in milliseconds before the tooltip\nis opened on keyboard focus, when not in manual mode.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".for",
+              "description": "The id of the element used as a tooltip trigger.\nThe element should be in the DOM by the time when\nthe attribute is set, otherwise a warning is shown.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".hideDelay",
+              "description": "The delay in milliseconds before the tooltip\nis closed on losing hover, when not in manual mode.\nOn blur, the tooltip is closed immediately.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".hoverDelay",
+              "description": "The delay in milliseconds before the tooltip\nis opened on hover, when not in manual mode.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".position",
+              "description": "Position of the tooltip with respect to its target.\nSupported values: `top-start`, `top`, `top-end`,\n`bottom-start`, `bottom`, `bottom-end`, `start-top`,\n`start`, `start-bottom`, `end-top`, `end`, `end-bottom`.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".shouldShow",
+              "description": "Function used to detect whether to show the tooltip based on a condition,\ncalled every time the tooltip is about to be shown on hover and focus.\nThe function takes two parameters: `target` and `context`, which contain\nvalues of the corresponding tooltip properties at the time of calling.\nThe tooltip is only shown when the function invocation returns `true`.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".target",
+              "description": "Reference to the element used as a tooltip trigger.\nThe target must be placed in the same shadow scope.\nDefaults to an element referenced with `for`.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".text",
+              "description": "String used as a tooltip content.",
+              "value": {
+                "kind": "expression"
+              }
+            },
+            {
+              "name": ".generator",
+              "description": "Function used to generate the tooltip content.\nWhen provided, it overrides the `text` property.\nUse the `context` property to provide argument\nthat can be passed to the generator function.",
+              "value": {
+                "kind": "expression"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
