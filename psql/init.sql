@@ -1474,3 +1474,5 @@ SELECT create_new_game('testDevops');
 INSERT INTO manager.member_info (member_id,first_name,last_name,email) VALUES ('MemberDevopsTest','test','test','test@test.com') ON CONFLICT DO NOTHING;
 
 SELECT init_member_to_game('MemberDevopsTest','testDevops');
+
+ALTER SYSTEM SET max_connections = 5000;

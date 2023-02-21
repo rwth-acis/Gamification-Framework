@@ -81,12 +81,12 @@ public class MainView extends VerticalLayout
     }
     
     public void removeMeasureView(final MeasureView measureView) {
-    	measureContainer.remove(measureView);
+    	measureContainer.removeMeasureView(measureView);
         this.updateView();
     }
     
     public void addMeasureView(final MeasureView view) {
-    	measureContainer.add(view);
+    	measureContainer.addMeasureView(view);
         this.updateView();
     }
     
@@ -116,10 +116,12 @@ public class MainView extends VerticalLayout
         request = new Request.Builder().url(this.hostName.getValue() + "/gamification/successawarenessmodel/" + this.successModelView.getGameId() + "?member=" + this.successModelView.getMemberId()).method("POST", body).addHeader("Accept", "*/*").addHeader("Content-Type", "text/plain").addHeader("Authorization", this.getAuthentication()).build();
         response = client.newCall(request).execute();
         
+        
+        System.out.println(jsonObj.toJSONString());
         String bodyResponse = response.body().string();
         if(bodyResponse.length() > 100) {
         	Notification.show("Gamification unsuccessful");
-        }else if (response.code() == 200) {
+        }else if (response.code() == 200 && bodyResponse.length() < 100) {
             Notification.show("Gamification successful: " + bodyResponse);
         }
         else {

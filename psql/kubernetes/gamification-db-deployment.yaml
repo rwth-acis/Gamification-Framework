@@ -16,7 +16,7 @@ spec:
     spec: 
       containers: 
         - 
-          image: david3941/gamificationframework_database_image:0.0.1
+          image: david3941/gamificationframework_database_image:0.0.3
           name: gamification-db
           ports: 
             - 
