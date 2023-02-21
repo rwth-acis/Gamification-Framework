@@ -11,6 +11,8 @@ Gamification Success Awareness Model Service:
 4. Now head up do the JSONGenerators/SuccessAwarenessModelJSONGenerator in order to generate the json to gamify your success awareness model. Open read.me and do the commands depending on your Operating system.
 5. After the last step is completed, head up to postman. Select POST as the http method and on the body tab of the http request select raw and past the output of step 4. Now for link put <your_server_url>gamification/successawarenessmodel/<your_game_id>?member=<your_member_id>
 
+Or simply head to https://milki-psy.dbis.rwth-aachen.de/devopsmodelwebapp/ or https://milki-psy.dbis.rwth-aachen.de/successawarenesswebapp/ to gamify your models. 
+In kubernetes each database (data processing and gamification) are in seperate containers.
 
 To visualize what you have done do the following:
 -Success awarenss model service: <your_server_url/gamification/visualization/successawareness/<your_game_id>/<your_member_id>
