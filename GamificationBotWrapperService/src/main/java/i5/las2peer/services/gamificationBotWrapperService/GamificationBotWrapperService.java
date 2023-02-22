@@ -588,6 +588,7 @@ public class GamificationBotWrapperService extends RESTService {
 			String points = achievement.get("point_value").toString();
 			String lockedDate = streak.get("lockedDate").toString();
 			String dueDate = streak.get("dueDate").toString();
+			
 			String status = "REVEALED";
 			String badge = "";
 			if (achievement.get("badge_id") != null) {
@@ -615,6 +616,9 @@ public class GamificationBotWrapperService extends RESTService {
 			action.put("status", status);
 			action.put("lockedDate", lockedDate);
 			action.put("dueDate", dueDate);
+			if(lockedDate.equals(dueDate)){
+				action.remove("lockedDate");
+				}
 			action.put("name", achievement.get("name").toString());
 			actionArray.add(action);
 			streak.put("actionArray", actionArray);
