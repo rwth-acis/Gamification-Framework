@@ -1431,8 +1431,14 @@ public class GamificationBotWrapperService extends RESTService {
 						- Integer.valueOf(json.get("memberPoint").toString());
 				g.drawString(json.get("progress").toString() + "%",
 						(int) (image.getWidth() * 0.47), 90);
-				g.drawString("(" + diff + " points to next Lvl)",
-						(int) (image.getWidth() * 0.34), 115);
+						if(diff== 1){
+							g.drawString("(" + diff + " point to next Lvl)",
+							(int) (image.getWidth() * 0.34), 115);
+						} else {
+							g.drawString("(" + diff + " points to next Lvl)",
+							(int) (image.getWidth() * 0.34), 115);
+						}
+				
 			}
 
 			g.drawString(json.get("unlockedAchievements").toString() + "/" + json.get("totalAchievements").toString(),
