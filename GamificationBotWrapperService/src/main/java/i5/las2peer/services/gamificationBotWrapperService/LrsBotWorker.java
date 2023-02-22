@@ -285,8 +285,11 @@ public class LrsBotWorker implements Runnable {
 										break;
 									}
 								}
+								if(desc.equals("")){
+									desc = action;
+								}
 						//		String actionDesc = this.getActionVerbs().get(action);
-								String message = streakMessage.replace("[streakAction]", action)
+								String message = streakMessage.replace("[streakAction]", desc)
 										.replace("[streakCount]", streak.get("currentStreakLevel").toString());
 
 								JSONArray notification = new JSONArray();
@@ -362,6 +365,11 @@ public class LrsBotWorker implements Runnable {
 				}
 
 				continue;
+			}
+			if (json.containsKey("type") && json.get("type").toString().equals("LEVEL")) {
+				String id = json.get("typeId").toString();
+				String num = json.get("levelNumber").toString();
+				message += "*NEW LEVEL REACHED: Level "+num+" ("+id+")* \n";	
 			}
 			if (json.containsKey("type") && json.get("type").toString().equals("ACHIEVEMENT")) {
 				String id = json.get("typeId").toString();
