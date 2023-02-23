@@ -305,10 +305,11 @@ public class ActionDAO {
 				resObj.put("message", rs.getString("message"));
 				System.out.println(resObj);
 				if(resObj.get("type").toString().equals("LEVEL")){
-					stmt = conn.prepareStatement("SELECT FROM " + gameId + ".level WHERE name = ?");
+					stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".level WHERE name = ?");
 					stmt.setString(1, resObj.get("typeId").toString());
 					ResultSet rs2 = stmt.executeQuery();
 					if(rs2.next()){
+						System.out.println(rs2.getStatement());
 						resObj.put("levelNumber",rs2.getInt("level_num"));
 					}
 					
