@@ -303,7 +303,7 @@ public class ActionDAO {
 				resObj.put("type", NotificationType.valueOf(rs.getString("type")));
 				resObj.put("typeId", rs.getString("type_id"));
 				resObj.put("message", rs.getString("message"));
-				if(resObj.getAsString("type").equals("LEVEL")){
+				if(resObj.get("type").toString().equals("LEVEL")){
 					stmt = conn.prepareStatement("SELECT FROM " + gameId + ".level WHERE name = ?");
 					stmt.setString(1, rs.getString("type_id"));
 					ResultSet rs2 = stmt.executeQuery();
