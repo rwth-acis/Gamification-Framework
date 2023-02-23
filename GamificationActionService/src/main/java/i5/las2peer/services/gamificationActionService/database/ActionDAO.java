@@ -305,9 +305,9 @@ public class ActionDAO {
 				resObj.put("message", rs.getString("message"));
 				if(resObj.get("type").toString().equals("LEVEL")){
 					stmt = conn.prepareStatement("SELECT FROM " + gameId + ".level WHERE name = ?");
-					stmt.setString(1, rs.getString("type_id"));
+					stmt.setString(1, resObj.get("typeId").toString());
 					ResultSet rs2 = stmt.executeQuery();
-					resObj.put("levelNumber",rs2.getString("level_num"));
+					resObj.put("levelNumber",rs2.getInt("level_num"));
 				}
 				resArray.add(resObj);
 
