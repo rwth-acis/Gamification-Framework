@@ -946,7 +946,18 @@ public class GamificationBotWrapperService extends RESTService {
 					if (userMessage.split("\\s").length > 1) {
 						splitMessage = userMessage.split("\\s")[1];
 					} else {
-
+						Response r = actions(body);
+						JSONObject response = (JSONObject) r.getEntity();
+						response.put("closeContext", false);
+						String text = response.get("text").toString();
+						int actionCount = Integer.valueOf(response.get("actionCount").toString());
+						text += String.valueOf(actionCount + 1) + ". " + pointText +" \n";
+						text += String.valueOf(actionCount + 2) + ". " + "Achievements \n";
+						text += String.valueOf(actionCount + 3) + ". " + "Badges \n";
+						response.put("text",text);
+						userContext.put(user, true);
+						return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+								.type(MediaType.APPLICATION_JSON).build();
 					}
 
 					System.out.println(splitMessage);
@@ -1304,6 +1315,8 @@ public class GamificationBotWrapperService extends RESTService {
 				JSONObject response = jsonBody;
 				response.put("text", jsonBody.get("errorMessage").toString());
 				response.put("closeContext", true);
+				return Response.status(HttpURLConnection.HTTP_OK).entity(response)
+						.type(MediaType.APPLICATION_JSON).build();
 			}
 
 		} catch (ParseException e) {
