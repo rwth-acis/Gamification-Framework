@@ -322,8 +322,7 @@ public class LrsBotWorker implements Runnable {
 		MiniClient client = new MiniClient();
 		// http://127.0.0.1:8090/SBFManager/bots/Botty/webhook
 		client.setConnectorEndpoint(this.sbmURL +
-				"/SBFManager/bots/"
-				+ this.botName + "/webhook");
+				"/SBFManager/bots/webhook");
 		HashMap<String, String> headers = new HashMap<String, String>();
 		System.out.println("user");
 		String message = "";
@@ -396,6 +395,7 @@ public class LrsBotWorker implements Runnable {
 		information.put("message", message);
 		information.put("channel", this.usersChannel.get(user));
 		information.put("event", "chat_message");
+		information.put("botName",this.botName);
 		try {
 			ClientResponse result = client.sendRequest("POST", "",
 					information.toJSONString());
