@@ -4,5 +4,5 @@
 # it starts a LAS2peer node providing the service 'i5.las2peer.services.gamificationBadgeService.GamificationBadgeService' of this project
 # pls execute it from the root folder of your deployment, e. g. ./bin/start_network.sh
 
-java -cp "lib/*:service/*" i5.las2peer.tools.L2pNodeLauncher -p 9013 -b 192.168.56.1:9011 uploadStartupDirectory\(\'etc/startup\'\) \
+java -cp "lib/*:service/*" i5.las2peer.tools.L2pNodeLauncher -p 9120 -b 137.226.232.171:9010 --observer uploadStartupDirectory\(\'etc/startup\'\) \
 startService\(\'i5.las2peer.services.gamificationStreakService.GamificationStreakService@0.1\',\'gamificationstreakpass\'\) startWebConnector interactive
