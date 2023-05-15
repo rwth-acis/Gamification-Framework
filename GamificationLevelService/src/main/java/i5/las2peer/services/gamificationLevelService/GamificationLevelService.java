@@ -699,11 +699,16 @@ public class GamificationLevelService extends RESTService {
 					String modelString = objectMapper.writeValueAsString(model);
 					JSONArray modelArray = (JSONArray) JSONValue.parse(modelString);
 					logger.info(modelArray.toJSONString());
+					System.out.println(model);
+					model = levelAccess.getAllLevels(conn,gameId);
+					modelString = objectMapper.writeValueAsString(model);
+					modelArray = (JSONArray) JSONValue.parse(modelString);
+					System.out.println(model);
 					objResponse.put("current", currentPage);
 					objResponse.put("rowCount", windowSize);
 					objResponse.put("rows", modelArray);
 					objResponse.put("total", totalNum);
-
+				
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_47, ""+randomLong, true);
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_48, ""+name, true);
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_49, ""+gameId, true);

@@ -1,5 +1,6 @@
 package i5.las2peer.services.gamificationStreakService.database;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -29,7 +30,7 @@ public class StreakModel {
 	// in format yyyy/MM/dd hh:mm
 	private LocalDateTime lockedDate;
 	private LocalDateTime dueDate;
-	private Period period;
+	private Duration period;
 	private boolean notificationCheck;
 	private String notificationMessage;
 	
@@ -171,14 +172,14 @@ public class StreakModel {
 	/**
 	 * @return the period
 	 */
-	public Period getPeriod() {
+	public Duration getPeriod() {
 		return period;
 	}
 	/**
-	 * @param period the period to set
+	 * @param duration the period to set
 	 */
-	public void setPeriod(Period period) {
-		this.period = period;
+	public void setPeriod(Duration duration) {
+		this.period = duration;
 	}
 	/**
 	 * @return the notificationCheck

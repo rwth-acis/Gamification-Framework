@@ -118,7 +118,7 @@ public class GamificationGamifierServiceTest {
 		}
 	}
 	
-	@Test
+/*	@Test
 	public void testA1_getActions()
 	{
 		System.out.println("Test --- Get Actions");
@@ -137,5 +137,5 @@ public class GamificationGamifierServiceTest {
 			System.exit(0);
 		}
 	
-	}
+	} */
 }

@@ -8,6 +8,8 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.postgresql.util.PGInterval;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import i5.las2peer.services.gamificationVisualizationService.database.QuestModel.QuestStatus;
 import i5.las2peer.services.gamificationVisualizationService.database.StreakModel.StreakSatstus;
 
@@ -154,7 +156,7 @@ public class VisualizationDAO {
 			throw new SQLException("Member ID not found");
 		}
 		//Get current and next level
-		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+gameId+".level WHERE level_num >= ? LIMIT 2");
+		stmt = conn.prepareStatement("SELECT level_num, name, point_value FROM "+gameId+".level WHERE level_num >= ? order by level_num LIMIT 2");
 		stmt.setInt(1, currentLevel);
 		rs = stmt.executeQuery();
 		if (rs.next()) {
@@ -173,7 +175,6 @@ public class VisualizationDAO {
 				resObj.put("nextLevelPoint", nextLevelPointThreshold);
 				resObj.put("nextLevelName", nextLevelName);
 				resObj.put("progress", Math.round(progress));
-				
 				
 			}
 			else{
@@ -194,6 +195,38 @@ public class VisualizationDAO {
 			}
 			else{
 				resObj.put("rank", "-");
+			}
+			stmt = conn.prepareStatement("Select count(*) FROM "+gameId+".member_achievement where member_id='"+memberId+"'");
+			ResultSet rs3 = stmt.executeQuery();
+			if (rs3.next()) {
+				resObj.put("unlockedAchievements", rs3.getInt("count"));
+			}
+			else{
+				resObj.put("unlockedAchievements", "0");
+			}
+			stmt = conn.prepareStatement("Select count(*) FROM "+gameId+".achievement");
+			ResultSet rs4 = stmt.executeQuery();
+			if (rs4.next()) {
+				resObj.put("totalAchievements", rs4.getInt("count"));
+			}
+			else{
+				resObj.put("totalAchievements", "0");
+			}
+			stmt = conn.prepareStatement("Select count(*) FROM "+gameId+".member_badge where member_id='"+memberId+"'");
+			ResultSet rs5 = stmt.executeQuery();
+			if (rs5.next()) {
+				resObj.put("unlockedBadges", rs5.getInt("count"));
+			}
+			else{
+				resObj.put("unlockedBadges", "0");
+			}
+			stmt = conn.prepareStatement("Select count(*) FROM "+gameId+".badge");
+			ResultSet rs6 = stmt.executeQuery();
+			if (rs6.next()) {
+				resObj.put("totalBadges", rs6.getInt("count"));
+			}
+			else{
+				resObj.put("totalBadges", "0");
 			}
 		}
 		else{
@@ -315,9 +348,10 @@ public class VisualizationDAO {
 
 		JSONArray resArr = new JSONArray();
 		JSONObject outObj = new JSONObject();
-		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,completed,times FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) WHERE "+gameId+".member_quest_action.quest_id=? AND member_id=?");
+		stmt = conn.prepareStatement("SELECT "+gameId+".member_quest_action.action_id,"+gameId+".member_quest.status,completed,times,"+gameId+".achievement.name,"+gameId+".achievement.description,"+gameId+".achievement.point_value,"+gameId+".achievement.badge_id FROM "+gameId+".member_quest_action INNER JOIN "+gameId+".quest_action ON ("+gameId+".member_quest_action.quest_id = "+gameId+".quest_action.quest_id AND "+gameId+".member_quest_action.action_id = "+gameId+".quest_action.action_id) JOIN "+gameId+".quest ON ("+gameId+".member_quest_action.quest_id="+gameId+".quest.quest_id) JOIN "+gameId+".achievement ON ("+gameId+".quest.achievement_id="+gameId+".achievement.achievement_id) JOIN "+gameId+".member_quest ON ("+gameId+".member_quest.quest_id="+gameId+".quest.quest_id) WHERE "+gameId+".member_quest_action.quest_id=? AND "+gameId+".member_quest_action.member_id=? AND "+gameId+".member_quest.member_id=?");
 		stmt.setString(1, questId);
 		stmt.setString(2, memberId);
+		stmt.setString(3, memberId);
 		ResultSet rs = stmt.executeQuery();
 
 		Integer truecount = 0;
@@ -327,7 +361,11 @@ public class VisualizationDAO {
 			resObj.put("maxTimes", rs.getInt("times"));
 			resObj.put("action", rs.getString("action_id"));
 			resObj.put("isCompleted", rs.getBoolean("completed"));
-			
+			resObj.put("description", rs.getString("description"));
+			resObj.put("points", rs.getString("point_value"));
+			resObj.put("badge", rs.getString("badge_id"));
+			resObj.put("name",rs.getString("name"));
+			resObj.put("status",rs.getString("status"));
 			//check if action is completed
 			if(rs.getBoolean("completed")){
 				
@@ -480,6 +518,118 @@ public class VisualizationDAO {
 		
 		return arr;
 	}
+
+	/**
+	 * Get local leaderboard of a member
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberLocalLeaderboard(Connection conn,String gameId) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM "+gameId+".member_point) SELECT * FROM sorted");
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("pointValue", rs.getInt("point_value"));
+			arr.put(obj);
+		}
+		
+		return arr;
+	}
+
+
+	/**
+	 * Get local leaderboard of a member over actions done
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberLocalLeaderboardOverAction(Connection conn,String gameId, String action_id) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT member_action.member_id,member_action.action_id,member_action.object_id,member_profile.nickname from "+gameId+".member_action JOIN "+gameId+".member_profile ON (member_action.member_id= member_profile.member_id) where action_id='"+action_id+"') SELECT member_id,nickname,count(action_id), row_number() OVER (ORDER BY COUNT(action_id) DESC) from sorted GROUP BY member_id,nickname;");
+		ResultSet rs = stmt.executeQuery();
+		List<String> users = new ArrayList<String>();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("nickname", rs.getString("nickname"));
+			obj.put("actioncount", rs.getInt("count"));
+			arr.put(obj);
+			users.add(rs.getString("member_id"));
+		}
+		stmt = conn.prepareStatement("SELECT * from "+gameId+".member Natural join "+gameId+".member_profile;");
+		ResultSet rs2 = stmt.executeQuery();
+		int lastPlace = arr.length()+1;
+		while(rs2.next()){
+			String user = rs2.getString("member_id");
+			if(!users.contains(user)){
+				JSONObject obj = new JSONObject();
+				obj.put("memberId",user);
+				obj.put("rank",lastPlace);
+				obj.put("nickname", rs2.getString("nickname"));
+				lastPlace++;
+				obj.put("actioncount",0);
+				arr.put(obj);
+			}
+		}
+		return arr;
+	}
+
+	/**
+	 * Get local leaderboard of a member over actions done
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberLocalLeaderboardOverCollectable(Connection conn,String gameId, String collectable) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		if(collectable.equals("point")){
+			stmt = conn.prepareStatement("Select member_point.member_id,nickname,point_value as count, row_number() over (order by point_value desc) from "+gameId+".member_point Join "+gameId+".member_profile on (member_point.member_id=member_profile.member_id) order by point_value desc;");
+		} else {
+			stmt = conn.prepareStatement("With res as (Select count(*),member_"+collectable+".member_id,member_profile.nickname from "+gameId+".member_"+collectable+" JOIN "+gameId+".member_profile ON (member_"+collectable+".member_id=member_profile.member_id) group by member_"+collectable+".member_id,nickname order by (count(*)) DESC) Select *,row_number() OVER (ORDER BY count DESC) from res;");
+		}
+		ResultSet rs = stmt.executeQuery();
+		List<String> users = new ArrayList<String>();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("nickname", rs.getString("nickname"));
+			obj.put("actioncount", rs.getInt("count"));
+			arr.put(obj);
+			users.add(rs.getString("member_id"));
+		}
+		stmt = conn.prepareStatement("SELECT * from "+gameId+".member Natural join "+gameId+".member_profile;");
+		ResultSet rs2 = stmt.executeQuery();
+		int lastPlace = arr.length()+1;
+		while(rs2.next()){
+			String user = rs2.getString("member_id");
+			if(!users.contains(user)){
+				JSONObject obj = new JSONObject();
+				obj.put("memberId",user);
+				obj.put("rank",lastPlace);
+				obj.put("nickname", rs2.getString("nickname"));
+				lastPlace++;
+				obj.put("actioncount",0);
+				arr.put(obj);
+			}
+		}
+		return arr;
+	}
 	
 	/**
 	 * Get global leaderboard of a member
@@ -507,6 +657,40 @@ public class VisualizationDAO {
 		}
 		
 		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM global_leaderboard."+commType+") SELECT * FROM sorted WHERE member_id LIKE '"+pattern+"' LIMIT "+window_size+" OFFSET "+offset);
+		rs = stmt.executeQuery();
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+			obj.put("rank", rs.getInt("row_number"));
+			obj.put("memberId", rs.getString("member_id"));
+			obj.put("pointValue", rs.getInt("point_value"));
+			arr.put(obj);
+		}
+		
+		return arr;
+	}
+
+		/**
+	 * Get global leaderboard of a member
+	 * 
+	 * @param conn database connection
+	 * @param gameId game id
+	 * @return JSONObject leaderboard
+	 * @throws SQLException sql exception
+	 */
+	public JSONArray getMemberGlobalLeaderboard(Connection conn,String gameId) throws SQLException{
+
+		JSONArray arr = new JSONArray();
+		String commType = null;
+		
+		// Get community type from an game
+		stmt = conn.prepareStatement("SELECT community_type FROM manager.game_info WHERE game_id = ?");
+		stmt.setString(1, gameId);
+		ResultSet rs = stmt.executeQuery();
+		if (rs.next()) {
+			commType = rs.getString("community_type");
+		}
+		
+		stmt = conn.prepareStatement("WITH sorted AS (SELECT *, row_number() OVER (ORDER BY point_value DESC) FROM global_leaderboard."+commType+") SELECT * FROM sorted");
 		rs = stmt.executeQuery();
 		while (rs.next()) {
 			JSONObject obj = new JSONObject();
@@ -671,6 +855,69 @@ public class VisualizationDAO {
 		}
 		obj.put("lockedAchievements", lockedAchievements);
 		return obj;
+	}
+
+	/**
+	 * 
+	 * @param conn dbConnection
+	 * @param gameId gameId
+	 * @param memberId memberId
+	 * @return streak progress details of member in JSON
+	 * @throws SQLException SQLException
+	 * @throws IOException  IOException
+	 */
+	public JSONObject getMemberStreakProgressDetailed(Connection conn, String gameId, String memberId) throws SQLException, IOException{
+		stmt =conn.prepareStatement("WITH achs AS (Select achievement_id,unlocked from "+gameId+".member_streak_achievement WHERE MEMBER_ID = '"+memberId+"') Select * from "+ gameId + ".member_streak JOIN "+ gameId + ".streak_achievement ON (member_streak.streak_id = streak_achievement.streak_id) JOIN "+ gameId + ".streak_action ON (streak_achievement.streak_id = streak_action.streak_id) JOIN achs ON (streak_achievement.achievement_id=achs.achievement_id) WHERE member_id='"+memberId+"';");
+		ResultSet rs = stmt.executeQuery();
+		JSONArray arr = new JSONArray();
+		JSONObject resp = new JSONObject();
+
+		while (rs.next()) {
+			JSONObject obj = new JSONObject();
+		//	obj.put("streakId", rs.getString("streak_id"));
+			//obj.put("name", rs.getString("name"));
+			//obj.put("description", rs.getString("description"));
+			obj.put("status", i5.las2peer.services.gamificationVisualizationService.database.StreakModel.StreakSatstus.valueOf(rs.getString("status")));
+		//	obj.put("pointTreshold", rs.getInt("point_th"));
+		//	obj.put("period", parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)).toString());
+			obj.put("lockedDate", rs.getObject("locked_date", LocalDateTime.class));
+			obj.put("dueDate", rs.getObject("due_date", LocalDateTime.class));
+		//	obj.put("notificationCheck", rs.getBoolean("use_notification"));
+	//		obj.put("notificationMessage", rs.getString("notif_message"));
+			obj.put("currentStreakLevel", rs.getInt("current_streak_level"));
+			obj.put("streakLevel", rs.getInt("streak_level"));
+			obj.put("highestStreakLevel", rs.getInt("highest_streak_level"));
+			obj.put("achievement_id", rs.getString("achievement_id"));
+			obj.put("unlocked", rs.getString("unlocked"));
+			// this will cause rror
+			obj.put("action_id", rs.getString("action_id"));
+			stmt = conn.prepareStatement("Select * from "+gameId+".action WHERE action_id='"+rs.getString("action_id")+"'");
+			ResultSet rs1 = stmt.executeQuery();
+			JSONObject action = new JSONObject();
+			if(rs1.next()){
+				action.put("id",rs1.getString("action_id"));
+				action.put("name",rs1.getString("name"));
+				action.put("description",rs1.getString("description"));
+				
+			}
+			obj.put("action", action);
+			stmt = conn.prepareStatement("Select * from "+gameId+".achievement WHERE achievement_id='"+rs.getString("achievement_id")+"'");
+			ResultSet rs2 = stmt.executeQuery();
+			JSONObject achievement = new JSONObject();
+			if(rs2.next()){
+				achievement.put("id",rs2.getString("achievement_id"));
+				achievement.put("name",rs2.getString("name"));
+				achievement.put("description",rs2.getString("description"));
+				achievement.put("badge_id",rs2.getString("badge_id"));
+				achievement.put("point_value",rs2.getString("point_value"));
+				
+			}
+			obj.put("achievement",achievement);
+			arr.put(obj);
+		}
+		
+		resp.put("streaks", arr);
+		return resp;
 	}
 	
 	

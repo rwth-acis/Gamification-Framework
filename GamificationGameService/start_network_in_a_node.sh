@@ -9,4 +9,5 @@ startService\(\'i5.las2peer.services.gamificationActionService.GamificationActio
 startService\(\'i5.las2peer.services.gamificationStreakService.GamificationStreakService@0.1\',\'gamificationstreakpass\'\) \
 startService\(\'i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService@0.1\',\'gamificationvisualizationpass\'\) \
 startService\(\'i5.las2peer.services.gamificationGamifierService.GamificationGamifierService@0.1\',\'gamificationgamifierpass\'\) \
+startService\(\'i5.las2peer.services.gamificationBotWrapperService.GamificationBotWrapperService@0.1\',\'gamificationgamifierpass\'\) \
 startWebConnector interactive

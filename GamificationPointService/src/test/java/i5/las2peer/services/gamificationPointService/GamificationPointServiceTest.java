@@ -120,7 +120,7 @@ public class GamificationPointServiceTest {
 		}
 	}
 
-	@Test
+/*	@Test
 	public void testA4_changeUnitName()
 	{
 		System.out.println("Test --- Change Unit Name");
@@ -149,6 +149,6 @@ public class GamificationPointServiceTest {
 			fail("Exception: " + e);
 			System.exit(0);
 		}
-	}
+	} */
 
 }

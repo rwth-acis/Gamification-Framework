@@ -38,6 +38,13 @@ else
   echo "run Badge.."
   cd ../GamificationBadgeService && screen -dmS g-badge sh join_network.sh
 
+    # # Bot
+  if screen -list | grep -q "g-bot"; then
+    screen -S g-bot -X quit
+  fi
+  echo "run Bot.."
+  cd ../GamificationBotWrapperService && screen -dmS g-bot sh join_network.sh
+
   # screen -mS g-badge
   # screen -r g-badge -p0  -X stuff "cd ../GamificationBadgeService && sh join_network.sh"
   # screen -r g-badge -p0  -X eval "stuff \015"

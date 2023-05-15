@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
@@ -249,6 +250,69 @@ public class StreakDAO {
 	}
 
 	/**
+	 * Get streaks with search parameter
+	 * 
+	 * @param conn         database connection
+	 * @param gameId       game id
+	 * @return list of streaks
+	 * @throws SQLException SQLException
+	 * @throws IOException  IOException
+	 */
+	public List<StreakModel> getAllStreaks(Connection conn, String gameId) throws SQLException, IOException {
+		List<StreakModel> streaks = new ArrayList<StreakModel>();
+
+		stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak");
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			StreakModel streak = new StreakModel();
+			streak.setStreakId(rs.getString("streak_id"));
+			streak.setName(rs.getString("name"));
+			streak.setDescription(rs.getString("description"));
+			streak.setStreakLevel(rs.getInt("streak_level"));
+			streak.setPointThreshold(rs.getInt("point_th"));
+			streak.setLockedDate(rs.getObject("locked_date", LocalDateTime.class));
+			streak.setDueDate(rs.getObject("due_date", LocalDateTime.class));
+			streak.setPeriod(parseIntervaltoPeriod(rs.getObject("period", PGInterval.class)));
+			streak.setNotificationCheck(rs.getBoolean("use_notification"));
+			streak.setNotificationMessage("notif_message");
+			streak.setStatus(StreakSatstus.valueOf(rs.getString("status")));
+			streaks.add(streak);
+		}
+		if (streaks.equals(null)) {
+			throw new IOException("Streak Model is null");
+		}
+		for (StreakModel streak : streaks) {
+			Map<Integer, String> badges = new HashMap<Integer, String>();
+			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_badge WHERE streak_id = ?");
+			stmt.setString(1, streak.getStreakId());
+			ResultSet rs2 = stmt.executeQuery();
+			while (rs2.next()) {
+				badges.put(rs2.getInt("streak_level"), rs2.getString("badge_id"));
+			}
+			streak.setBadges(badges);
+
+			Map<Integer, String> achievements = new HashMap<Integer, String>();
+			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_achievement WHERE streak_id = ?");
+			stmt.setString(1, streak.getStreakId());
+			ResultSet rs3 = stmt.executeQuery();
+			while (rs3.next()) {
+				achievements.put(rs3.getInt("streak_level"), rs3.getString("achievement_id"));
+			}
+			streak.setAchievements(achievements);
+
+			List<String> actions = new ArrayList<String>();
+			stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".streak_action WHERE streak_id = ?");
+			stmt.setString(1, streak.getStreakId());
+			ResultSet rs4 = stmt.executeQuery();
+			while (rs4.next()) {
+				actions.add(rs4.getString("action_id"));
+			}
+			streak.setActions(actions);
+		}
+		return streaks;
+	}
+
+	/**
 	 * Get total number of streak
 	 * 
 	 * @param conn   database connection
@@ -364,11 +428,16 @@ public class StreakDAO {
 		stmt.executeUpdate();
 	}
 
-	private PGInterval parsePeriodToInterval(Period period) {
-		return new PGInterval(period.getYears(), period.getMonths(), period.getDays(), 0, 0, 0);
+	private PGInterval parsePeriodToInterval(Duration period) {
+		return new PGInterval(0, 0, (int) period.toDaysPart(), period.toHoursPart(), period.toMinutesPart(), period.toSecondsPart());
 	}
 
-	private Period parseIntervaltoPeriod(PGInterval interval) {
-		return Period.of(interval.getYears(), interval.getMonths(), interval.getDays());
+	private Duration parseIntervaltoPeriod(PGInterval interval) {
+		Duration days = Duration.ofDays(interval.getDays());
+		Duration hours = Duration.ofHours(interval.getHours());
+		Duration minutes = Duration.ofMinutes(interval.getMinutes());
+		Duration seconds = Duration.ofSeconds((long) interval.getSeconds());
+		Duration time = days.plus(hours).plus(minutes).plus(seconds);
+		return time;
 	}
 }

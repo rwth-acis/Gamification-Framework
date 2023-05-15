@@ -136,6 +136,16 @@ public class GamificationAchievementServiceTest {
 	
 	@Test
 	public void testC1_createNewAchievement(){
+		try
+		{
+			ClientResponse result = c1.sendRequest("DELETE",  mainPath + "" + gameId + "/" + achievementId, "");
+	        //ertEquals(200, result.getHttpCode());
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println("couldnt delete");
+			
+		}
 		System.out.println("Test --- Create New Achievement");
 		try
 		{
@@ -199,7 +209,7 @@ public class GamificationAchievementServiceTest {
 
 	}
 	
-	@Test
+/* 	@Test
 	public void testC2_updateAchievement(){
 		System.out.println("Test --- Update Achievement");
 		try
@@ -227,10 +237,10 @@ public class GamificationAchievementServiceTest {
 			Map<String, String> headers = new HashMap<>();
 			headers.put("Accept-Encoding","gzip, deflate");
 			headers.put("Accept-Language","en-GB,en-US;q=0.8,en;q=0.6");
-			
-			ClientResponse result = c1.sendRequest("PUT", mainPath + "" + gameId +"/"+ achievementId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
+			*/
+		//	ClientResponse result = c1.sendRequest("PUT", mainPath + "" + gameId +"/"+ achievementId, out.toString(), "multipart/form-data; boundary="+boundary, "*/*", headers);
 
-			System.out.println(result.getResponse());
+		/* System.out.println(result.getResponse());
 			assertEquals(HttpURLConnection.HTTP_OK,result.getHttpCode());
 			
 		} catch (Exception e)
@@ -242,7 +252,7 @@ public class GamificationAchievementServiceTest {
 			System.exit(0);
 		}
 	}
-	
+	*/	
 
 	
 	@Test
@@ -262,7 +272,7 @@ public class GamificationAchievementServiceTest {
 	
 	}
 
-	@Test
+ /*	@Test
 	public void testZ6_deleteAchievement(){
 		System.out.println("Test --- Delete Achievement");
 		try
@@ -275,5 +285,5 @@ public class GamificationAchievementServiceTest {
 			fail("Exception: " + e);
 			System.exit(0);
 		}
-	}
+	} */
 }

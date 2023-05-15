@@ -236,6 +236,24 @@ public class QuestDAO {
 //		conn.setAutoCommit(true);
 	}
 
+			/**
+	 * Update an achievement information
+	 * 
+	 * @param gameId game id
+	 * @param conn database connection
+	 * @param quests model to be updated
+	 * @throws SQLException SQL exception
+	 */
+	public void moveUp(Connection conn,String gameId, ArrayList<QuestModel> quests) throws SQLException {
+		// check whether the badgeid exist or not
+		for(QuestModel quest : quests){
+			stmt = conn.prepareStatement("UPDATE "+gameId+".quest SET name = ? WHERE quest_id = ?");
+			stmt.setString(1, quest.getName());
+			stmt.setString(2, quest.getId());
+			stmt.executeUpdate();
+		}
+	}
+
 	/**
 	 * Delete a specific quest
 	 * 

@@ -14,6 +14,7 @@ function configure_function {
 	printf $CONF_PROPERTIES > GamificationAchievementService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties
 	printf $CONF_PROPERTIES > GamificationActionService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties
 	printf $CONF_PROPERTIES > GamificationBadgeService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties
+	printf $CONF_PROPERTIES > GamificationBotWrapperService/etc/i5.las2peer.services.gamificationBotWrapperService.GamificationBadgeService.properties
 	printf $CONF_PROPERTIES > GamificationLevelService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties
 	printf $CONF_PROPERTIES > GamificationPointService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties
 	printf $CONF_PROPERTIES > GamificationStreakService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties
@@ -25,6 +26,7 @@ function configure_function {
 	cp -f GamificationAchievementService/etc/bin/join_network.sh GamificationAchievementService/join_network.sh
 	cp -f GamificationActionService/etc/bin/join_network.sh GamificationActionService/join_network.sh
 	cp -f GamificationBadgeService/etc/bin/join_network.sh GamificationBadgeService/join_network.sh
+	cp -f GamificationBotWrapperService/etc/bin/join_network.sh GamificationBotWrapperService/join_network.sh
 	cp -f GamificationLevelService/etc/bin/join_network.sh GamificationLevelService/join_network.sh
 	cp -f GamificationPointService/etc/bin/join_network.sh GamificationPointService/join_network.sh
 	cp -f GamificationQuestService/etc/bin/join_network.sh GamificationQuestService/join_network.sh
@@ -40,6 +42,7 @@ function configure_function {
 	sed -i 's/\-p \([0-9]*\) /-p '$ACHIEVEMENT_PORT' /' GamificationAchievementService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$ACTION_PORT' /' GamificationActionService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$BADGE_PORT' /' GamificationBadgeService/join_network.sh
+	sed -i 's/\-p \([0-9]*\) /-p '$BOT_PORT' /' GamificationBotWrapperService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$GAME_PORT' /' GamificationGameService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$GAMIFIER_PORT' /' GamificationGamifierService/join_network.sh
 	sed -i 's/\-p \([0-9]*\) /-p '$LEVEL_PORT' /' GamificationLevelService/join_network.sh
@@ -54,6 +57,7 @@ function configure_function {
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationAchievementService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationActionService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationBadgeService/join_network.sh
+	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationBotWrapperService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationLevelService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationPointService/join_network.sh
 	sed -i 's/\-b \(.*\):\([0-9]*\) /-b '$BASE_NODE_IP':'$BASE_NODE_PORT' \-\-observer /' GamificationQuestService/join_network.sh
@@ -67,6 +71,7 @@ function configure_function {
 	chmod +x GamificationAchievementService/join_network.sh
 	chmod +x GamificationActionService/join_network.sh
 	chmod +x GamificationBadgeService/join_network.sh
+	chmod +x GamificationBotWrapperService/join_network.sh
 	chmod +x GamificationLevelService/join_network.sh
 	chmod +x GamificationPointService/join_network.sh
 	chmod +x GamificationQuestService/join_network.sh
@@ -79,6 +84,8 @@ function configure_function {
 	echo "Done !!"
 
 }
+
+
 
 function run_one_node_function {
 	echo "[Start One Node]"
@@ -112,6 +119,17 @@ function run_join_node_function {
 function stop_join_node_function {
 	echo "[Stop Join Node]"
 	cd script && sh stop_join.sh
+}
+function set_in_service_config {
+	sed -i "s?${1}[[:blank:]]*=.*?${1}=${2}?g" ${SERVICE_PROPERTY_FILE}
+}
+
+function replace_properties_function {
+	echo "[replacing properties file]"
+	set_in_service_config jdbcSchema ${DATABASE_NAME}
+	set_in_service_config jdbcUrl ${DATABASE_HOST}
+	set_in_service_config jdbcLogin ${DATABASE_USER}
+	set_in_service_config jdbcPass ${DATABASE_PASSWORD}
 }
 
 function help {
@@ -154,6 +172,29 @@ elif [ "$1" == "-s" ]; then
 elif [ "$1" == "-r" ]; then
 	echo "[Run]"
 	if [ "$2" == "start_one_node" ]; then
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationLevelService.GamificationLevelService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationActionService.GamificationActionService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationAchievementService.GamificationAchievementService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationGameService.GamificationGameService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationBadgeService.GamificationBadgeService.properties'
+		replace_properties_function	
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationQuestService.GamificationQuestService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationStreakService.GamificationStreakService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationBotWrapperService.GamificationBotWrapperService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationPointService.GamificationPointService.properties'
+		replace_properties_function
+		export SERVICE_PROPERTY_FILE='GamificationGameService/etc/i5.las2peer.services.gamificationGamifierService.GamificationGamifierService.properties'
+		replace_properties_function
+		echo ${DATABASE_NAME}
 		run_one_node_function
 	elif [ "$2" == "join_one_node" ]; then
 		if [ "$3" == "start" ]; then

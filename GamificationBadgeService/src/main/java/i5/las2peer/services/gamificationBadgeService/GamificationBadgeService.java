@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Random;
+import java.util.Base64;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.*;
@@ -175,9 +176,9 @@ public class GamificationBadgeService extends RESTService {
 		 * @throws NullPointerException null pointer exception
 		 */
 		private byte[] resizeImage(InputStream inputImageRaw) throws IllegalArgumentException, IOException, NullPointerException{
-
+			System.out.println("resizing image");
 			BufferedImage img = ImageIO.read(inputImageRaw);
-			BufferedImage newImg = Scalr.resize(img,Mode.AUTOMATIC,300,300);
+			BufferedImage newImg = Scalr.resize(img,Mode.AUTOMATIC,200,200);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ImageIO.write(newImg, "png", baos);
 			baos.flush();
@@ -798,9 +799,10 @@ public class GamificationBadgeService extends RESTService {
 				if(!LocalFileManager.deleteFile(LocalFileManager.getBasedir()+"/"+gameId+"/"+badgeId)){
 					
 					logger.info("Delete File Failed >> ");
+					System.out.println("WHoopsy nothing to delete");
 					objResponse.put("message", "Cannot delete badge. Delete File Failed");
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
-					return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
+				//	return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
 
 				}
 				objResponse.put("message", "File Deleted");
@@ -908,14 +910,30 @@ public class GamificationBadgeService extends RESTService {
 					windowSize = totalNum;
 				}
 				
-				badges = badgeAccess.getBadgesWithOffsetAndSearchPhrase(conn,gameId, offset, windowSize, searchPhrase);
+				badges = badgeAccess.getAllBadges(conn,gameId);
 				
 				
 				ObjectMapper objectMapper = new ObjectMapper();
 		    	//Set pretty printing of json
 		    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 		    	
-		    	String badgeString = objectMapper.writeValueAsString(badges);
+		    	
+				for(int i=0; i < badges.size();i++){
+					BadgeModel badge = badges.get(i);
+					System.out.println("searching for badge image" );
+					byte[] filecontent = getBadgeImageMethod(gameId, badge.getId());
+					
+					try{
+						byte[] encode = Base64.getEncoder().encode(filecontent);
+						String result = new String(encode);
+							badge.setBase64(result);
+							badges.set(i, badge);
+							System.out.println("badge img found" );
+					} catch (Exception e){
+						e.printStackTrace();
+					}
+				}
+				String badgeString = objectMapper.writeValueAsString(badges);
 				JSONArray badgeArray = (JSONArray) JSONValue.parse(badgeString);
 
 				objResponse.put("current", currentPage);
@@ -1047,6 +1065,20 @@ public class GamificationBadgeService extends RESTService {
 		public byte[] getBadgeImageMethod(String gameId, String badgeId){
 			byte[] filecontent = LocalFileManager.getFile(gameId+"/"+badgeId);
 			return filecontent;
+		}
+
+				/**
+		 * RMI function to get the badge image
+		 * @param gameId Game ID obtained from Gamification Game Service
+		 * @param badgeId badge id
+		 * @return badge image as byte array
+		 */
+		public String getBadgeImageMethodRMI(String gameId, String badgeId){
+			byte[] filecontent = LocalFileManager.getFile(gameId+"/"+badgeId);
+			
+			byte[] encode = Base64.getEncoder().encode(filecontent);
+			String result = new String(encode);
+			return result;
 		}
 		
 		// RMI
