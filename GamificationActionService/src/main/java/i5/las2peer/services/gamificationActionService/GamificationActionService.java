@@ -509,7 +509,6 @@ public class GamificationActionService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				System.out.println(e.getMessage());
 				logger.info("SQLException >> " + e.getMessage());
 				objResponse.put("message", "Cannot connect to database");
 				Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR,
@@ -520,7 +519,6 @@ public class GamificationActionService extends RESTService {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			System.out.println(e.getMessage());
 			logger.info("SQLException >> " + e.getMessage());
 			objResponse.put("message", "Cannot connect to database");
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
@@ -671,7 +669,6 @@ public class GamificationActionService extends RESTService {
 		String name = null;
 		Agent agent = Context.getCurrent().getMainAgent();
 		if (agent instanceof AnonymousAgent) {
-			System.out.println("is anonomy");
 			return unauthorizedMessage();
 		} else if (agent instanceof UserAgent) {
 			UserAgent userAgent = (UserAgent) Context.getCurrent().getMainAgent();
@@ -771,19 +768,15 @@ public class GamificationActionService extends RESTService {
 					try {
 						conn = dbm.getConnection();
 						JSONObject obj = new JSONObject();
-						System.out.println(actionId.split(":")[0]);
 						if(!actionAccess.isActionIdExist(conn,gameId, actionId.split(":")[0])){
 							System.out.println("no id found");
 							return null;
 						}
 						ActionModel a =actionAccess.getActionWithId(conn, gameId, actionId.split(":")[0]);
 						if(a.getActionType().equals("LRS")){
-							System.out.println("fetched action is of type LRS");
 							if(a.getLrsOccString() != null){
-								System.out.println("lrsocc there");
 								if(a.getLrsOccString().equals("Distinct")){
 									if(actionAccess.isVerbObjPresent(conn, gameId, memberId, actionId)){
-										System.out.println(" already there");
 											return null;
 									}
 

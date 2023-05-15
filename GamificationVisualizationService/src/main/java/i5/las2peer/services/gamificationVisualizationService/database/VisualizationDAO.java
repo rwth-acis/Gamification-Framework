@@ -391,15 +391,9 @@ public class VisualizationDAO {
 			totalcount = totalcount + rs.getInt("times");
 			resArr.put(resObj);
 		}
-		
-		System.out.println("arr " + resArr.toString());
 		outObj.put("actionArray", resArr);
 		float progress = (float) (((float)truecount/(float)totalcount) * 100.0);
 		outObj.put("progress", Math.round(progress));
-
-		System.out.println("count " + truecount);
-		System.out.println("total " + totalcount);
-		System.out.println("progress " + progress);
 		return outObj;
 	}
 	

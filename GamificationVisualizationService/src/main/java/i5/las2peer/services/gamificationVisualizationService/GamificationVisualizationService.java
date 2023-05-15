@@ -97,8 +97,6 @@ public class GamificationVisualizationService extends RESTService {
 
 	public GamificationVisualizationService() {
 		setFieldValues();
-		System.out
-				.println(jdbcDriverClassName + ", " + jdbcLogin + ", " + jdbcPass + ", " + jdbcUrl + ", " + jdbcSchema);
 		dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
 		this.visualizationAccess = new VisualizationDAO();
 	}
@@ -430,7 +428,6 @@ public class GamificationVisualizationService extends RESTService {
 			badges = visualizationAccess.getObtainedBadges(conn, gameId, memberId);
 			for (int i = 0; i < badges.size(); i++) {
 				BadgeModel badge = badges.get(i);
-				System.out.println("searching for badge image");
 
 				try {
 
@@ -439,7 +436,6 @@ public class GamificationVisualizationService extends RESTService {
 							"getBadgeImageMethodRMI", gameId, badge.getId())).toString();
 					badge.setBase64(result);
 					badges.set(i, badge);
-					System.out.println("badge img found");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -1160,13 +1156,11 @@ public class GamificationVisualizationService extends RESTService {
 						"i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1",
 						"getQuestListRMI", new Serializable[] { gameId, 0, 0, "" });
 				if (result != null) {
-					System.out.println(result);
 					JSONObject jsonResult = new JSONObject(result);
 					for (Object quest : (JSONArray) jsonResult.get("rows")) {
 						JSONObject jsonQuest = (JSONObject) quest;
 						result2 = visualizationAccess.getMemberQuestProgress(conn, gameId, memberId,
 								jsonQuest.getString("id"));
-						System.out.println(result2);
 						finalResp.put(jsonQuest.getString("id"), result2);
 
 					}
@@ -1258,13 +1252,11 @@ public class GamificationVisualizationService extends RESTService {
 						"i5.las2peer.services.gamificationQuestService.GamificationQuestService@0.1",
 						"getQuestListRMI", new Serializable[] { gameId, 0, 0, "" });
 				if (result != null) {
-					System.out.println(result);
 					JSONObject jsonResult = new JSONObject(result);
 					for (Object quest : (JSONArray) jsonResult.get("rows")) {
 						JSONObject jsonQuest = (JSONObject) quest;
 						result2 = visualizationAccess.getMemberQuestProgress(conn, gameId, memberId,
 								jsonQuest.getString("id"));
-						System.out.println(result2);
 						finalResp.put(result2);
 					}
 					return finalResp.toString();
@@ -1524,13 +1516,11 @@ public class GamificationVisualizationService extends RESTService {
 		long randomLong = new Random().nextLong(); // To be able to match
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
-		System.out.println("11");
 		Agent agent = Context.getCurrent().getMainAgent();
 		if (agent instanceof AnonymousAgent) {
 			return unauthorizedMessage();
 		}
 		try {
-			System.out.println("1 + " + actionId);
 			conn = dbm.getConnection();
 			Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_38, "" + randomLong, true);
 			if (!visualizationAccess.isGameIdExist(conn, gameId)) {
@@ -1541,7 +1531,6 @@ public class GamificationVisualizationService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-			System.out.println("2");
 			if (!visualizationAccess.isMemberRegistered(conn, memberId)) {
 				logger.info("Member ID not found >> ");
 				objResponse.put("message", "Member ID not found");
@@ -1550,7 +1539,6 @@ public class GamificationVisualizationService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-			System.out.println("3");
 			if (!visualizationAccess.isMemberRegisteredInGame(conn, memberId, gameId)) {
 				logger.info("Member is not registered in Game >> ");
 				objResponse.put("message", "Member is not registered in Game");
@@ -1559,7 +1547,6 @@ public class GamificationVisualizationService extends RESTService {
 				return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(objResponse.toString())
 						.type(MediaType.APPLICATION_JSON).build();
 			}
-			System.out.println("4");
 			// RMI call with parameters
 			String result = "";
 			try {
@@ -1573,7 +1560,6 @@ public class GamificationVisualizationService extends RESTService {
 							true);
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_45, "" + memberId,
 							true);
-					System.out.println("5");
 					return Response.status(HttpURLConnection.HTTP_OK).entity(result).type(MediaType.APPLICATION_JSON)
 							.build();
 				}

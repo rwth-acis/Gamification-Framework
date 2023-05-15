@@ -212,7 +212,6 @@ public class GamificationGameService extends RESTService {
 			}
 
 			// gameid must be unique
-			System.out.println(gameid);
 			if (gameAccess.isGameIdExist(conn, gameid)) {
 				// game id already exist
 				objResponse.put("message", "Game ID already exist");
@@ -643,8 +642,6 @@ public class GamificationGameService extends RESTService {
 
 		JSONObject objResponse = new JSONObject();
 		Connection conn = null;
-
-		System.out.println("checking whether we can add member to game yes yes");
 		Agent agent = Context.getCurrent().getMainAgent();
 		if (agent instanceof AnonymousAgent) {
 			return unauthorizedMessage();
@@ -828,10 +825,8 @@ public class GamificationGameService extends RESTService {
 
 		MemberModel member;
 		Connection conn = null;
-		System.out.println("testing about agent");
 		Agent agent = Context.getCurrent().getMainAgent();
 		if (agent instanceof AnonymousAgent) {
-			System.out.println("testing about agent anononyony");
 			return unauthorizedMessage();
 		}
 		String name = memberId;
@@ -840,12 +835,10 @@ public class GamificationGameService extends RESTService {
 			if (name != "" && email != "") {// jsonUserData instanceof JSONObject
 				String lastname = "";
 				String firstname = "";
-				System.out.println("testing about agent2");
 				member = new MemberModel(name, firstname, lastname, email);
 				try {
 					conn = dbm.getConnection();
 					if (!gameAccess.isMemberRegistered(conn, member.getId())) {
-						System.out.println("testing about agent3");
 						gameAccess.registerMember(conn, member);
 						objResponse.put("message", "Welcome " + member.getId() + "!");
 						Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_CUSTOM_MESSAGE_7,

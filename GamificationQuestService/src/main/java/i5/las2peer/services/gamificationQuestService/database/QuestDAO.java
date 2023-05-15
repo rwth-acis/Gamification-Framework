@@ -220,11 +220,8 @@ public class QuestDAO {
 		PreparedStatement batchstmt = null;
 		//conn.setAutoCommit(false);
 		
-		for(Pair<String,Integer> a : quest.getActionIds()){
-
-		      
+		for(Pair<String,Integer> a : quest.getActionIds()){    
 			batchstmt = conn.prepareStatement("INSERT INTO "+gameId+".quest_action (quest_id, action_id, times) VALUES ( ?, ?, ?)");
-			System.out.println(quest.getId());
 			batchstmt.setString(1, quest.getId());
 			batchstmt.setString(2, a.getLeft());
 			batchstmt.setInt(3, a.getRight());

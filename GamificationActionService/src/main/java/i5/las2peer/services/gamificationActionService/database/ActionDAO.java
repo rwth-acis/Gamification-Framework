@@ -92,10 +92,8 @@ public class ActionDAO {
 
 		stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".member_action where member_id='" + memberId + "'");
 		ResultSet rs = stmt.executeQuery();
-		System.out.println("verbObj is " + verbObj);
 		while (rs.next()) {
 			if (rs.getString("object_id") != null) {
-				System.out.println(rs.getString("action_id") + rs.getString("object_id"));
 				if (rs.getString("action_id").equals(verbObj.split(":")[0])
 						&& rs.getString("object_id").equals(verbObj.split(":")[1])) {
 					return true;
@@ -279,7 +277,6 @@ public class ActionDAO {
 		Boolean hasNotif = false;
 
 		JSONObject finalObj = new JSONObject();
-		System.out.println("data : " + gameId + " " + memberId);
 		// Submit action into member_action
 		stmt = conn.prepareStatement(
 				"INSERT INTO " + gameId + ".member_action (member_id, action_id, object_id) VALUES (?, ?, ?)");
@@ -303,13 +300,11 @@ public class ActionDAO {
 				resObj.put("type", NotificationType.valueOf(rs.getString("type")));
 				resObj.put("typeId", rs.getString("type_id"));
 				resObj.put("message", rs.getString("message"));
-				System.out.println(resObj);
 				if(resObj.get("type").toString().equals("LEVEL")){
 					stmt = conn.prepareStatement("SELECT * FROM " + gameId + ".level WHERE name = ?");
 					stmt.setString(1, resObj.get("typeId").toString());
 					ResultSet rs2 = stmt.executeQuery();
 					if(rs2.next()){
-						System.out.println(rs2.getStatement());
 						resObj.put("levelNumber",rs2.getInt("level_num"));
 					}
 					

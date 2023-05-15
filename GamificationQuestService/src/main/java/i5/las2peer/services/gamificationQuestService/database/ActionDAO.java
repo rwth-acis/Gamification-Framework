@@ -218,7 +218,6 @@ public class ActionDAO {
 	public JSONArray triggerAction(Connection conn,String gameId, String memberId, String actionId) throws SQLException {
 		
 		JSONArray resArray = new JSONArray();
-		System.out.println("data : " + gameId + " " + memberId);
 		// Submit action into member_action
 		stmt = conn.prepareStatement("INSERT INTO "+gameId+".member_action (member_id, action_id) VALUES (?, ?)");
 		stmt.setString(1, memberId);

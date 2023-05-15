@@ -164,7 +164,6 @@ public class BadgeDAO {
 			stmt.setString(4, badge.getNotificationMessage());
 			stmt.setString(5, badge.getId());
 			stmt.executeUpdate();
-			System.out.println("Badge id " + badge.getId() + " is updated");
 
 	}
 
@@ -181,7 +180,6 @@ public class BadgeDAO {
 			stmt = conn.prepareStatement("DELETE FROM "+gameId+".badge WHERE badge_id = ?");
 			stmt.setString(1, badge_id);
 			stmt.executeUpdate();
-			System.out.println("Badge id " + badge_id + " is deleted from database");
 
 	}
 

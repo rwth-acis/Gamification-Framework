@@ -312,8 +312,6 @@ public class GamificationQuestService extends RESTService {
 						.type(MediaType.APPLICATION_JSON).build();
 
 			}
-			System.out.println(content);
-			System.out.println(contentB);
 
 			JSONObject obj = (JSONObject) JSONValue.parseWithException(content);
 			try {
@@ -371,7 +369,6 @@ public class GamificationQuestService extends RESTService {
 			if (questnotifcheck) {
 				questnotifmessage = stringfromJSON(obj, "questnotificationmessage");
 			}
-			System.out.println(questquestidcompleted);
 			QuestModel model = new QuestModel(questid, questname, questdescription, QuestStatus.valueOf(queststatus),
 					questachievementid, questquestflag, questquestidcompleted, questpointflag, questpointvalue,
 					questnotifcheck, questnotifmessage);
@@ -829,10 +826,8 @@ public class GamificationQuestService extends RESTService {
 		long randomLong = new Random().nextLong(); // To be able to match
 		String split[] = questIds.split(",");
 		
-		System.out.println("ijhdsflsdflshdfl");
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
-	    System.out.println(questIds);
 		Connection conn = null;
 
 		String name = null;

@@ -176,7 +176,6 @@ public class GamificationBadgeService extends RESTService {
 		 * @throws NullPointerException null pointer exception
 		 */
 		private byte[] resizeImage(InputStream inputImageRaw) throws IllegalArgumentException, IOException, NullPointerException{
-			System.out.println("resizing image");
 			BufferedImage img = ImageIO.read(inputImageRaw);
 			BufferedImage newImg = Scalr.resize(img,Mode.AUTOMATIC,200,200);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -798,8 +797,7 @@ public class GamificationBadgeService extends RESTService {
 				badgeAccess.deleteBadge(conn,gameId, badgeId);
 				if(!LocalFileManager.deleteFile(LocalFileManager.getBasedir()+"/"+gameId+"/"+badgeId)){
 					
-					logger.info("Delete File Failed >> ");
-					System.out.println("WHoopsy nothing to delete");
+					logger.info("Delete File Failed >> ");;
 					objResponse.put("message", "Cannot delete badge. Delete File Failed");
 					Context.getCurrent().monitorEvent(this, MonitoringEvent.SERVICE_ERROR, (String) objResponse.get("message"));
 				//	return Response.status(HttpURLConnection.HTTP_INTERNAL_ERROR).entity(objResponse.toJSONString()).type(MediaType.APPLICATION_JSON).build();
@@ -920,7 +918,6 @@ public class GamificationBadgeService extends RESTService {
 		    	
 				for(int i=0; i < badges.size();i++){
 					BadgeModel badge = badges.get(i);
-					System.out.println("searching for badge image" );
 					byte[] filecontent = getBadgeImageMethod(gameId, badge.getId());
 					
 					try{
@@ -928,7 +925,6 @@ public class GamificationBadgeService extends RESTService {
 						String result = new String(encode);
 							badge.setBase64(result);
 							badges.set(i, badge);
-							System.out.println("badge img found" );
 					} catch (Exception e){
 						e.printStackTrace();
 					}

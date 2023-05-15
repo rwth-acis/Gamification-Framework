@@ -30,7 +30,6 @@ public class ProfileDAO {
 			throws SQLException {
 		stmt = conn.prepareStatement("UPDATE " + game_id + ".member_profile SET badge_id='" + badge_id
 				+ "' WHERE member_id='" + member_id + "';");
-		System.out.println(stmt.toString());
 		int success = stmt.executeUpdate();
 		if (success == 1) {
 			// if(rs.getString("game_id").equals(game_id)){
@@ -117,8 +116,6 @@ public class ProfileDAO {
 		ResultSet rs = stmt.executeQuery();
 		JSONArray arr = new JSONArray(); 
 		while (rs.next()) {
-			System.out.println("found old id");
-			System.out.println(rs.getFetchSize());
 			arr.add(rs.getString("statement_id"));
 			// if(rs.getString("game_id").equals(game_id)){
 			

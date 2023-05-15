@@ -207,7 +207,6 @@ public class GamificationStreakService extends RESTService {
 				streak.setStreakLevel(obj.getInt("streakLevel"));
 				streak.setStatus(StreakSatstus.valueOf(obj.getString("status")));
 				streak.setPointThreshold(obj.getInt("pointThreshold"));
-				System.out.println("set to equalddd");
 				if (obj.has("lockedDate")) {
 					streak.setLockedDate(LocalDateTime.parse(obj.getString("lockedDate")));
 				}
@@ -226,7 +225,6 @@ public class GamificationStreakService extends RESTService {
 					// a bit ugly, but the idea is that if no due lock date is set, the lock date gets set to the current time when the action is triggered
 					streak.setLockedDate(LocalDateTime.parse("2020-12-13T12:00:00"));
 					streak.setDueDate(LocalDateTime.parse("2020-12-13T12:00:00"));
-					System.out.println("set to equal");
 				}
 
 				streak.setPeriod(Duration.parse(obj.getString("period")));

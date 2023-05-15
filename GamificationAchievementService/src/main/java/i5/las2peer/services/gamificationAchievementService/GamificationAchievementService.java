@@ -79,7 +79,6 @@ public class GamificationAchievementService extends RESTService {
 		// IF THE SERVICE CLASS NAME IS CHANGED, THE PROPERTIES FILE NAME NEED TO BE CHANGED TOO!
 		setFieldValues();
 		dbm = DatabaseManager.getInstance(jdbcDriverClassName, jdbcLogin, jdbcPass, jdbcUrl, jdbcSchema);
-		System.out.println("drive i s " + jdbcDriverClassName + jdbcLogin + jdbcPass + jdbcSchema);
 		this.achievementAccess = new AchievementDAO();
 	}
 
@@ -617,10 +616,9 @@ public class GamificationAchievementService extends RESTService {
 		long randomLong = new Random().nextLong(); // To be able to match
 		String split[] = achievementIds.split(",");
 		
-		System.out.println("ijhdsflsdflshdfl");
 		// parse given multipart form data
 		JSONObject objResponse = new JSONObject();
-	    System.out.println(achievementIds);
+
 		Connection conn = null;
 
 		String name = null;
@@ -682,7 +680,6 @@ public class GamificationAchievementService extends RESTService {
 				achievements.add(ach);
 			}
 
-			System.out.println(achievements.size());
 
 			achievementAccess.moveUp(conn, gameId, achievements);
 

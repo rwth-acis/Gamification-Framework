@@ -107,7 +107,6 @@ public class LrsBotWorker implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("size is"+arr.size());
 		this.userLRS.put(email, arr);
 	}
 
@@ -119,13 +118,11 @@ public class LrsBotWorker implements Runnable {
 	// trigger actions
 	@Override
 	public void run() {
-		System.out.println("10" + this.botName);
 		while (!Thread.currentThread().isInterrupted()) {
 			// will need to do timestamp per user and not per instance of bot
 			// will need to check for the "moreStatements" field in the response for more
 			// statements...
 			for (String user : users.keySet()) {
-				System.out.println("Fetching for: " + user);
 				JSONArray storedStatements = this.userLRS.get(user);
 				JSONParser parser = new JSONParser(0);
 				try {
@@ -157,7 +154,6 @@ public class LrsBotWorker implements Runnable {
 					JSONObject jsonBody = (JSONObject) p.parse(response.toString());
 
 					JSONArray statements = (JSONArray) jsonBody.get("statements");
-					System.out.println("statements coming" + statements.size());
 					if (statements.size() > 0) {
 						int occ = 0;
 						for (Object statement : statements) {
@@ -182,33 +178,22 @@ public class LrsBotWorker implements Runnable {
 								}
 							}
 							String verbId = ((JSONObject) s.get("verb")).get("id").toString();
-							System.out.println("checked verb is " + verbId);
 							String objectId = ((JSONObject) ((JSONObject) ((JSONObject) s.get("object"))
 									.get("definition")).get("name")).get("en-US").toString();
 									// change this to split based on / 
 							if (this.actionVerbs.keySet().contains(verbId.split("verb/")[1])) {
-								System.out.println("verb found in list");
 								for (Object o : this.actionVerbs.get(verbId.split("verb/")[1])) {
 
 									JSONObject jsonO = (JSONObject) o;
-									System.out.println("checking stuff for action id: " + jsonO.get("id").toString());
 									if (jsonO.containsKey("lrsAttribute")
 											&& !jsonO.get("lrsAttribute").toString().equals("")) {
-										System.out.println(
-												"to match attribute is:+ " + jsonO.get("lrsAttribute").toString()
-														+ " with value " + jsonO.get("lrsAttributeValue").toString());
 										if (!jsonO.get("lrsAttributeValue").toString()
 												.equals(recursive(s, jsonO.get("lrsAttribute").toString()))) {
-											System.out.println("attributes do not match");
 											continue;
 										}
 									}
 									try {
 										String actionId = jsonO.get("id").toString();
-										System.out.println(this.gameURL +
-												"/gamification/visualization/actions/"
-												+ this.game + "/" + actionId + ":" + objectId + "/"
-												+ user);
 										MiniClient client = new MiniClient();
 
 										client.setConnectorEndpoint(this.gameURL +
@@ -218,14 +203,9 @@ public class LrsBotWorker implements Runnable {
 												+ user);
 
 										HashMap<String, String> headers = new HashMap<String, String>();
-										System.out.println("user");
 										try {
 											client.setLogin(restarterBot.getLoginName(), restarterBot.getPassphrase());
 											ClientResponse result = client.sendRequest("POST", "", "");
-											System.out.println(result.toString());
-											System.out.println(result.getHttpCode());
-											System.out.println(result.getRawResponse());
-											System.out.println(result.getResponse());
 											JSONObject rJSON = (JSONObject) p.parse(result.getResponse());
 											if (rJSON.containsKey("notification")) {
 												this.sendNotification(user, (JSONArray) rJSON.get("notification"));
@@ -235,15 +215,12 @@ public class LrsBotWorker implements Runnable {
 											// System.out.println(answer);
 										} catch (Exception e) {
 											e.printStackTrace();
-											System.out.println("pepe");
 										}
 										// Context.get().invokeInternally(
 										// "i5.las2peer.services.gamificationVisualizationService.GamificationVisualizationService",
 										// "triggerAction", this.game, verbId.split("verb/")[1], user);
-										System.out.println("done triggering action1");
 									} catch (Exception e3) {
 										e3.printStackTrace();
-										System.out.println("done triggering action");
 									}
 
 									occ++;
@@ -256,18 +233,12 @@ public class LrsBotWorker implements Runnable {
 						System.out.println("found " + occ + "statemetns");
 
 					} else {
-						System.out.println("no statements");
 					}
 					if (userStreaks.containsKey(user) && userStreaks.get(user) != null) {
-						System.out.println(userStreaks.get(user));
 						for (String streakId : userStreaks.get(user).keySet()) {
 
 							JSONObject streak = (JSONObject) ((JSONObject) userStreaks.get(user)).get(streakId);
 							LocalDateTime now = LocalDateTime.now();
-							System.out.println("difference in hourse is " + ChronoUnit.MINUTES.between(now,
-									LocalDateTime.parse(streak.get("dueDate").toString())) + " "
-									+ ChronoUnit.MINUTES.between(LocalDateTime.parse(streak.get("dueDate").toString()),
-											now));
 							if (ChronoUnit.MINUTES.between(now,
 									LocalDateTime.parse(streak.get("dueDate").toString())) < streakReminder * 60) {
 								String action = ((JSONObject) ((JSONArray) streak.get("openActions")).get(0))
@@ -324,14 +295,12 @@ public class LrsBotWorker implements Runnable {
 		client.setConnectorEndpoint(this.sbmURL +
 				"/SBFManager/bots/webhook");
 		HashMap<String, String> headers = new HashMap<String, String>();
-		System.out.println("user");
 		String message = "";
 		JSONObject information = new JSONObject();
 		for (Object o : notification) {
 			JSONObject json = (JSONObject) o;
 			if (json.containsKey("type") && json.get("type").toString().equals("STREAK")) {
 				MiniClient client2 = new MiniClient();
-				System.out.println(json);
 				client2.setConnectorEndpoint(this.gameURL +
 						"/gamification/visualization/streaks/"
 						+ this.game + "/" + user + "/progress/"
@@ -342,13 +311,8 @@ public class LrsBotWorker implements Runnable {
 				JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
 
 				JSONObject jsonResult = new JSONObject();
-				System.out.println(result1.getResponse());
-				System.out.println(result1.getHttpCode());
 				try {
-					System.out.println("parsing jsonresult now");
 					jsonResult = (JSONObject) parser.parse(result1.getResponse());
-					System.out.println("parsing worked");
-					System.out.println(jsonResult);
 					if (userStreaks.containsKey(user) && userStreaks.get(user) != null && !userStreaks.get(user).isEmpty()) {
 						userStreaks.put(user,
 								(JSONObject) userStreaks.get(user).put(json.get("typeId").toString(), jsonResult));
@@ -399,29 +363,21 @@ public class LrsBotWorker implements Runnable {
 		try {
 			ClientResponse result = client.sendRequest("POST", "",
 					information.toJSONString());
-			System.out.println(result.toString());
-			System.out.println(result.getHttpCode());
-			System.out.println(result.getRawResponse());
-			System.out.println(result.getResponse());
 			// JSONObject answer = (JSONObject) parser.parse(result.getResponse());
 			// System.out.println(answer);
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("pepe");
 		}
 	}
 
 	public void addMember(String user) {
 		try {
-			System.out.println("attempting to add player");
 			try {
 				Context.get().invokeInternally("i5.las2peer.services.gamificationGameService.GamificationGameService",
 						"memberLoginValidation", user);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-
-			System.out.println("worked?");
 			Context.get().invokeInternally("i5.las2peer.services.gamificationGameService.GamificationGameService",
 					"addMemberToGame", this.game, user);
 		} catch (Exception e) {
