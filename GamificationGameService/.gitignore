@@ -2,6 +2,7 @@
 .project
 /export/
 /log/
+/bin/
 /service/
 /node-storage
 /build/
